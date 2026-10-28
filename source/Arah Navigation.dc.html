@@ -1,0 +1,807 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#0a0c1a">
+<title>ARAH · Navigasi Malaysia — 3D Map &amp; Turn-by-Turn</title>
+<meta name="description" content="ARAH is a 3D navigation map for Malaysia: low-poly landmarks, day, night, satellite and terrain views, toll estimates in RM, along-route surau, R&amp;R and EV search, flood and landslide reports, and voice guidance in Bahasa Malaysia, English, 中文 and தமிழ்.">
+<meta name="application-name" content="ARAH">
+<meta name="apple-mobile-web-app-title" content="ARAH">
+<meta property="og:type" content="website">
+<meta property="og:site_name" content="ARAH · Navigasi Malaysia">
+<meta property="og:title" content="ARAH — Navigasi Malaysia dalam 3D">
+<meta property="og:description" content="3D low-poly navigation built for Malaysian roads. Voice in BM, English, 中文 and தமிழ். Built on OpenStreetMap.">
+<meta property="og:locale" content="ms_MY">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="ARAH — Navigasi Malaysia dalam 3D">
+<meta name="twitter:description" content="3D low-poly navigation for Malaysia, with voice in BM, English, 中文 and தமிழ்.">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='22' fill='%230a0c1a'/%3E%3Cpath d='M50 18 L78 80 L50 66 L22 80 Z' fill='none' stroke='%232fd0ec' stroke-width='7' stroke-linejoin='round'/%3E%3C/svg%3E">
+<link rel="stylesheet" href="_ds/nocturne-34584848-8905-44bd-8587-b2383b36a709/styles.css">
+<script src="_ds/nocturne-34584848-8905-44bd-8587-b2383b36a709/_ds_bundle.js"></script>
+<link rel="stylesheet" href="https://unpkg.com/maplibre-gl@5/dist/maplibre-gl.css">
+<script src="https://unpkg.com/maplibre-gl@5/dist/maplibre-gl.js"></script>
+<link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/regular/style.css">
+<link rel="stylesheet" href="https://unpkg.com/@phosphor-icons/web@2.1.1/src/fill/style.css">
+<style>
+html,body{margin:0;height:100%;overflow:hidden;background:#0a0c1a;overscroll-behavior:none}
+a{color:#a865f5}a:hover{color:#bf8dff}
+.maplibregl-ctrl-attrib{background:rgba(10,12,26,.75)!important;color:#80859f!important;font-size:10px}
+.maplibregl-ctrl-attrib a{color:#a2a7c2!important}
+.maplibregl-ctrl-attrib-button{filter:invert(1)}
+.maplibregl-popup-content{background:#141729;color:#eef0fa;border-radius:8px;box-shadow:0 0 0 1px #474b61,0 6px 18px rgba(0,0,0,.6);padding:10px 12px;font-family:Ubuntu,sans-serif}
+.maplibregl-popup-tip{border-top-color:#141729!important;border-bottom-color:#141729!important}
+@keyframes arahPulse{0%{transform:scale(.6);opacity:.9}100%{transform:scale(2.6);opacity:0}}
+</style>
+</helmet>
+<div style="position:relative;width:100%;height:100dvh;overflow:hidden;background:var(--color-bg);color:var(--color-text);font-family:var(--font-body);-webkit-tap-highlight-color:transparent">
+  <div ref="{{ mapRef }}" style="position:absolute;inset:0"></div>
+
+  <sc-if value="{{ notReady }}" hint-placeholder-val="{{ true }}">
+    <div style="position:absolute;inset:0;display:grid;place-items:center;pointer-events:none">
+      <div class="text-mono" style="font-size:12px;color:var(--color-accent-2-300);letter-spacing:.14em">MEMUATKAN PETA…</div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ showTop }}" hint-placeholder-val="{{ true }}">
+    <div style="position:absolute;top:calc(env(safe-area-inset-top) + 12px);left:12px;right:12px;display:flex;gap:8px;align-items:flex-start;pointer-events:none;z-index:5">
+      <div style="pointer-events:auto;display:flex;flex-direction:column;justify-content:center;padding:0 14px;height:50px;flex:none;border-radius:var(--radius-lg);background:color-mix(in srgb,var(--color-surface) 90%,transparent);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);box-shadow:var(--shadow-md)">
+        <div class="text-neon" style="font-family:var(--font-heading);font-weight:800;font-style:italic;font-size:28px;line-height:.95;letter-spacing:.03em">ARAH</div>
+        <div style="display:flex;align-items:center;gap:5px"><span class="text-mono" style="font-size:8.5px;color:var(--color-neutral-400);letter-spacing:.16em">NAVIGASI MALAYSIA</span><span class="text-mono" style="font-size:8px;line-height:1;padding:2px 4px;border-radius:3px;border:1px solid var(--color-neon-orange);color:var(--color-neutral-100);letter-spacing:.1em">BETA</span></div>
+      </div>
+      <div style="pointer-events:auto;position:relative;flex:1;min-width:0;max-width:560px">
+        <div style="display:flex;align-items:center;gap:8px;height:50px;padding:0 6px 0 14px;border-radius:var(--radius-lg);background:color-mix(in srgb,var(--color-surface) 90%,transparent);backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);box-shadow:var(--shadow-md)">
+          <i class="ph ph-magnifying-glass" style="font-size:19px;color:var(--color-accent-2)"></i>
+          <input value="{{ query }}" onChange="{{ onQuery }}" onKeyDown="{{ onSearchKey }}" onFocus="{{ onSearchFocus }}" placeholder="Cari tempat · Search Malaysia" style="flex:1;min-width:0;height:100%;background:transparent;border:0;outline:none;color:var(--color-text);font-family:var(--font-body);font-size:16px">
+          <sc-if value="{{ hasQuery }}" hint-placeholder-val="{{ false }}">
+            <button class="btn btn-ghost" onClick="{{ clearQuery }}" style="width:40px;height:40px;padding:0;color:var(--color-neutral-400)"><i class="ph ph-x" style="font-size:18px"></i></button>
+          </sc-if>
+        </div>
+        <sc-if value="{{ showResults }}" hint-placeholder-val="{{ false }}">
+          <div style="position:absolute;top:58px;left:0;right:0;max-height:min(60dvh,420px);overflow:auto;padding:6px;border-radius:var(--radius-lg);background:var(--color-surface);box-shadow:var(--shadow-lg);display:flex;flex-direction:column;gap:2px">
+            <sc-for list="{{ results }}" as="r" hint-placeholder-count="4">
+              <button onClick="{{ r.onPick }}" style="display:flex;align-items:center;gap:12px;width:100%;min-height:48px;padding:8px 10px;border:0;border-radius:var(--radius-md);background:transparent;color:var(--color-text);text-align:left;cursor:pointer;font-family:var(--font-body)" style-hover="background:color-mix(in srgb,var(--color-text) 7%,transparent)">
+                <i class="{{ r.icon }}" style="font-size:18px;color:var(--color-accent-300);flex:none"></i>
+                <span style="display:flex;flex-direction:column;min-width:0">
+                  <span style="font-size:14px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.title }}</span>
+                  <span style="font-size:12px;color:var(--color-neutral-400);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.sub }}</span>
+                </span>
+              </button>
+            </sc-for>
+          </div>
+        </sc-if>
+      </div>
+    </div>
+  </sc-if>
+
+  <div style="position:absolute;right:12px;top:calc(env(safe-area-inset-top) + 74px);display:flex;flex-direction:column;gap:8px;z-index:7">
+    <button class="btn btn-secondary" onClick="{{ toggle3D }}" title="Toggle 3D" style="width:44px;height:44px;padding:0;background:color-mix(in srgb,var(--color-surface) 90%,transparent);box-shadow:var(--shadow-md);font-size:15px">{{ viewLabel }}</button>
+    <button class="btn btn-secondary" onClick="{{ resetNorth }}" title="Reset north" style="width:44px;height:44px;padding:0;background:color-mix(in srgb,var(--color-surface) 90%,transparent);box-shadow:var(--shadow-md)"><i class="ph-fill ph-compass" style="font-size:22px;color:var(--color-neon-magenta);transform:rotate({{ compassDeg }}deg)"></i></button>
+    <button class="{{ layersCls }}" onClick="{{ toggleLayers }}" title="Map views" style="width:44px;height:44px;padding:0;background:color-mix(in srgb,var(--color-surface) 90%,transparent);box-shadow:var(--shadow-md)"><i class="ph ph-stack" style="font-size:21px"></i></button>
+    <sc-if value="{{ layersOpen }}" hint-placeholder-val="{{ false }}">
+      <div style="position:absolute;right:54px;top:0;width:min(272px,calc(100vw - 90px));padding:12px;border-radius:var(--radius-lg);background:var(--color-surface);box-shadow:var(--shadow-lg);display:flex;flex-direction:column;gap:10px">
+        <div style="display:flex;align-items:center">
+          <h6 style="margin:0;color:var(--color-accent-2-300);flex:1">Paparan peta · Map view</h6>
+          <button class="btn btn-ghost" onClick="{{ toggleLayers }}" style="width:32px;height:32px;padding:0;color:var(--color-neutral-400)"><i class="ph ph-x"></i></button>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+          <button onClick="{{ setNight }}" style="display:flex;flex-direction:column;gap:6px;padding:6px;border-radius:var(--radius-md);border:1.5px solid {{ vNight }};background:transparent;color:var(--color-text);cursor:pointer;text-align:left">
+            <span style="display:block;height:58px;border-radius:6px;background:linear-gradient(150deg,#0a0c1a 30%,#1a1050);box-shadow:inset 0 -14px 0 -12px #ec4899,inset 0 0 0 1px #2e3145"></span>
+            <span style="font-family:var(--font-heading);font-weight:700;font-size:15px;text-transform:uppercase;line-height:1">Malam<span style="display:block;font-family:var(--font-body);font-weight:400;font-size:11px;text-transform:none;color:var(--color-neutral-400);margin-top:2px">Neon night</span></span>
+          </button>
+          <button onClick="{{ setDay }}" style="display:flex;flex-direction:column;gap:6px;padding:6px;border-radius:var(--radius-md);border:1.5px solid {{ vDay }};background:transparent;color:var(--color-text);cursor:pointer;text-align:left">
+            <span style="display:block;height:58px;border-radius:6px;background:linear-gradient(150deg,#eef0f4 35%,#c8e6cf 65%,#a9d3f0);box-shadow:inset 0 -14px 0 -11px #f9b85c"></span>
+            <span style="font-family:var(--font-heading);font-weight:700;font-size:15px;text-transform:uppercase;line-height:1">Siang<span style="display:block;font-family:var(--font-body);font-weight:400;font-size:11px;text-transform:none;color:var(--color-neutral-400);margin-top:2px">Daylight</span></span>
+          </button>
+          <button onClick="{{ setSat }}" style="display:flex;flex-direction:column;gap:6px;padding:6px;border-radius:var(--radius-md);border:1.5px solid {{ vSat }};background:transparent;color:var(--color-text);cursor:pointer;text-align:left">
+            <span style="display:block;height:58px;border-radius:6px;background:radial-gradient(60% 80% at 30% 30%,#5b6b3c,transparent),radial-gradient(50% 70% at 80% 80%,#1f3a4a,transparent),#33402c"></span>
+            <span style="font-family:var(--font-heading);font-weight:700;font-size:15px;text-transform:uppercase;line-height:1">Satelit<span style="display:block;font-family:var(--font-body);font-weight:400;font-size:11px;text-transform:none;color:var(--color-neutral-400);margin-top:2px">Satellite + labels</span></span>
+          </button>
+          <button onClick="{{ setTerrainView }}" style="display:flex;flex-direction:column;gap:6px;padding:6px;border-radius:var(--radius-md);border:1.5px solid {{ vTerrain }};background:transparent;color:var(--color-text);cursor:pointer;text-align:left">
+            <span style="display:block;height:58px;border-radius:6px;background:linear-gradient(160deg,#dfe2f1 20%,#b5d9bf 50%,#80859f 75%,#c4c8de)"></span>
+            <span style="font-family:var(--font-heading);font-weight:700;font-size:15px;text-transform:uppercase;line-height:1">Rupa bumi<span style="display:block;font-family:var(--font-body);font-weight:400;font-size:11px;text-transform:none;color:var(--color-neutral-400);margin-top:2px">3D terrain</span></span>
+          </button>
+        </div>
+        <div style="display:flex;gap:6px"><button class="{{ flagsCls }}" onClick="{{ toggleFlags }}" style="min-height:40px;font-size:13px;flex:1"><i class="ph ph-flag-banner"></i>Bendera</button><button class="{{ sightsCls }}" onClick="{{ toggleSights }}" style="min-height:40px;font-size:13px;flex:1"><i class="ph ph-map-pin-simple-area"></i>Terkenal</button></div>
+        <button class="{{ autoCls }}" onClick="{{ toggleAuto }}" style="min-height:40px;font-size:13px;justify-content:flex-start"><i class="ph ph-sun-horizon"></i>Auto siang / malam</button>
+      </div>
+    </sc-if>
+    <button class="{{ terrainCls }}" onClick="{{ toggleTerrain }}" title="3D terrain" style="width:44px;height:44px;padding:0;background:color-mix(in srgb,var(--color-surface) 90%,transparent);box-shadow:var(--shadow-md)"><i class="ph ph-mountains" style="font-size:21px"></i></button>
+    <button class="btn btn-secondary" onClick="{{ locate }}" title="My location" style="width:44px;height:44px;padding:0;background:color-mix(in srgb,var(--color-surface) 90%,transparent);box-shadow:var(--shadow-md)"><i class="ph ph-crosshair" style="font-size:21px;color:var(--color-accent-2)"></i></button>
+    <button class="btn btn-primary" onClick="{{ openReport }}" title="Report" style="width:44px;height:44px;padding:0;background:color-mix(in srgb,var(--color-surface) 90%,transparent)"><i class="ph-fill ph-megaphone" style="font-size:20px"></i></button>
+  </div>
+
+  <sc-if value="{{ showPanel }}" hint-placeholder-val="{{ true }}">
+    <div style="position:absolute;left:12px;bottom:calc(env(safe-area-inset-bottom) + 12px);width:min(410px,calc(100% - 24px));max-height:min(58dvh,640px);display:flex;flex-direction:column;border-radius:var(--radius-lg);background:color-mix(in srgb,var(--color-surface) 93%,transparent);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);box-shadow:var(--shadow-md);z-index:4;overflow:hidden">
+      <div style="display:flex;align-items:center;gap:6px;padding:8px">
+        <button class="{{ tabExplore }}" onClick="{{ goExplore }}" style="min-height:40px;font-size:14px;flex:1"><i class="ph ph-buildings"></i>Explore</button>
+        <button class="{{ tabRoute }}" onClick="{{ goRoute }}" style="min-height:40px;font-size:14px;flex:1"><i class="ph ph-path"></i>Route</button>
+        <button class="{{ tabNearby }}" onClick="{{ goNearby }}" style="min-height:40px;font-size:14px;flex:1"><i class="ph ph-map-pin-area"></i>Nearby</button>
+        <button class="btn btn-ghost" onClick="{{ togglePanel }}" style="width:40px;height:40px;padding:0;color:var(--color-neutral-300)"><i class="{{ panelIcon }}" style="font-size:18px"></i></button>
+      </div>
+      <sc-if value="{{ panelOpen }}" hint-placeholder-val="{{ true }}">
+        <div style="overflow:auto;padding:0 12px 14px;display:flex;flex-direction:column;gap:14px;-webkit-overflow-scrolling:touch">
+
+          <sc-if value="{{ showPlace }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex;flex-direction:column;gap:6px;padding:12px;border-radius:var(--radius-md);background:var(--color-bg);box-shadow:var(--shadow-sm)">
+              <div style="display:flex;align-items:flex-start;gap:8px">
+                <div style="flex:1;min-width:0">
+                  <div class="card-kicker">{{ place.kind }}</div>
+                  <div style="font-family:var(--font-heading);font-weight:800;font-style:italic;text-transform:uppercase;font-size:24px;line-height:1.02;text-wrap:pretty">{{ place.name }}</div>
+                  <div style="font-size:12px;color:var(--color-neutral-400);margin-top:2px">{{ place.sub }}</div>
+                </div>
+                <button class="btn btn-ghost" onClick="{{ clearPlace }}" style="width:36px;height:36px;padding:0;color:var(--color-neutral-400)"><i class="ph ph-x"></i></button>
+              </div>
+              <sc-if value="{{ hasInfo }}" hint-placeholder-val="{{ false }}">
+                <div style="font-size:13px;color:var(--color-neutral-300);text-wrap:pretty">{{ placeInfo }}</div>
+              </sc-if>
+              <sc-if value="{{ isGuide }}" hint-placeholder-val="{{ false }}">
+                <div style="display:flex;gap:6px;flex-wrap:wrap">
+                  <button class="btn btn-secondary" onClick="{{ toggleGuide }}" style="min-height:40px;font-size:13px;border-color:var(--color-accent-2)"><i class="{{ guideIcon }}" style="color:var(--color-accent-2)"></i>{{ guideLabel }}</button>
+                  <button class="btn btn-ghost" onClick="{{ guideLang }}" title="Change guide language" style="min-height:40px;font-size:13px"><i class="ph ph-translate"></i>{{ voiceLabel }}</button>
+                </div>
+              </sc-if>
+              <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:4px">
+                <button class="btn btn-primary" onClick="{{ placeDirections }}" style="min-height:44px;flex:1"><i class="ph ph-navigation-arrow"></i>Directions</button>
+                <button class="btn btn-secondary" onClick="{{ placeStartHere }}" style="min-height:44px"><i class="ph ph-flag"></i>Start here</button>
+                <button class="btn btn-secondary" onClick="{{ placeAttr }}" style="min-height:44px"><i class="ph ph-camera"></i>Tarikan berdekatan</button>
+              </div>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ isExplore }}" hint-placeholder-val="{{ true }}">
+            <div style="display:flex;flex-direction:column;gap:12px">
+              <div>
+                <h6 style="color:var(--color-accent-2-300);margin:0 0 6px">Ikon Malaysia · 3D landmarks</h6>
+                <div style="display:flex;flex-direction:column">
+                  <sc-for list="{{ landmarks }}" as="l" hint-placeholder-count="6">
+                    <button onClick="{{ l.onClick }}" style="display:flex;align-items:center;gap:10px;min-height:46px;padding:6px 8px;border:0;border-radius:var(--radius-md);background:transparent;color:var(--color-text);cursor:pointer;text-align:left" style-hover="background:color-mix(in srgb,var(--color-text) 6%,transparent)">
+                      <i class="ph ph-cube" style="font-size:17px;color:var(--color-accent);flex:none"></i>
+                      <span style="flex:1;min-width:0;display:flex;flex-direction:column">
+                        <span style="font-family:var(--font-heading);font-weight:700;font-size:17px;line-height:1.1;text-transform:uppercase;letter-spacing:.02em">{{ l.name }}</span>
+                        <span class="text-mono" style="font-size:10px;color:var(--color-neutral-400)">{{ l.city }}</span>
+                      </span>
+                      <span class="text-mono" style="font-size:11px;color:var(--color-accent-300)">{{ l.h }}</span>
+                    </button>
+                  </sc-for>
+                </div>
+              </div>
+              <div>
+                <h6 style="color:var(--color-accent-2-300);margin:0 0 8px">Bandar · Cities</h6>
+                <div style="display:flex;flex-wrap:wrap;gap:6px">
+                  <sc-for list="{{ cities }}" as="c" hint-placeholder-count="6">
+                    <button class="btn btn-secondary" onClick="{{ c.onClick }}" style="min-height:38px;font-size:13px">{{ c.name }}</button>
+                  </sc-for>
+                </div>
+              </div>
+              <div class="text-mono" style="font-size:10px;color:var(--color-neutral-500)">Long-press or right-click the map to drop a pin.</div>
+              <div style="display:flex;flex-direction:column;gap:8px;padding:12px;border-radius:var(--radius-md);background:var(--color-bg);box-shadow:var(--shadow-sm)">
+                <div style="display:flex;align-items:center;gap:8px"><i class="ph ph-cloud-slash" style="font-size:18px;color:var(--color-accent-2)"></i><h6 style="margin:0;flex:1;color:var(--color-accent-2-300)">Peta luar talian · Offline</h6><span class="tag {{ netCls }}">{{ netTxt }}</span></div>
+                <div style="font-size:12px;color:var(--color-neutral-300)">{{ offInfo }}</div>
+                <sc-if value="{{ offRun }}" hint-placeholder-val="{{ false }}"><div style="height:6px;border-radius:3px;background:var(--color-divider);overflow:hidden"><div style="height:100%;width:{{ offPct }}%;background:var(--gradient-neon)"></div></div></sc-if>
+                <div style="display:flex;gap:6px;flex-wrap:wrap">
+                  <button class="btn btn-secondary" onClick="{{ dlArea }}" style="min-height:40px;font-size:13px"><i class="ph ph-download-simple"></i>Kawasan ini</button>
+                  <sc-if value="{{ hasRoute }}" hint-placeholder-val="{{ false }}"><button class="btn btn-secondary" onClick="{{ dlRoute }}" style="min-height:40px;font-size:13px"><i class="ph ph-path"></i>Laluan</button></sc-if>
+                  <button class="btn btn-ghost" onClick="{{ clearOff }}" style="min-height:40px;font-size:13px;color:var(--color-neutral-400)">Padam</button>
+                </div>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:8px;padding:12px;border-radius:var(--radius-md);background:var(--color-bg);box-shadow:var(--shadow-sm)">
+                <div style="display:flex;align-items:center;gap:10px">
+                  <div class="lighten" style="width:44px;height:44px;flex:none;border-radius:var(--radius-md);overflow:hidden;background:var(--color-bg)"><img src="assets/rydetech-logo.png" alt="Rydetech Global Enterprise logo" style="width:100%;height:100%;object-fit:contain;display:block"></div>
+                  <div style="flex:1;min-width:0">
+                    <div class="text-mono" style="font-size:9px;color:var(--color-neutral-400);letter-spacing:.14em">BETA · DESIGNED &amp; BUILT BY</div>
+                    <div style="font-family:var(--font-heading);font-weight:800;font-style:italic;text-transform:uppercase;font-size:18px;line-height:1.05">Rydetech Global Enterprise</div>
+                  </div>
+                </div>
+                <div style="display:flex;flex-direction:column;gap:6px;font-size:12px;color:var(--color-neutral-300);text-wrap:pretty">
+                  <div style="display:flex;gap:8px;align-items:flex-start"><i class="ph ph-hand-heart" style="font-size:16px;color:var(--color-neon-teal);flex:none"></i><span>100% non-profit. ARAH is free, carries no ads and sells nothing.</span></div>
+                  <div style="display:flex;gap:8px;align-items:flex-start"><i class="ph ph-shield-check" style="font-size:16px;color:var(--color-accent-2);flex:none"></i><span>No personal information collected. No accounts, no tracking. Your location and reports stay on your device.</span></div>
+                  <div style="display:flex;gap:8px;align-items:flex-start"><i class="ph ph-flask" style="font-size:16px;color:var(--color-neon-orange);flex:none"></i><span>Beta release. Always follow road signs and local traffic laws.</span></div>
+                </div>
+                <div class="text-mono" style="font-size:9px;color:var(--color-neutral-500)">Map data © OpenStreetMap contributors</div>
+              </div>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ isRoute }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex;flex-direction:column;gap:12px">
+              <div style="display:flex;flex-direction:column;gap:8px;padding:10px;border-radius:var(--radius-md);background:var(--color-bg);box-shadow:var(--shadow-sm)">
+                <div style="display:flex;align-items:center;gap:8px">
+                  <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:6px">
+                    <div style="display:flex;align-items:center;gap:10px;min-height:44px;padding:0 10px;border-radius:var(--radius-md);border:1px solid {{ fromBorder }};background:var(--color-surface)">
+                      <span style="width:10px;height:10px;border-radius:50%;background:var(--color-neon-cyan);box-shadow:var(--glow-cyan);flex:none"></span>
+                      <input value="{{ fromText }}" onFocus="{{ editFrom }}" onChange="{{ onEpQuery }}" placeholder="Titik mula · Starting point" style="flex:1;min-width:0;height:42px;background:transparent;border:0;outline:none;color:var(--color-text);font-family:var(--font-body);font-size:16px">
+                    </div>
+                    <div style="display:flex;align-items:center;gap:10px;min-height:44px;padding:0 10px;border-radius:var(--radius-md);border:1px solid {{ toBorder }};background:var(--color-surface)">
+                      <span style="width:10px;height:10px;border-radius:2px;background:var(--color-neon-magenta);flex:none"></span>
+                      <input value="{{ toText }}" onFocus="{{ editTo }}" onChange="{{ onEpQuery }}" placeholder="Destinasi · Destination" style="flex:1;min-width:0;height:42px;background:transparent;border:0;outline:none;color:var(--color-text);font-family:var(--font-body);font-size:16px">
+                    </div>
+                  </div>
+                  <button class="btn btn-secondary" onClick="{{ swap }}" title="Swap start and destination" style="width:40px;height:40px;padding:0"><i class="ph ph-arrows-down-up"></i></button>
+                </div>
+                <sc-if value="{{ editing }}" hint-placeholder-val="{{ false }}">
+                  <div style="display:flex;flex-direction:column;gap:2px">
+                    <div style="display:flex;gap:6px;flex-wrap:wrap;padding-bottom:4px">
+                      <button class="btn btn-secondary" onClick="{{ epUseMe }}" style="min-height:38px;font-size:13px"><i class="ph ph-crosshair"></i>Lokasi saya</button>
+                      <button class="btn btn-secondary" onClick="{{ epPickMap }}" style="min-height:38px;font-size:13px"><i class="ph ph-hand-pointing"></i>Pilih di peta</button>
+                      <button class="btn btn-ghost" onClick="{{ epCancel }}" style="min-height:38px;font-size:13px;color:var(--color-neutral-400)">Batal</button>
+                    </div>
+                    <sc-for list="{{ epResults }}" as="r" hint-placeholder-count="0">
+                      <button onClick="{{ r.onPick }}" style="display:flex;align-items:center;gap:10px;width:100%;min-height:46px;padding:6px 8px;border:0;border-radius:var(--radius-md);background:transparent;color:var(--color-text);text-align:left;cursor:pointer" style-hover="background:color-mix(in srgb,var(--color-text) 7%,transparent)">
+                        <i class="{{ r.icon }}" style="font-size:17px;color:var(--color-accent-300);flex:none"></i>
+                        <span style="display:flex;flex-direction:column;min-width:0">
+                          <span style="font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.title }}</span>
+                          <span style="font-size:11px;color:var(--color-neutral-400);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ r.sub }}</span>
+                        </span>
+                      </button>
+                    </sc-for>
+                  </div>
+                </sc-if>
+                <div class="text-mono" style="font-size:10px;color:var(--color-neutral-500)">Drag the cyan or magenta pin on the map to fine-tune.</div>
+              </div>
+              <div style="display:flex;gap:6px">
+                <button class="{{ modeCar }}" onClick="{{ setCar }}" style="flex:1;min-width:0;min-height:48px;padding:0 2px;font-size:11px;flex-direction:column;gap:2px;line-height:1.1"><i class="ph ph-car-profile" style="font-size:20px"></i>Kereta</button>
+                <button class="{{ modeMoto }}" onClick="{{ setMoto }}" style="flex:1;min-width:0;min-height:48px;padding:0 2px;font-size:11px;flex-direction:column;gap:2px;line-height:1.1"><i class="ph ph-motorcycle" style="font-size:20px"></i>Motor</button>
+                <button class="{{ modeTruck }}" onClick="{{ setTruck }}" style="flex:1;min-width:0;min-height:48px;padding:0 2px;font-size:11px;flex-direction:column;gap:2px;line-height:1.1"><i class="ph ph-truck" style="font-size:20px"></i>Lori</button>
+                <button class="{{ modeBus }}" onClick="{{ setBus }}" style="flex:1;min-width:0;min-height:48px;padding:0 2px;font-size:11px;flex-direction:column;gap:2px;line-height:1.1"><i class="ph ph-bus" style="font-size:20px"></i>Bas</button>
+                <button class="{{ modeWalk }}" onClick="{{ setWalk }}" style="flex:1;min-width:0;min-height:48px;padding:0 2px;font-size:11px;flex-direction:column;gap:2px;line-height:1.1"><i class="ph ph-person-simple-walk" style="font-size:20px"></i>Jalan</button>
+              </div>
+              <div style="display:flex;gap:6px;flex-wrap:wrap">
+                <button class="{{ tollCls }}" onClick="{{ toggleToll }}" style="min-height:38px;font-size:13px"><i class="ph ph-coins"></i>Elak tol</button>
+                <button class="{{ hwCls }}" onClick="{{ toggleHw }}" style="min-height:38px;font-size:13px"><i class="ph ph-road-horizon"></i>Elak lebuh raya</button>
+                <button class="btn btn-secondary" onClick="{{ toggleLang }}" style="min-height:38px;font-size:13px"><i class="ph ph-speaker-high"></i>{{ voiceLabel }}</button>
+              </div>
+              <div style="display:flex;flex-direction:column;gap:6px">
+                <div class="text-mono" style="font-size:10px;color:var(--color-neutral-400);letter-spacing:.12em">BERTOLAK · DEPART</div>
+                <div style="display:flex;gap:6px">
+                  <sc-for list="{{ departs }}" as="d" hint-placeholder-count="4"><button class="{{ d.cls }}" onClick="{{ d.onClick }}" style="flex:1;min-height:38px;font-size:12px;padding:0 4px">{{ d.label }}</button></sc-for>
+                </div>
+                <sc-if value="{{ hasWx }}" hint-placeholder-val="{{ false }}"><div style="font-size:12px;color:var(--color-neutral-300)"><i class="ph ph-cloud-rain" style="margin-right:6px;color:var(--color-accent-2)"></i>{{ wxLine }}</div></sc-if>
+              </div>
+              <sc-if value="{{ hasSaved }}" hint-placeholder-val="{{ false }}"><button class="btn btn-secondary" onClick="{{ loadSaved }}" style="min-height:40px;font-size:13px;justify-content:flex-start"><i class="ph ph-bookmark-simple"></i>Laluan tersimpan · Saved route (works offline)</button></sc-if>
+              <sc-if value="{{ noDest }}" hint-placeholder-val="{{ true }}">
+                <div style="font-size:13px;color:var(--color-neutral-400)">Type a place in either field, use your location, or tap “Pilih di peta” to pick a point on the map.</div>
+              </sc-if>
+              <sc-if value="{{ busy }}" hint-placeholder-val="{{ false }}">
+                <div class="text-mono" style="font-size:11px;color:var(--color-accent-2-300);letter-spacing:.12em">MENCARI LALUAN…</div>
+              </sc-if>
+              <sc-if value="{{ hasRoutes }}" hint-placeholder-val="{{ false }}">
+                <div style="display:flex;flex-direction:column;gap:6px">
+                  <sc-for list="{{ routes }}" as="r" hint-placeholder-count="2">
+                    <button onClick="{{ r.onClick }}" style="display:flex;flex-direction:column;gap:4px;padding:10px 12px;border-radius:var(--radius-md);border:1px solid {{ r.border }};background:{{ r.bg }};color:var(--color-text);text-align:left;cursor:pointer">
+                      <span style="display:flex;align-items:baseline;gap:10px">
+                        <span style="font-family:var(--font-heading);font-weight:800;font-style:italic;font-size:26px;line-height:1">{{ r.time }}</span>
+                        <span style="font-size:13px;color:var(--color-neutral-300)">{{ r.dist }}</span>
+                        <span class="text-mono" style="margin-left:auto;font-size:10px;color:var(--color-neutral-400);text-transform:uppercase">{{ r.label }}</span>
+                      </span>
+                      <span class="text-mono" style="font-size:10px;color:var(--color-neutral-400)">{{ r.trend }}</span>
+                      <span style="display:flex;gap:6px;flex-wrap:wrap">
+                        <span class="tag tag-accent"><i class="ph ph-coins" style="margin-right:4px"></i>{{ r.toll }}</span>
+                        <span class="tag tag-neutral">{{ r.via }}</span>
+                        <sc-if value="{{ r.hasToll }}" hint-placeholder-val="{{ false }}"><span class="text-mono" style="font-size:10px;color:var(--color-neutral-400);width:100%">{{ r.tollDetail }}</span></sc-if>
+                        <sc-if value="{{ r.hasReports }}" hint-placeholder-val="{{ false }}">
+                          <span class="tag" style="background:color-mix(in srgb,var(--color-neon-orange) 22%,transparent);color:var(--color-neutral-100)"><i class="ph ph-warning" style="margin-right:4px"></i>{{ r.reportsTxt }}</span>
+                        </sc-if>
+                      </span>
+                    </button>
+                  </sc-for>
+                </div>
+                <sc-if value="{{ hasRoutes }}" hint-placeholder-val="{{ false }}">
+                  <div style="font-size:12px;color:var(--color-neutral-400)">{{ tollNote }}</div>
+                </sc-if>
+                <div style="display:flex;gap:8px">
+                  <button class="btn btn-primary" onClick="{{ startLive }}" style="flex:1;min-height:48px;font-size:17px"><i class="ph-fill ph-navigation-arrow"></i>Jom, go</button>
+                  <button class="btn btn-secondary" onClick="{{ startSim }}" style="min-height:48px"><i class="ph ph-play"></i>Preview</button>
+                </div>
+                <div style="display:flex;flex-direction:column">
+                  <sc-for list="{{ steps }}" as="st" hint-placeholder-count="5">
+                    <div style="display:flex;align-items:center;gap:12px;padding:8px 2px">
+                      <i class="{{ st.icon }}" style="font-size:20px;color:var(--color-accent-2);flex:none;width:22px"></i>
+                      <span style="flex:1;min-width:0;font-size:13px;text-wrap:pretty">{{ st.text }}</span>
+                      <span class="text-mono" style="font-size:11px;color:var(--color-neutral-400)">{{ st.dist }}</span>
+                    </div>
+                  </sc-for>
+                </div>
+              </sc-if>
+            </div>
+          </sc-if>
+
+          <sc-if value="{{ isNearby }}" hint-placeholder-val="{{ false }}">
+            <div style="display:flex;flex-direction:column;gap:10px">
+              <h6 style="color:var(--color-accent-2-300);margin:0">{{ nearbyHint }}</h6>
+              <div style="display:flex;flex-wrap:wrap;gap:6px">
+                <sc-for list="{{ nearKinds }}" as="n" hint-placeholder-count="7">
+                  <button class="{{ n.cls }}" onClick="{{ n.onClick }}" style="min-height:40px;font-size:13px"><i class="{{ n.icon }}"></i>{{ n.label }}</button>
+                </sc-for>
+              </div>
+              <sc-if value="{{ poiBusy }}" hint-placeholder-val="{{ false }}">
+                <div class="text-mono" style="font-size:11px;color:var(--color-accent-2-300);letter-spacing:.12em">MENCARI…</div>
+              </sc-if>
+              <sc-if value="{{ poiEmpty }}" hint-placeholder-val="{{ false }}">
+                <div style="font-size:13px;color:var(--color-neutral-400)">Nothing mapped here yet. Zoom out or plan a route to search along it.</div>
+              </sc-if>
+              <div style="display:flex;flex-direction:column">
+                <sc-for list="{{ pois }}" as="p" hint-placeholder-count="0">
+                  <button onClick="{{ p.onClick }}" style="display:flex;align-items:center;gap:10px;min-height:46px;padding:6px 8px;border:0;border-radius:var(--radius-md);background:transparent;color:var(--color-text);cursor:pointer;text-align:left" style-hover="background:color-mix(in srgb,var(--color-text) 6%,transparent)">
+                    <span style="width:10px;height:10px;border-radius:50%;background:{{ p.color }};flex:none"></span>
+                    <span style="flex:1;min-width:0;display:flex;flex-direction:column">
+                      <span style="font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ p.name }}</span>
+                      <span style="font-size:11px;color:var(--color-neutral-400);white-space:nowrap;overflow:hidden;text-overflow:ellipsis">{{ p.sub }}</span>
+                    </span>
+                    <span class="text-mono" style="font-size:11px;color:var(--color-accent-300)">{{ p.distTxt }}</span>
+                  </button>
+                </sc-for>
+              </div>
+            </div>
+          </sc-if>
+        </div>
+      </sc-if>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ navigating }}" hint-placeholder-val="{{ false }}">
+    <div style="position:absolute;top:calc(env(safe-area-inset-top) + 12px);left:12px;right:68px;max-width:560px;display:flex;gap:12px;align-items:center;padding:12px 14px;border-radius:var(--radius-lg);background:color-mix(in srgb,var(--color-surface) 94%,transparent);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);box-shadow:var(--shadow-lg);z-index:6">
+      <div style="width:60px;height:60px;flex:none;display:grid;place-items:center;border-radius:var(--radius-md);border:1px solid var(--color-accent-2);box-shadow:var(--glow-cyan)"><i class="{{ navIcon }}" style="font-size:34px;color:var(--color-accent-2-300)"></i></div>
+      <div style="flex:1;min-width:0">
+        <div style="font-family:var(--font-heading);font-weight:800;font-style:italic;font-size:34px;line-height:1">{{ navDist }}</div>
+        <div style="font-size:15px;font-weight:500;line-height:1.3;text-wrap:pretty">{{ navText }}</div>
+        <div class="text-mono" style="font-size:10px;color:var(--color-neutral-400);margin-top:2px">{{ navThen }}</div>
+        <sc-if value="{{ hasLanes }}" hint-placeholder-val="{{ false }}"><div style="display:flex;gap:4px;margin-top:6px"><sc-for list="{{ navLanes }}" as="l" hint-placeholder-count="3"><span style="width:30px;height:34px;display:grid;place-items:center;border-radius:6px;border:1px solid {{ l.bd }};background:{{ l.bg }};color:{{ l.fg }}"><i class="{{ l.icon }}" style="font-size:18px"></i></span></sc-for></div></sc-if>
+      </div>
+    </div>
+    <div style="position:absolute;left:12px;right:12px;bottom:calc(env(safe-area-inset-bottom) + 12px);max-width:560px;display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:var(--radius-lg);background:color-mix(in srgb,var(--color-surface) 94%,transparent);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);box-shadow:var(--shadow-md);z-index:6">
+      <div style="width:52px;height:52px;flex:none;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;border:2px solid var(--color-accent)">
+        <span style="font-family:var(--font-heading);font-weight:800;font-size:20px;line-height:1">{{ navSpeed }}</span>
+        <span class="text-mono" style="font-size:8px;color:var(--color-neutral-400)">KM/J</span>
+      </div>
+      <div style="flex:1;min-width:0">
+        <div style="font-family:var(--font-heading);font-weight:800;font-style:italic;font-size:24px;line-height:1;color:var(--color-neon-teal)">{{ navEta }}</div>
+        <div style="font-size:12px;color:var(--color-neutral-300)">{{ navRemain }}</div>
+        <div class="text-mono" style="font-size:9px;color:var(--color-accent-300);letter-spacing:.12em">{{ navMode }}</div>
+      </div>
+      <button class="btn btn-secondary" onClick="{{ toggleVoice }}" style="width:44px;height:44px;padding:0"><i class="{{ voiceIcon }}" style="font-size:20px"></i></button>
+      <button class="btn btn-primary" onClick="{{ openReport }}" style="width:44px;height:44px;padding:0"><i class="ph-fill ph-megaphone" style="font-size:20px"></i></button>
+      <button class="btn btn-secondary" onClick="{{ stopNav }}" style="min-height:44px;border-color:var(--color-neon-magenta);color:var(--color-neutral-100)">Tamat</button>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ reportOpen }}" hint-placeholder-val="{{ false }}">
+    <div class="dialog-backdrop" onClick="{{ closeReport }}" style="z-index:20">
+      <div class="dialog" onClick="{{ stop }}" style="width:min(520px,100%)">
+        <div>
+          <div class="card-kicker">Lapor · at your position</div>
+          <div style="font-family:var(--font-heading);font-weight:800;font-style:italic;text-transform:uppercase;font-size:30px;line-height:1">What's on the road?</div>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(112px,1fr));gap:8px">
+          <sc-for list="{{ rtypes }}" as="t" hint-placeholder-count="8">
+            <button onClick="{{ t.onClick }}" style="display:flex;flex-direction:column;align-items:flex-start;gap:6px;min-height:84px;padding:10px;border-radius:var(--radius-md);border:1px solid var(--color-divider);background:var(--color-bg);color:var(--color-text);cursor:pointer;text-align:left" style-hover="border-color:var(--color-accent)">
+              <i class="{{ t.icon }}" style="font-size:24px;color:{{ t.color }}"></i>
+              <span style="font-size:13px;font-weight:500;line-height:1.2">{{ t.label }}</span>
+              <span style="font-size:11px;color:var(--color-neutral-400);line-height:1.2">{{ t.sub }}</span>
+            </button>
+          </sc-for>
+        </div>
+        <div class="dialog-actions"><button class="btn btn-secondary" onClick="{{ closeReport }}" style="min-height:44px">Batal</button></div>
+      </div>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ picking }}" hint-placeholder-val="{{ false }}">
+    <div style="position:absolute;left:50%;top:calc(env(safe-area-inset-top) + 74px);transform:translateX(-50%);display:flex;align-items:center;gap:10px;padding:8px 8px 8px 14px;border-radius:var(--radius-lg);background:var(--color-surface);box-shadow:var(--shadow-lg);z-index:25;max-width:calc(100% - 120px)">
+      <i class="ph ph-hand-pointing" style="font-size:20px;color:var(--color-accent-2)"></i>
+      <span style="font-size:14px">{{ pickText }}</span>
+      <button class="btn btn-secondary" onClick="{{ epCancel }}" style="min-height:38px;font-size:13px">Batal</button>
+    </div>
+  </sc-if>
+
+  <sc-if value="{{ hasToast }}" hint-placeholder-val="{{ false }}">
+    <div style="position:absolute;left:50%;top:calc(env(safe-area-inset-top) + 74px);transform:translateX(-50%);max-width:calc(100% - 120px);padding:8px 14px;border-radius:var(--radius-md);background:var(--color-surface);box-shadow:var(--shadow-lg);font-size:13px;z-index:30;pointer-events:none">{{ toast }}</div>
+  </sc-if>
+</div>
+
+<template id="__bundler_thumbnail"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect width="100" height="100" fill="#0a0c1a"></rect><path d="M50 30 L68 70 L50 61 L32 70 Z" fill="#2fd0ec"></path></svg></template></x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;startCity&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;kl&quot;,&quot;penang&quot;,&quot;melaka&quot;,&quot;putrajaya&quot;,&quot;jb&quot;,&quot;ipoh&quot;,&quot;kk&quot;,&quot;kuching&quot;,&quot;langkawi&quot;],&quot;default&quot;:&quot;penang&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Map&quot;},&quot;buildingHeight&quot;:{&quot;editor&quot;:&quot;range&quot;,&quot;min&quot;:0.5,&quot;max&quot;:3,&quot;step&quot;:0.1,&quot;default&quot;:1.7,&quot;tsType&quot;:&quot;number&quot;,&quot;section&quot;:&quot;Map&quot;},&quot;showLandmarks&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Map&quot;},&quot;ttsEndpoint&quot;:{&quot;editor&quot;:&quot;text&quot;,&quot;default&quot;:&quot;/api/tts&quot;,&quot;tsType&quot;:&quot;string&quot;,&quot;section&quot;:&quot;Voice&quot;}}">
+const C={bg:'#0a0c1a',surface:'#141729',teal:'#1fe0a8',cyan:'#2fd0ec',blue:'#4f6bff',violet:'#a865f5',magenta:'#ec4899',orange:'#ff7a2f'};
+const EMPTY={type:'FeatureCollection',features:[]};
+const rng=s=>()=>{s|=0;s=s+0x6D2B79F5|0;let t=Math.imul(s^s>>>15,1|s);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};
+const MS=lat=>({x:111320*Math.cos(lat*Math.PI/180),y:110574});
+const off=(c,dx,dy)=>{const m=MS(c[1]);return[c[0]+dx/m.x,c[1]+dy/m.y];};
+function poly(c,r,n,rot=0,star=0,jit=0,rnd){const m=MS(c[1]),p=[];for(let i=0;i<n;i++){const a=rot*Math.PI/180+i*2*Math.PI/n;let rr=r*(star&&i%2?star:1);if(jit)rr*=1+jit*(rnd()-.5);p.push([c[0]+rr*Math.cos(a)/m.x,c[1]+rr*Math.sin(a)/m.y]);}p.push(p[0]);return p;}
+function rect(c,w,h,rot=0){const m=MS(c[1]),r=rot*Math.PI/180;const p=[[-w/2,-h/2],[w/2,-h/2],[w/2,h/2],[-w/2,h/2]].map(([x,y])=>[c[0]+(x*Math.cos(r)-y*Math.sin(r))/m.x,c[1]+(x*Math.sin(r)+y*Math.cos(r))/m.y]);p.push(p[0]);return p;}
+const F=(ring,base,top,color)=>({type:'Feature',properties:{base,top,color},geometry:{type:'Polygon',coordinates:[ring]}});
+
+const LANDMARKS=[
+{id:'petronas',name:'Menara Berkembar Petronas',city:'Kuala Lumpur',h:'452 m',info:'Twin towers on an eight-point star plan, linked by the skybridge at level 41–42.',c:[101.71160,3.15787],v:{z:16.2,p:68,b:-40},parts(c){const o=[];const T=[off(c,-24,14),off(c,24,-14)];const tiers=[[27,0,175],[25,175,268],[22,268,330],[18,330,368],[13,368,390],[8,390,410]];T.forEach(t=>{tiers.forEach(([r,b,h],i)=>o.push(F(poly(t,r,16,0,.8),b,h,i%2?'#c4c8de':'#dfe2f1')));o.push(F(poly(t,2.4,6),410,452,C.cyan));});o.push(F(rect(c,50,5,-30),170,178,C.violet));o.push(F(rect(c,7,4,-30),150,170,'#a2a7c2'));return o;}},
+{id:'merdeka118',name:'Merdeka 118',city:'Kuala Lumpur',h:'679 m',info:'Faceted crystalline tower — the second-tallest building in the world.',c:[101.70050,3.14160],v:{z:15.4,p:70,b:20},parts(c){const o=[];for(let i=0;i<10;i++){o.push(F(poly(c,34-i*2.6,5,i*14),i*52,i*52+52,i%2?'#6a35a6':C.blue));}o.push(F(poly(c,9,5,140),520,560,C.cyan));o.push(F(poly(c,2.2,5),560,679,C.cyan));return o;}},
+{id:'menarakl',name:'Menara Kuala Lumpur',city:'Kuala Lumpur',h:'421 m',info:'Telecom tower on Bukit Nanas forest reserve; observation deck at 276 m.',c:[101.70380,3.15280],v:{z:16.3,p:66,b:-60},parts(c){return[F(poly(c,6,8),0,276,'#c4c8de'),F(poly(c,12,12),276,290,C.violet),F(poly(c,17,12),290,310,'#bf8dff'),F(poly(c,19,12),310,322,C.cyan),F(poly(c,15,12),322,335,C.violet),F(poly(c,4,8),335,350,'#c4c8de'),F(poly(c,1.4,6),350,421,C.magenta)];}},
+{id:'masjidnegara',name:'Masjid Negara',city:'Kuala Lumpur',h:'73 m',info:'National Mosque — an 18-point star roof, one for each state plus the five pillars.',c:[101.69180,3.14190],v:{z:17,p:60,b:30},parts(c){return[F(rect(c,90,90),0,8,'#474b61'),F(poly(c,42,36,0,.72),8,22,'#22c3de'),F(poly(off(c,55,-30),3.5,8),0,68,'#dfe2f1'),F(poly(off(c,55,-30),2,8),68,73,C.cyan)];}},
+{id:'sultanabdulsamad',name:'Bangunan Sultan Abdul Samad',city:'Kuala Lumpur',h:'41 m',info:'Moorish-revival landmark facing Dataran Merdeka.',c:[101.69460,3.14870],v:{z:17.2,p:62,b:70},parts(c){return[F(rect(c,30,130),0,18,C.orange),F(poly(c,6,4,45),0,36,C.orange),F(poly(c,6.5,10),36,41,'#d6b8ff'),F(poly(off(c,0,55),5,10),18,25,'#d6b8ff'),F(poly(off(c,0,-55),5,10),18,25,'#d6b8ff')];}},
+{id:'batucaves',name:'Batu Caves',city:'Selangor',h:'43 m',info:'Limestone hill and temple caves guarded by the golden Lord Murugan statue.',c:[101.68400,3.23710],v:{z:16.4,p:65,b:160},parts(c,rnd){const o=[F(poly(c,7,8),0,6,'#62677f'),F(poly(c,5,8,22),6,30,C.orange),F(poly(c,3,8),30,38,C.orange),F(poly(off(c,3,0),.8,4),0,43,'#d6b8ff')];const h=off(c,-60,250);[[210,0,70],[160,70,150],[110,150,230],[60,230,300]].forEach(([r,b,t],i)=>o.push(F(poly(h,r,8,rnd()*90,0,.45,rnd),b,t,['#2e3145','#474b61','#62677f','#80859f'][i])));return o;}},
+{id:'masjidputra',name:'Masjid Putra',city:'Putrajaya',h:'116 m',info:'Rose-tinted granite dome over Putrajaya Lake.',c:[101.68950,2.93600],v:{z:16.5,p:64,b:-20},parts(c){const o=[F(rect(c,70,70),0,14,'#c4c8de')];[[26,14,24],[23,24,32],[18,32,38],[11,38,43],[4,43,46]].forEach(([r,b,t])=>o.push(F(poly(c,r,12),b,t,C.magenta)));const m=off(c,62,0);o.push(F(poly(m,4,8),0,110,'#dfe2f1'),F(poly(m,2.2,8),110,116,C.magenta));return o;}},
+{id:'komtar',name:'Komtar',city:'George Town, Pulau Pinang',h:'249 m',info:'Penang’s 12-sided civic tower, with The TOP skywalk.',c:[100.32960,5.41460],v:{z:16,p:64,b:30},parts(c){return[F(poly(c,24,12),0,249,'#c4c8de'),F(poly(c,18,12),249,256,C.cyan)];}},
+{id:'alorsetar',name:'Menara Alor Setar',city:'Kedah',h:'165 m',info:'Telecom tower with an observation pod above the rice-bowl plains.',c:[100.36750,6.12150],v:{z:16.5,p:64,b:0},parts(c){return[F(poly(c,5,8),0,88,'#c4c8de'),F(poly(c,13,12),88,96,C.violet),F(poly(c,15,12),96,104,C.cyan),F(poly(c,12,12),104,110,C.violet),F(poly(c,1.2,6),110,165,C.magenta)];}},
+{id:'afamosa',name:'A Famosa',city:'Melaka',h:'11 m',info:'Porta de Santiago — the surviving gate of the 1511 Portuguese fortress.',c:[102.25050,2.19160],v:{z:18.2,p:60,b:20},parts(c){return[F(rect(c,12,6),0,9,'#80859f'),F(rect(c,8,3.5),9,11,'#a2a7c2')];}},
+{id:'dunsarawak',name:'Bangunan DUN Sarawak',city:'Kuching',h:'50 m',info:'State assembly crowned with a golden payung roof on the Sarawak River.',c:[110.34630,1.56330],v:{z:16.6,p:62,b:-10},parts(c){return[F(poly(c,38,9),0,18,'#c4c8de'),F(poly(c,48,9,20),18,24,C.orange),F(poly(c,36,9),24,34,C.orange),F(poly(c,22,9,20),34,42,C.orange),F(poly(c,8,9),42,50,C.orange)];}},
+{id:'kinabalu',name:'Gunung Kinabalu',city:'Sabah',h:'4,095 m',info:'Low-poly model of Malaysia’s highest peak, granite summit above the cloud forest.',c:[116.55850,6.07500],v:{z:10.8,p:70,b:200},parts(c,rnd){const cols=['#0d505d','#127587','#189bb3','#474b61','#62677f','#80859f','#c4c8de'];return[[7000,0,700],[5600,700,1500],[4300,1500,2300],[3000,2300,3000],[1900,3000,3600],[1000,3600,3900],[400,3900,4095]].map(([r,b,t],i)=>F(poly(c,r,9,rnd()*40,0,.4,rnd),b,t,cols[i]));}}
+];
+const GUIDE={
+petronas:{en:"Petronas Twin Towers, 452 metres of steel and glass. Walk the Skybridge on level 41, then catch the KLCC Park fountain show at 8 pm. Tip: book tickets online and go at sunset.",bm:"Menara Berkembar Petronas, setinggi 452 meter. Lalui Jambatan Langit di aras 41, kemudian tonton pertunjukan air pancut Taman KLCC jam 8 malam. Tip: tempah tiket dalam talian dan datang waktu senja.",zh:"双子塔高452米。可登上41楼的空中天桥，晚上8点到KLCC公园观赏音乐喷泉。建议：网上预订门票，傍晚前往。",ta:"பெட்ரோனாஸ் இரட்டைக் கோபுரம், 452 மீட்டர் உயரம். 41வது மாடி வான்பாலத்தில் நடந்து, இரவு 8 மணிக்கு KLCC பூங்கா நீரூற்று நிகழ்ச்சியைப் பாருங்கள். குறிப்பு: டிக்கெட்டை இணையத்தில் முன்பதிவு செய்யுங்கள்."},
+merdeka118:{en:"Merdeka 118, the world's second-tallest building, its spire inspired by the hand raised at independence. Nearby, explore Petaling Street and Stadium Merdeka. Tip: take the MRT to Merdeka station.",bm:"Merdeka 118, bangunan kedua tertinggi di dunia, puncaknya diilhamkan laungan merdeka. Berdekatan, terokai Petaling Street dan Stadium Merdeka. Tip: naik MRT ke stesen Merdeka.",zh:"默迪卡118是世界第二高楼，塔尖象征独立时高举的手。附近可游览茨厂街和独立体育场。建议：乘捷运到默迪卡站。",ta:"மெர்டேக்கா 118, உலகின் இரண்டாவது உயரமான கட்டடம். அருகில் பெட்டாலிங் தெரு மற்றும் மெர்டேக்கா அரங்கத்தைப் பாருங்கள். குறிப்பு: மெர்டேக்கா MRT நிலையத்தில் இறங்குங்கள்."},
+menarakl:{en:"Menara KL rises from Bukit Nanas, the city's oldest forest reserve. Step into the glass Sky Box at 300 metres, then walk the canopy trail. Tip: clear mornings give the best views.",bm:"Menara KL berdiri di Hutan Simpan Bukit Nanas. Cuba Sky Box kaca pada 300 meter, kemudian jalan di laluan kanopi hutan. Tip: pagi yang cerah beri pemandangan terbaik.",zh:"吉隆坡塔坐落在武吉拿督森林保护区。体验300米高的玻璃天空盒，再走森林树冠步道。建议：晴朗的早上视野最好。",ta:"கோலாலம்பூர் கோபுரம் புக்கிட் நானாஸ் காட்டில் உள்ளது. 300 மீட்டர் உயர கண்ணாடி ஸ்கை பாக்ஸை அனுபவியுங்கள். குறிப்பு: தெளிவான காலை நேரம் சிறந்தது."},
+masjidnegara:{en:"Masjid Negara, the National Mosque, crowned by an 18-point star roof. Visitors are welcome outside prayer times and robes are provided. The Islamic Arts Museum is next door.",bm:"Masjid Negara dengan bumbung bintang 18 bucu. Pelawat dialu-alukan di luar waktu solat dan jubah disediakan. Muzium Kesenian Islam terletak bersebelahan.",zh:"国家清真寺拥有18角星形屋顶。非祈祷时间欢迎参观，并提供长袍。隔壁就是伊斯兰艺术博物馆。",ta:"தேசிய பள்ளிவாசல், 18 முனை நட்சத்திரக் கூரையுடன். தொழுகை நேரம் தவிர பார்வையாளர்கள் வரலாம், அங்கிகள் வழங்கப்படும். அருகில் இஸ்லாமிய கலை அருங்காட்சியகம் உள்ளது."},
+sultanabdulsamad:{en:"Sultan Abdul Samad Building faces Dataran Merdeka, where independence was declared in 1957. Come at night when it's lit, and visit the KL City Gallery across the square.",bm:"Bangunan Sultan Abdul Samad menghadap Dataran Merdeka, tempat kemerdekaan diisytiharkan pada 1957. Datang waktu malam ketika ia bercahaya, dan singgah di Galeri Kuala Lumpur.",zh:"苏丹阿都沙末大厦面向独立广场，1957年在此宣布独立。晚上灯光最美，可顺道参观吉隆坡城市展览馆。",ta:"சுல்தான் அப்துல் சமட் கட்டடம், 1957ல் சுதந்திரம் அறிவிக்கப்பட்ட மெர்டேக்கா சதுக்கத்தை நோக்கியுள்ளது. இரவில் விளக்கொளியில் பார்ப்பது சிறப்பு."},
+batucaves:{en:"Batu Caves, guarded by a 43-metre golden Lord Murugan. Climb the 272 rainbow steps to the Temple Cave. Tip: cover knees and shoulders, and keep snacks away from the monkeys.",bm:"Batu Caves dijaga patung emas Dewa Murugan setinggi 43 meter. Daki 272 anak tangga pelangi ke Gua Kuil. Tip: tutup lutut dan bahu, dan jaga makanan daripada monyet.",zh:"黑风洞由43米高的金色战神像守护。登上272级彩虹阶梯到达神庙洞。建议：遮盖膝盖和肩膀，小心猴子抢食物。",ta:"பத்துமலை, 43 மீட்டர் உயர தங்க முருகன் சிலையுடன். 272 வண்ணப் படிகளில் ஏறி கோயில் குகைக்குச் செல்லுங்கள். குறிப்பு: முழங்கால், தோள்களை மூடுங்கள்; குரங்குகளிடம் கவனம்."},
+masjidputra:{en:"Masjid Putra, the rose-domed mosque on Putrajaya Lake. Take a lake cruise, then walk to Perdana Putra. Tip: come at sunset for reflections on the water.",bm:"Masjid Putra, masjid berkubah merah jambu di tepi Tasik Putrajaya. Naik kapal persiaran tasik, kemudian ke Perdana Putra. Tip: datang waktu senja untuk pantulan di air.",zh:"粉红清真寺位于布城湖畔。可乘游船游湖，再步行到首相署。建议：日落时分倒影最美。",ta:"புத்ரா பள்ளிவாசல், புத்ராஜெயா ஏரிக்கரையில் இளஞ்சிவப்புக் குவிமாடத்துடன். ஏரிப் படகுப் பயணம் செய்யுங்கள். குறிப்பு: சூரிய அஸ்தமனத்தில் நீர்ப் பிரதிபலிப்பு அழகு."},
+komtar:{en:"Komtar is home to The TOP and its glass Rainbow Skywalk, 249 metres above George Town. Then walk the UNESCO heritage streets for murals and hawker food. Tip: try char kway teow and cendol.",bm:"Komtar menempatkan The TOP dan Rainbow Skywalk kaca, 249 meter di atas George Town. Kemudian terokai jalan warisan UNESCO untuk mural dan makanan gerai. Tip: cuba char kway teow dan cendol.",zh:"光大大厦设有The TOP彩虹玻璃天桥，高249米。随后漫步世界遗产街区，欣赏壁画、品尝小吃。建议：一定要试炒粿条和煎蕊。",ta:"கொம்தார் கோபுரத்தில் 249 மீட்டர் உயர கண்ணாடி ரெயின்போ ஸ்கைவாக் உள்ளது. யுனெஸ்கோ பாரம்பரியத் தெருக்களில் சுவரோவியங்களையும் தெரு உணவையும் அனுபவியுங்கள்."},
+alorsetar:{en:"Menara Alor Setar overlooks Kedah's paddy fields, the rice bowl of Malaysia. Nearby, visit Masjid Zahir and the Paddy Museum. Tip: go late afternoon for golden light over the fields.",bm:"Menara Alor Setar menghadap sawah padi Kedah, jelapang padi negara. Berdekatan, lawati Masjid Zahir dan Muzium Padi. Tip: datang lewat petang untuk cahaya keemasan.",zh:"亚罗士打塔俯瞰吉打稻田，马来西亚的米仓。附近有扎希尔清真寺和稻米博物馆。建议：傍晚前往，稻田一片金黄。",ta:"அலோர் ஸ்டார் கோபுரம் மலேசியாவின் நெற்களஞ்சியமான கெடா வயல்களைக் காட்டுகிறது. அருகில் ஜாஹிர் பள்ளிவாசல், நெல் அருங்காட்சியகம் உள்ளன."},
+afamosa:{en:"A Famosa, the 1511 Portuguese gate, part of Melaka's UNESCO heritage. Climb to St Paul's Church, then hit the Jonker Street night market on weekends. Tip: try chicken rice balls.",bm:"A Famosa, pintu kota Portugis 1511, sebahagian warisan UNESCO Melaka. Daki ke Gereja St Paul, kemudian ke pasar malam Jonker Street pada hujung minggu. Tip: cuba nasi ayam bebola.",zh:"圣地亚哥城门建于1511年，属马六甲世界遗产。登上圣保罗教堂，周末逛鸡场街夜市。建议：试试鸡饭粒。",ta:"ஏ ஃபமோசா, 1511 போர்த்துகீசியக் கோட்டை வாயில், மலாக்கா யுனெஸ்கோ பாரம்பரியம். புனித பவுல் தேவாலயத்திற்கு ஏறி, வார இறுதியில் ஜோங்கர் தெரு இரவுச் சந்தைக்குச் செல்லுங்கள்."},
+dunsarawak:{en:"The Sarawak State Assembly, with its golden umbrella roof on the Sarawak River. Cross the Darul Hana Bridge and stroll the Kuching Waterfront. Tip: have Sarawak laksa for breakfast.",bm:"Bangunan DUN Sarawak dengan bumbung payung emas di tebing Sungai Sarawak. Seberangi Jambatan Darul Hana dan bersiar di Waterfront Kuching. Tip: sarapan laksa Sarawak.",zh:"砂拉越州议会大厦，金色伞形屋顶矗立在砂拉越河畔。走过达鲁哈拿桥，漫步古晋河滨。建议：早餐来一碗砂拉越叻沙。",ta:"சரவாக் சட்டமன்றக் கட்டடம், சரவாக் ஆற்றங்கரையில் தங்கக் குடைக் கூரையுடன். தாருல் ஹனா பாலத்தைக் கடந்து கூச்சிங் நீர்முனையில் உலாவுங்கள்."},
+kinabalu:{en:"Mount Kinabalu, 4,095 metres, Malaysia's highest peak and a UNESCO site. The climb takes two days with a licensed guide. Tip: book permits months ahead, or unwind at Kundasang and Poring hot springs.",bm:"Gunung Kinabalu, 4,095 meter, puncak tertinggi Malaysia dan tapak UNESCO. Pendakian dua hari bersama malim gunung berlesen. Tip: tempah permit awal, atau bersantai di Kundasang dan Poring.",zh:"京那巴鲁山高4095米，是马来西亚最高峰和世界遗产。攀登需两天并须持证向导。建议：提早预订许可证，或到昆达山和波令温泉放松。",ta:"கினபாலு மலை, 4,095 மீட்டர், மலேசியாவின் மிக உயரமான சிகரம். உரிமம் பெற்ற வழிகாட்டியுடன் இரண்டு நாள் ஏற்றம். குறிப்பு: அனுமதியை முன்கூட்டியே பதிவு செய்யுங்கள்."}};
+const STATES=[
+{n:'Perlis',cap:'Kangar',c:[100.20,6.45],f:'Flag_of_Perlis.svg',z:6,info:'Malaysia’s smallest state. Try Wang Kelian viewpoint and Harumanis mangoes.'},
+{n:'Kedah',cap:'Alor Setar',c:[100.65,6.1],f:'Flag_of_Kedah.svg',z:6,info:'The rice bowl of Malaysia, gateway to Langkawi.'},
+{n:'Pulau Pinang',cap:'George Town',c:[100.43,5.38],f:'Flag_of_Penang_(Malaysia).svg',z:6,info:'UNESCO George Town: street art, heritage shophouses and hawker food.'},
+{n:'Perak',cap:'Ipoh',c:[101.1,4.6],f:'Flag_of_Perak.svg',z:6,info:'Ipoh white coffee, limestone cave temples and Royal Belum rainforest.'},
+{n:'Kelantan',cap:'Kota Bharu',c:[102.0,5.4],f:'Flag_of_Kelantan.svg',z:6,info:'The heart of Malay culture: batik, silat, wayang kulit and Siti Khadijah Market.'},
+{n:'Terengganu',cap:'Kuala Terengganu',c:[103.0,4.85],f:'Flag_of_Terengganu.svg',z:6,info:'Gateway to Redang and Perhentian; Crystal Mosque and keropok lekor.'},
+{n:'Pahang',cap:'Kuantan',c:[102.6,3.8],f:'Flag_of_Pahang.svg',z:6,info:'Malaysia’s largest peninsular state: Taman Negara, Cameron Highlands and Genting.'},
+{n:'Selangor',cap:'Shah Alam',c:[101.35,3.4],f:'Flag_of_Selangor.svg',z:6,info:'Blue Mosque, Kuala Selangor fireflies and Sunway’s theme parks.'},
+{n:'Kuala Lumpur',cap:'Federal Territory',c:[101.72,3.18],f:'Flag_of_Kuala_Lumpur,_Malaysia.svg',z:7.6,info:'The capital: Petronas Towers, Bukit Bintang and Jalan Alor street food.'},
+{n:'Putrajaya',cap:'Federal Territory',c:[101.69,2.91],f:'Flag_of_Putrajaya.svg',z:7.6,info:'Planned administrative capital with a lake, bridges and boulevards.'},
+{n:'Negeri Sembilan',cap:'Seremban',c:[102.25,2.72],f:'Flag_of_Negeri_Sembilan.svg',z:6,info:'Minangkabau-style roofs, Port Dickson beaches and rendang.'},
+{n:'Melaka',cap:'Melaka City',c:[102.25,2.2],f:'Flag_of_Malacca.svg',z:6,info:'UNESCO historic city: A Famosa, Jonker Street and river cruises.'},
+{n:'Johor',cap:'Johor Bahru',c:[103.3,2.0],f:'Flag_of_Johor.svg',z:6,info:'Southern gateway to Singapore, with Desaru and Mersing for islands.'},
+{n:'Sabah',cap:'Kota Kinabalu',c:[117.0,5.25],f:'Flag_of_Sabah.svg',z:5,info:'Land below the wind: Mount Kinabalu, Sipadan and Sepilok orangutans.'},
+{n:'Sarawak',cap:'Kuching',c:[113.5,2.7],f:'Flag_of_Sarawak.svg',z:5,info:'Land of the hornbills: Mulu Caves, Bako and Sarawak laksa.'},
+{n:'Labuan',cap:'Federal Territory',c:[115.2,5.3],f:'Flag_of_Labuan.svg',z:7.6,info:'Duty-free island with WWII memorials and great diving wrecks.'}];
+const SIGHTS=[
+['Langkawi Sky Bridge',[99.6657,6.3858],'Kedah','Curved cable-stayed bridge 700 m above sea level. Ride the SkyCab; go early to beat cloud.'],
+['Pulau Perhentian',[102.737,5.897],'Terengganu','Clear water and turtles. Boats run March to October; closed in monsoon.'],
+['Taman Negara',[102.401,4.39],'Pahang','130-million-year-old rainforest. Canopy walkway and river boat rides.'],
+['Cameron Highlands',[101.379,4.472],'Pahang','Tea plantations and strawberry farms. Cool weather; bring a jacket.'],
+['Genting Highlands',[101.793,3.423],'Pahang','Hill-top resort with a cable car and theme park.'],
+['Kek Lok Si Temple',[100.273,5.399],'Pulau Pinang','Largest Buddhist temple in Malaysia. Lit up beautifully for Chinese New Year.'],
+['Gunung Mulu Caves',[114.894,4.043],'Sarawak','UNESCO caves, with millions of bats streaming out at dusk.'],
+['Sepilok Orangutan Centre',[117.944,5.874],'Sabah','Rehabilitation centre for orphaned orangutans. Feeding times 10am and 3pm.'],
+['Sipadan Island',[118.628,4.115],'Sabah','World-class diving with turtles and barracuda. Dive permits are limited daily.'],
+['Pulau Redang',[103.01,5.78],'Terengganu','Marine park with coral gardens and turtle sanctuary.'],
+['Pulau Pangkor',[100.55,4.213],'Perak','Fishing island with hornbills and dried-fish markets.'],
+['Fraser’s Hill',[101.735,3.716],'Pahang','Cool hill station, famous for bird watching and colonial bungalows.'],
+['Danum Valley',[117.79,4.96],'Sabah','One of the oldest lowland rainforests; wildlife, canopy walks and night safaris.'],
+['Bako National Park',[110.469,1.716],'Sarawak','Proboscis monkeys and coastal trails, 40 minutes by boat from Kuching.'],
+['Pulau Tioman',[104.17,2.81],'Pahang','Island with white sand and jungle trekking; ferry from Mersing.'],
+['Taiping Lake Gardens',[100.738,4.856],'Perak','Malaysia’s oldest garden, shaded by rain trees; wettest town in the peninsula.'],
+['Kuala Selangor Fireflies',[101.29,3.335],'Selangor','Evening boat rides among glowing firefly trees.'],
+['Cherating',[103.39,4.13],'Pahang','Laid-back beach village with batik workshops and surf.'],
+['Port Dickson Beach',[101.8,2.52],'Negeri Sembilan','Weekend beach escape, one hour from KL.']];
+const CITIES=[{name:'Kuala Lumpur',c:[101.7117,3.1550],z:15.2,b:-30},{name:'George Town',c:[100.3295,5.4146],z:14.6,b:20},{name:'Melaka',c:[102.2490,2.1930],z:15,b:0},{name:'Putrajaya',c:[101.6895,2.9360],z:14.5,b:-20},{name:'Johor Bahru',c:[103.7630,1.4600],z:14.2,b:0},{name:'Ipoh',c:[101.0790,4.5975],z:14.5,b:0},{name:'Kota Kinabalu',c:[116.0735,5.9804],z:14,b:0},{name:'Kuching',c:[110.3460,1.5580],z:14.5,b:0},{name:'Langkawi',c:[99.8430,6.3500],z:11.5,b:0}];
+const CITY_IDS={kl:0,penang:1,melaka:2,putrajaya:3,jb:4,ipoh:5,kk:6,kuching:7,langkawi:8};
+const RTYPES=[{id:'jam',bm:'Kesesakan',en:'Traffic jam',icon:'ph-car-profile',color:C.orange,ttl:3},{id:'accident',bm:'Kemalangan',en:'Accident',icon:'ph-warning',color:C.magenta,ttl:3},{id:'flood',bm:'Banjir kilat',en:'Flash flood',icon:'ph-waves',color:C.cyan,ttl:8},{id:'works',bm:'Kerja jalan',en:'Roadworks',icon:'ph-traffic-cone',color:C.orange,ttl:72},{id:'hazard',bm:'Jalan berlubang',en:'Pothole / debris',icon:'ph-warning-circle',color:C.violet,ttl:48},{id:'police',bm:'Sekatan polis',en:'Police block',icon:'ph-siren',color:C.blue,ttl:3},{id:'closure',bm:'Sekatan jalan raya',en:'Roadblock / road closed',icon:'ph-prohibit',color:C.magenta,ttl:12},{id:'landslide',bm:'Tanah runtuh',en:'Landslide',icon:'ph-mountains',color:C.teal,ttl:72},{id:'shelter',bm:'Tempat berteduh',en:'Rider rain shelter',icon:'ph-umbrella',color:C.teal,ttl:0}];
+const RT=Object.fromEntries(RTYPES.map(t=>[t.id,t]));
+const NEAR=[{id:'attr',label:'Tarikan',icon:'ph-camera',color:'#bf8dff',q:'nwr["tourism"~"^(attraction|museum|viewpoint|theme_park|zoo|gallery|aquarium)$"]["name"]'},{id:'fuel',label:'Minyak',icon:'ph-gas-pump',color:C.orange,q:'nwr["amenity"="fuel"]'},{id:'ev',label:'EV',icon:'ph-lightning',color:C.teal,q:'nwr["amenity"="charging_station"]'},{id:'surau',label:'Surau / Masjid',icon:'ph-moon-stars',color:C.cyan,q:'nwr["amenity"="place_of_worship"]["religion"="muslim"]'},{id:'rnr',label:'R&R',icon:'ph-coffee',color:C.violet,q:'nwr["highway"~"^(rest_area|services)$"]'},{id:'makan',label:'Makan',icon:'ph-bowl-food',color:C.magenta,q:'nwr["amenity"~"^(restaurant|food_court|fast_food)$"]'},{id:'toilets',label:'Tandas',icon:'ph-toilet',color:C.blue,q:'nwr["amenity"="toilets"]'},{id:'parking',label:'Parkir',icon:'ph-letter-circle-p',color:'#a2a7c2',q:'nwr["amenity"="parking"]'}];
+const repLabel=(id,l)=>RTX[l]?RTX[l][id]:(l==='bm'?RT[id].bm:RT[id].en);
+const AHEAD={bm:'Di hadapan: ',en:'Ahead: ',zh:'前方：',ta:'முன்னால்: '};
+const URB=['E5','E6','E7','E9','E10','E11','E14','E15','E18','E20','E21'];
+const SEED2=()=>{const n=Date.now();return[{id:'s5',type:'police',c:[101.7125,3.1490],ts:n-20*60e3,demo:true},{id:'s6',type:'closure',c:[101.6990,3.1555],ts:n-60*60e3,demo:true}];};
+const LANEI={left:'ph-arrow-bend-up-left',right:'ph-arrow-bend-up-right',straight:'ph-arrow-up','slight left':'ph-arrow-up-left','slight right':'ph-arrow-up-right','sharp left':'ph-arrow-bend-up-left','sharp right':'ph-arrow-bend-up-right',uturn:'ph-arrow-u-up-left',none:'ph-arrow-up'};
+const CITYR=[[101.69,3.14,22000],[100.33,5.41,12000],[103.76,1.46,14000],[101.08,4.6,9000],[116.07,5.98,9000],[110.35,1.56,9000],[102.25,2.2,7000]];
+const NK=Object.fromEntries(NEAR.map(n=>[n.id,n]));
+
+const hav=(a,b)=>{const R=6371000,k=Math.PI/180,dLa=(b[1]-a[1])*k,dLo=(b[0]-a[0])*k;const x=Math.sin(dLa/2)**2+Math.cos(a[1]*k)*Math.cos(b[1]*k)*Math.sin(dLo/2)**2;return 2*R*Math.asin(Math.sqrt(x));};
+const brg=(a,b)=>{const k=Math.PI/180,y=Math.sin((b[0]-a[0])*k)*Math.cos(b[1]*k),x=Math.cos(a[1]*k)*Math.sin(b[1]*k)-Math.sin(a[1]*k)*Math.cos(b[1]*k)*Math.cos((b[0]-a[0])*k);return Math.atan2(y,x)/k;};
+const fmtDur=s=>{const m=Math.max(1,Math.round(s/60));return m<60?`${m} min`:`${Math.floor(m/60)} h ${m%60} min`;};
+const fmtDist=m=>m<1000?`${Math.max(10,Math.round(m/10)*10)} m`:`${(m/1000).toFixed(m<10000?1:0)} km`;
+const DEN={left:'left',right:'right','slight left':'slightly left','slight right':'slightly right','sharp left':'sharp left','sharp right':'sharp right',straight:'straight',uturn:'U-turn'};
+const DBM={left:'kiri',right:'kanan','slight left':'sedikit ke kiri','slight right':'sedikit ke kanan','sharp left':'tajam ke kiri','sharp right':'tajam ke kanan',straight:'terus',uturn:'pusing U'};
+const LANGS=['bm','en','zh','ta'];
+const LX={bm:{label:'Suara: BM',speech:'ms-MY',pre:'ms',in150:'Dalam 150 meter, ',then:'KEMUDIAN · ',arrive:'Tiba ',arrived:'Anda telah tiba di destinasi'},
+en:{label:'Voice: EN',speech:'en-GB',pre:'en',in150:'In 150 metres, ',then:'THEN · ',arrive:'Arrive ',arrived:'You have arrived'},
+zh:{label:'语音: 中文',speech:'zh-CN',pre:'zh',in150:'前方150米，',then:'然后 · ',arrive:'到达 ',arrived:'您已到达目的地'},
+ta:{label:'குரல்: தமிழ்',speech:'ta-IN',pre:'ta',in150:'150 மீட்டரில், ',then:'பிறகு · ',arrive:'சேரும் நேரம் ',arrived:'நீங்கள் சேருமிடத்தை அடைந்துவிட்டீர்கள்'}};
+const DZH={left:'左转',right:'右转','slight left':'向左前方行驶','slight right':'向右前方行驶','sharp left':'向左急转','sharp right':'向右急转',straight:'直行',uturn:'掉头'};
+const DTA={left:'இடது பக்கம் திரும்பவும்',right:'வலது பக்கம் திரும்பவும்','slight left':'சற்று இடது பக்கம் செல்லவும்','slight right':'சற்று வலது பக்கம் செல்லவும்','sharp left':'கூர்மையாக இடது பக்கம் திரும்பவும்','sharp right':'கூர்மையாக வலது பக்கம் திரும்பவும்',straight:'நேராகச் செல்லவும்',uturn:'யு-டர்ன் செய்யவும்'};
+const RTX={zh:{jam:'交通拥堵',accident:'车祸',flood:'突发水灾',works:'道路施工',hazard:'路面坑洞',police:'警察路障',closure:'封路 / 路障',landslide:'山体滑坡',shelter:'骑士避雨处'},ta:{jam:'போக்குவரத்து நெரிசல்',accident:'விபத்து',flood:'திடீர் வெள்ளம்',works:'சாலைப் பணி',hazard:'சாலைக் குழி',police:'காவல்துறை சோதனை',closure:'சாலை மூடல் / தடை',landslide:'நிலச்சரிவு',shelter:'மழை தங்குமிடம்'}};
+function instr(s,lang){if(lang==='zh'||lang==='ta'){const t=s.maneuver.type,m=s.maneuver.modifier||'straight',road=s.name||s.ref||'',ex=s.maneuver.exit||1,zh=lang==='zh';const left=m.includes('left');
+ if(zh){const onto=road?`，进入${road}`:'';switch(t){case 'depart':return`出发${road?'，沿'+road+'行驶':''}`;case 'arrive':return'已到达目的地';case 'roundabout':case 'rotary':case 'roundabout turn':case 'exit roundabout':return`在环岛从第${ex}个出口驶出${onto}`;case 'on ramp':return`驶入匝道${onto}`;case 'off ramp':return`从出口驶出${onto}`;case 'fork':return`在岔路口${m==='straight'?'直行':left?'靠左':'靠右'}${onto}`;case 'merge':return`并入${road||'主路'}`;case 'continue':case 'new name':return`继续行驶${onto}`;default:return`${DZH[m]||'直行'}${onto}`;}}
+ const at=road?`${road} நோக்கி `:'';switch(t){case 'depart':return`${road?road+' வழியாக ':''}பயணத்தைத் தொடங்கவும்`;case 'arrive':return LX.ta.arrived;case 'roundabout':case 'rotary':case 'roundabout turn':case 'exit roundabout':return`ரவுண்டானாவில் ${ex}வது வெளியேறலை எடுத்து ${at}செல்லவும்`;case 'on ramp':return`${at}சாய்வுப் பாதையில் நுழையவும்`;case 'off ramp':return`${at}வெளியேறும் பாதையில் செல்லவும்`;case 'fork':return`கிளைச் சாலையில் ${m==='straight'?'நேராக':left?'இடது பக்கம்':'வலது பக்கம்'} இருக்கவும்${road?' · '+road:''}`;case 'merge':return`${road||'பிரதான சாலை'}யில் இணையவும்`;case 'continue':case 'new name':return`${at}தொடர்ந்து செல்லவும்`;default:return`${at}${DTA[m]||DTA.straight}`;}}
+ return instrBE(s,lang);}
+function instrBE(s,lang){const t=s.maneuver.type,m=s.maneuver.modifier||'straight',road=s.name||s.ref||'',bm=lang==='bm';const onto=road?(bm?` ke ${road}`:` onto ${road}`):'';
+switch(t){case 'depart':return bm?`Mula perjalanan${road?' di '+road:''}`:`Head out${road?' on '+road:''}`;
+case 'arrive':return bm?'Tiba di destinasi':'You have arrived';
+case 'roundabout':case 'rotary':case 'roundabout turn':case 'exit roundabout':return bm?`Di bulatan, ambil susur keluar ke-${s.maneuver.exit||1}${onto}`:`At the roundabout, take exit ${s.maneuver.exit||1}${onto}`;
+case 'on ramp':return bm?`Masuk susur${onto}`:`Take the ramp${onto}`;
+case 'off ramp':return bm?`Keluar ikut susur${onto}`:`Take the exit${onto}`;
+case 'fork':return bm?`Ikut ${DBM[m]||'terus'} di simpang${onto}`:`Keep ${DEN[m]||'straight'} at the fork${onto}`;
+case 'merge':return bm?`Bergabung${onto}`:`Merge${onto}`;
+case 'continue':case 'new name':return bm?`Terus${onto}`:`Continue${onto}`;
+default:if(m==='straight')return bm?`Terus${onto}`:`Continue straight${onto}`;if(m==='uturn')return bm?`Buat pusingan U${onto}`:`Make a U-turn${onto}`;return bm?`Belok ${DBM[m]||m}${onto}`:`Turn ${DEN[m]||m}${onto}`;}}
+function stepIcon(s){const t=s.maneuver.type,m=s.maneuver.modifier||'';if(t==='arrive')return'ph-flag-checkered';if(t==='depart')return'ph-navigation-arrow';if(t.includes('roundabout')||t==='rotary')return'ph-arrows-clockwise';if(m==='uturn')return'ph-arrow-u-up-left';if(m.includes('left'))return m.includes('slight')?'ph-arrow-up-left':'ph-arrow-bend-up-left';if(m.includes('right'))return m.includes('slight')?'ph-arrow-up-right':'ph-arrow-bend-up-right';return'ph-arrow-up';}
+
+function buildLandmarks(){const fs=[],pts=[];LANDMARKS.forEach((l,i)=>{const rnd=rng(i*977+13);l.parts(l.c,rnd).forEach(f=>{f.properties.lm=l.id;fs.push(f);});pts.push({type:'Feature',properties:{name:l.name,lm:l.id},geometry:{type:'Point',coordinates:l.c}});});return{fc:{type:'FeatureCollection',features:fs},pts:{type:'FeatureCollection',features:pts}};}
+
+const BRH=['coalesce',['get','render_height'],6];
+const TX=(c,h)=>({'text-color':c,'text-halo-color':h});
+const SKY={night:{'sky-color':'#1a1050','horizon-color':'#2c1a7a','fog-color':'#0a0c1a','sky-horizon-blend':.7,'horizon-fog-blend':.6,'fog-ground-blend':.35,'atmosphere-blend':.5},day:{'sky-color':'#93c5f0','horizon-color':'#e8fbff','fog-color':'#f1f3fb','sky-horizon-blend':.6,'horizon-fog-blend':.7,'fog-ground-blend':.3,'atmosphere-blend':.6},satellite:{'sky-color':'#4f86c6','horizon-color':'#c6e2f5','fog-color':'#9fb3c8','sky-horizon-blend':.6,'horizon-fog-blend':.6,'fog-ground-blend':.25,'atmosphere-blend':.6}};
+function themePaint(v){
+ if(v==='night')return{bg:{'background-color':'#0a0c1a'},landcover:{'fill-color':['match',['get','class'],['wood','forest'],'#0b1d22','grass','#0d1822','#0d1020']},park:{'fill-color':'#0b2127'},landuse:{'fill-color':'#10132a'},hillshade:{'hillshade-shadow-color':'#05060f','hillshade-highlight-color':'#2c1a7a','hillshade-accent-color':'#141729','hillshade-exaggeration':.5},water:{'fill-color':'#071a29'},'water-edge':{'line-color':'#127587'},waterway:{'line-color':'#0d505d'},'road-minor':{'line-color':'#2e3145'},'road-tertiary':{'line-color':'#474b61'},'road-secondary':{'line-color':'#127587'},'road-primary':{'line-color':C.blue},'road-trunk':{'line-color':C.violet},'road-motorway':{'line-color':C.magenta},'road-hw-glow':{'line-opacity':.35},rail:{'line-color':C.teal},'building-3d':{'fill-extrusion-color':['interpolate',['linear'],BRH,0,'#1b1d2e',25,'#2e3145',80,'#3a3170',200,'#4a2675',350,'#6a35a6'],'fill-extrusion-opacity':.9},pois:{'circle-stroke-color':'#0a0c1a'},'road-label':TX('#a2a7c2','#0a0c1a'),'place-minor':TX('#a2a7c2','#0a0c1a'),'place-major':TX('#eef0fa','#0a0c1a'),'place-state':TX('#bf8dff','#0a0c1a'),'poi-label':TX('#dfe2f1','#0a0c1a'),'lm-label':TX('#d6b8ff','#0a0c1a'),'sights-label':TX('#ffd6a8','#0a0c1a')};
+ if(v==='satellite')return{'road-minor':{'line-color':'rgba(241,243,251,.22)'},'road-tertiary':{'line-color':'rgba(241,243,251,.4)'},'road-secondary':{'line-color':'rgba(252,216,121,.55)'},'road-primary':{'line-color':'rgba(252,216,121,.8)'},'road-trunk':{'line-color':'#f9b85c'},'road-motorway':{'line-color':'#f39a4a'},'road-hw-glow':{'line-opacity':0},rail:{'line-color':'rgba(31,224,168,.75)'},'building-3d':{'fill-extrusion-color':'#dfe2f1','fill-extrusion-opacity':.35},pois:{'circle-stroke-color':'#f1f3fb'},'road-label':TX('#f1f3fb','rgba(10,12,26,.85)'),'place-minor':TX('#f1f3fb','rgba(10,12,26,.85)'),'place-major':TX('#f1f3fb','rgba(10,12,26,.9)'),'place-state':TX('#eadbff','rgba(10,12,26,.85)'),'poi-label':TX('#f1f3fb','rgba(10,12,26,.85)'),'lm-label':TX('#eadbff','rgba(10,12,26,.9)'),'sights-label':TX('#ffe3c4','rgba(10,12,26,.9)')};
+ const t=v==='terrain';const H='#f6f7fc';
+ return{bg:{'background-color':'#eef0f4'},landcover:{'fill-color':['match',['get','class'],['wood','forest'],t?'#b5d9bf':'#cfe8d6','grass',t?'#cfe6c9':'#dcefd9','#eef0f4']},park:{'fill-color':'#c8e6cf'},landuse:{'fill-color':'#e6e8f0'},hillshade:t?{'hillshade-shadow-color':'#80859f','hillshade-highlight-color':'#fdfdff','hillshade-accent-color':'#a2a7c2','hillshade-exaggeration':.85}:{'hillshade-shadow-color':'#c4c8de','hillshade-highlight-color':'#f6f7fc','hillshade-accent-color':'#dfe2f1','hillshade-exaggeration':.3},water:{'fill-color':'#a9d3f0'},'water-edge':{'line-color':'#8cc3e8'},waterway:{'line-color':'#a9d3f0'},'road-minor':{'line-color':'#fdfdff'},'road-tertiary':{'line-color':'#fdfdff'},'road-secondary':{'line-color':'#fde9a8'},'road-primary':{'line-color':'#fcd879'},'road-trunk':{'line-color':'#f9b85c'},'road-motorway':{'line-color':'#f39a4a'},'road-hw-glow':{'line-opacity':0},rail:{'line-color':'#a2a7c2'},'building-3d':{'fill-extrusion-color':['interpolate',['linear'],BRH,0,'#e3e5ee',60,'#d3d6e6',200,'#c4c8de'],'fill-extrusion-opacity':.92},pois:{'circle-stroke-color':H},'road-label':TX('#474b61',H),'place-minor':TX('#474b61',H),'place-major':TX('#1b1d2e',H),'place-state':TX('#6a35a6',H),'poi-label':TX('#2e3145',H),'lm-label':TX('#6a35a6',H),'sights-label':TX('#a8420a',H)};}
+function buildStyle(exag){const L=buildLandmarks();const nm=['coalesce',['get','name:latin'],['get','name']];const W=(a,b)=>['interpolate',['exponential',1.6],['zoom'],6,a,18,b];
+const road=(id,cls,color,w,extra={},minzoom=0)=>({id,type:'line',source:'omt','source-layer':'transportation',minzoom,filter:['match',['get','class'],cls,true,false],layout:{'line-cap':'round','line-join':'round'},paint:{'line-color':color,'line-width':w,...extra}});
+const rh=['coalesce',['get','render_height'],6];
+return{version:8,glyphs:'https://tiles.openfreemap.org/fonts/{fontstack}/{range}.pbf',
+sky:{'sky-color':'#1a1050','horizon-color':'#2c1a7a','fog-color':'#0a0c1a','sky-horizon-blend':.7,'horizon-fog-blend':.6,'fog-ground-blend':.35,'atmosphere-blend':.5},
+sources:{omt:{type:'vector',url:'https://tiles.openfreemap.org/planet',attribution:'© OpenStreetMap contributors · OpenFreeMap · OSRM · Photon · Overpass'},
+dem:{type:'raster-dem',tiles:['https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png'],encoding:'terrarium',tileSize:256,maxzoom:13,attribution:'Terrain © Mapzen'},
+dem3d:{type:'raster-dem',tiles:['https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png'],encoding:'terrarium',tileSize:256,maxzoom:13},
+sat:{type:'raster',tiles:['https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}'],tileSize:256,maxzoom:19,attribution:'Imagery © Esri, Maxar, Earthstar Geographics'},
+landmarks:{type:'geojson',data:L.fc},lmpts:{type:'geojson',data:L.pts},sights:{type:'geojson',data:{type:'FeatureCollection',features:SIGHTS.map(s=>({type:'Feature',properties:{name:s[0],state:s[2],info:s[3]},geometry:{type:'Point',coordinates:s[1]}}))}},route:{type:'geojson',lineMetrics:true,data:EMPTY},routeAlt:{type:'geojson',data:EMPTY},pois:{type:'geojson',data:EMPTY}},
+layers:[
+{id:'bg',type:'background',paint:{'background-color':'#0a0c1a'}},
+{id:'sat',type:'raster',source:'sat',layout:{visibility:'none'},paint:{'raster-fade-duration':200}},
+{id:'landcover',type:'fill',source:'omt','source-layer':'landcover',paint:{'fill-color':['match',['get','class'],['wood','forest'],'#0b1d22','grass','#0d1822','#0d1020'],'fill-opacity':.9}},
+{id:'park',type:'fill',source:'omt','source-layer':'park',paint:{'fill-color':'#0b2127','fill-opacity':.8}},
+{id:'landuse',type:'fill',source:'omt','source-layer':'landuse',filter:['match',['get','class'],['residential','suburb','neighbourhood'],true,false],paint:{'fill-color':'#10132a','fill-opacity':.7}},
+{id:'hillshade',type:'hillshade',source:'dem',paint:{'hillshade-shadow-color':'#05060f','hillshade-highlight-color':'#2c1a7a','hillshade-accent-color':'#141729','hillshade-exaggeration':.5}},
+{id:'water',type:'fill',source:'omt','source-layer':'water',paint:{'fill-color':'#071a29'}},
+{id:'water-edge',type:'line',source:'omt','source-layer':'water',paint:{'line-color':'#127587','line-width':['interpolate',['linear'],['zoom'],5,.3,14,1.2],'line-opacity':.6}},
+{id:'waterway',type:'line',source:'omt','source-layer':'waterway',paint:{'line-color':'#0d505d','line-width':['interpolate',['linear'],['zoom'],8,.5,16,3]}},
+{id:'boundary',type:'line',source:'omt','source-layer':'boundary',filter:['<=',['get','admin_level'],4],paint:{'line-color':['match',['get','admin_level'],2,C.violet,'#4a2675'],'line-width':['match',['get','admin_level'],2,1.6,.8],'line-dasharray':[3,2]}},
+road('road-minor',['minor','service','track'],'#2e3145',W(.2,9),{},12),
+road('road-tertiary',['tertiary'],'#474b61',W(.3,12),{},9),
+road('road-secondary',['secondary'],'#127587',W(.4,14)),
+road('road-primary',['primary'],C.blue,W(.5,16)),
+road('road-hw-glow',['trunk','motorway'],C.violet,W(2,30),{'line-blur':6,'line-opacity':.35}),
+road('road-trunk',['trunk'],C.violet,W(.6,18)),
+road('road-motorway',['motorway'],C.magenta,W(.8,20)),
+{id:'rail',type:'line',source:'omt','source-layer':'transportation',minzoom:10,filter:['match',['get','class'],['rail','transit'],true,false],paint:{'line-color':C.teal,'line-width':['interpolate',['linear'],['zoom'],10,.8,17,3],'line-dasharray':[2,1.5],'line-opacity':.8}},
+{id:'route-alt-casing',type:'line',source:'routeAlt',layout:{'line-cap':'round','line-join':'round'},paint:{'line-color':'#0a0c1a','line-width':['interpolate',['linear'],['zoom'],8,6,16,16]}},
+{id:'route-alt',type:'line',source:'routeAlt',layout:{'line-cap':'round','line-join':'round'},paint:{'line-color':'#80859f','line-width':['interpolate',['linear'],['zoom'],8,3,16,10]}},
+{id:'route-glow',type:'line',source:'route',layout:{'line-cap':'round','line-join':'round'},paint:{'line-color':C.cyan,'line-width':['interpolate',['linear'],['zoom'],8,10,16,28],'line-blur':10,'line-opacity':.45}},
+{id:'route-casing',type:'line',source:'route',layout:{'line-cap':'round','line-join':'round'},paint:{'line-color':'#0a0c1a','line-width':['interpolate',['linear'],['zoom'],8,8,16,22]}},
+{id:'route',type:'line',source:'route',layout:{'line-cap':'round','line-join':'round'},paint:{'line-color':C.cyan,'line-width':['interpolate',['linear'],['zoom'],8,5,16,15]}},
+{id:'route-arrows',type:'symbol',source:'route',layout:{'symbol-placement':'line','symbol-spacing':64,'icon-image':'route-arrow','icon-size':['interpolate',['linear'],['zoom'],10,.45,17,.85],'icon-allow-overlap':true,'icon-ignore-placement':true,'icon-rotation-alignment':'map','icon-pitch-alignment':'map'}},
+{id:'building-3d',type:'fill-extrusion',source:'omt','source-layer':'building',minzoom:13,paint:{'fill-extrusion-color':['interpolate',['linear'],rh,0,'#1b1d2e',25,'#2e3145',80,'#3a3170',200,'#4a2675',350,'#6a35a6'],'fill-extrusion-height':['interpolate',['linear'],['zoom'],13,0,14.5,['*',rh,exag]],'fill-extrusion-base':['*',['coalesce',['get','render_min_height'],0],exag],'fill-extrusion-opacity':.9,'fill-extrusion-vertical-gradient':true}},
+{id:'landmark-3d',type:'fill-extrusion',source:'landmarks',paint:{'fill-extrusion-color':['get','color'],'fill-extrusion-height':['get','top'],'fill-extrusion-base':['get','base'],'fill-extrusion-opacity':1,'fill-extrusion-vertical-gradient':true}},
+{id:'pois',type:'circle',source:'pois',paint:{'circle-radius':['interpolate',['linear'],['zoom'],10,4,17,8],'circle-color':['get','color'],'circle-stroke-color':'#0a0c1a','circle-stroke-width':2}},
+{id:'road-label',type:'symbol',source:'omt','source-layer':'transportation_name',minzoom:13,layout:{'symbol-placement':'line','text-field':nm,'text-font':['Noto Sans Regular'],'text-size':11},paint:{'text-color':'#a2a7c2','text-halo-color':'#0a0c1a','text-halo-width':1.4}},
+{id:'place-minor',type:'symbol',source:'omt','source-layer':'place',minzoom:11,filter:['match',['get','class'],['suburb','village','neighbourhood','quarter'],true,false],layout:{'text-field':nm,'text-font':['Noto Sans Regular'],'text-size':12},paint:{'text-color':'#a2a7c2','text-halo-color':'#0a0c1a','text-halo-width':1.5}},
+{id:'place-major',type:'symbol',source:'omt','source-layer':'place',filter:['match',['get','class'],['city','town'],true,false],layout:{'text-field':nm,'text-font':['Noto Sans Bold'],'text-size':['match',['get','class'],'city',16,13],'text-transform':'uppercase','text-letter-spacing':.08},paint:{'text-color':'#eef0fa','text-halo-color':'#0a0c1a','text-halo-width':1.8}},
+{id:'place-state',type:'symbol',source:'omt','source-layer':'place',maxzoom:8,filter:['match',['get','class'],['state','country'],true,false],layout:{'text-field':nm,'text-font':['Noto Sans Bold'],'text-size':13,'text-transform':'uppercase','text-letter-spacing':.25},paint:{'text-color':'#bf8dff','text-halo-color':'#0a0c1a','text-halo-width':1.5}},
+{id:'poi-label',type:'symbol',source:'pois',minzoom:13,layout:{'text-field':['get','name'],'text-font':['Noto Sans Regular'],'text-size':11,'text-offset':[0,1.1],'text-anchor':'top'},paint:{'text-color':'#dfe2f1','text-halo-color':'#0a0c1a','text-halo-width':1.4}},
+{id:'sights',type:'circle',source:'sights',minzoom:6,paint:{'circle-radius':['interpolate',['linear'],['zoom'],6,4,14,8],'circle-color':C.orange,'circle-stroke-color':'#ffffff','circle-stroke-width':2}},
+{id:'sights-label',type:'symbol',source:'sights',minzoom:8,layout:{'text-field':['get','name'],'text-font':['Noto Sans Bold'],'text-size':11,'text-offset':[0,1],'text-anchor':'top'},paint:{'text-color':'#ffd6a8','text-halo-color':'#0a0c1a','text-halo-width':1.6}},
+{id:'lm-label',type:'symbol',source:'lmpts',minzoom:9,layout:{'text-field':['get','name'],'text-font':['Noto Sans Bold'],'text-size':12,'text-offset':[0,1.2],'text-anchor':'top','text-transform':'uppercase','text-letter-spacing':.06},paint:{'text-color':'#d6b8ff','text-halo-color':'#0a0c1a','text-halo-width':1.8}}
+]};}
+
+const SEED=()=>{const n=Date.now();return[{id:'s1',type:'jam',c:[101.7190,3.1612],ts:n-12*60e3,demo:true},{id:'s2',type:'flood',c:[101.6885,3.1702],ts:n-35*60e3,demo:true},{id:'s3',type:'works',c:[101.7062,3.1598],ts:n-5*3600e3,demo:true},{id:'s4',type:'shelter',c:[101.6702,3.1182],ts:n-30*86400e3,demo:true}];};
+
+class Component extends DCLogic {
+  mapRef=React.createRef();
+  state={depart:0,avoidHw:false,saved:false,off:{run:false,done:0,total:0},flagsOn:true,sightsOn:true,editing:null,epQuery:'',epResults:[],picking:null,ready:false,view:'night',layersOpen:false,autoView:false,query:'',results:[],showResults:false,bearing:0,is3D:true,terrain:false,panelOpen:true,tab:'explore',place:null,origin:null,dest:null,mode:'car',avoidTolls:false,lang:'bm',voice:true,routes:[],sel:0,busy:false,poiKind:null,pois:[],poiBusy:false,navigating:false,nav:{},reportOpen:false,toast:''};
+  componentDidMount(){this.unlockAudio();try{const pf=JSON.parse(localStorage.getItem('arah.prefs.v1'));if(pf)this.setState({avoidTolls:!!pf.avoidTolls,avoidHw:!!pf.avoidHw,mode:pf.mode||'car'});this.setState({saved:!!localStorage.getItem('arah.saved.v1')});}catch(e){}window.addEventListener('offline',this._offL=()=>{this.toast('Luar talian · Offline: cached maps and your saved route still work');this.forceUpdate();});window.addEventListener('online',this._onL=()=>{this.toast('Kembali dalam talian');this.forceUpdate();});this.measure();try{const l=localStorage.getItem('arah.lang.v1');if(LANGS.includes(l))this.setState({lang:l});}catch(e){}this.loadReports();this.waitGL();}
+  componentWillUnmount(){clearTimeout(this._t);cancelAnimationFrame(this.raf);if(this.watch!=null)navigator.geolocation.clearWatch(this.watch);this.map&&this.map.remove();}
+  componentDidUpdate(pp){if(!this.map||!this.state.ready)return;
+    if(pp.buildingHeight!==this.props.buildingHeight){const e=this.exag(),rh=['coalesce',['get','render_height'],6];this.map.setPaintProperty('building-3d','fill-extrusion-height',['interpolate',['linear'],['zoom'],13,0,14.5,['*',rh,e]]);this.map.setPaintProperty('building-3d','fill-extrusion-base',['*',['coalesce',['get','render_min_height'],0],e]);}
+    if(pp.showLandmarks!==this.props.showLandmarks){const v=this.props.showLandmarks===false?'none':'visible';['landmark-3d','lm-label'].forEach(l=>this.map.setLayoutProperty(l,'visibility',v));}
+    if(pp.startCity!==this.props.startCity)this.flyCity(this.startCity());}
+  exag(){return this.props.buildingHeight??1.2;}
+  startCity(){return CITIES[CITY_IDS[this.props.startCity??'kl']??0];}
+  waitGL(){if(window.maplibregl&&this.mapRef.current)this.initMap();else this._t=setTimeout(()=>this.waitGL(),80);}
+  toast(t){this.setState({toast:t});clearTimeout(this._tt);this._tt=setTimeout(()=>this.setState({toast:''}),2800);}
+  initMap(){const gl=window.maplibregl,c=this.startCity();if(!window.__arahProto&&window.caches){window.__arahProto=1;gl.addProtocol('arahcache',async params=>{const url=params.url.replace('arahcache://',''),json=params.type==='json',c=await caches.open('arah-tiles-v1');let res=json?null:await c.match(url);if(!res){try{const r=await fetch(url);if(r.ok){try{await c.put(url,r.clone());}catch(e){}res=r;}else if(json)res=await c.match(url);}catch(e){res=await c.match(url);}}if(!res)throw new Error('offline');return{data:json?await res.json():await res.arrayBuffer()};});}
+    const map=this.map=new gl.Map({container:this.mapRef.current,style:buildStyle(this.exag()),transformRequest:(u,t)=>this.tr(u,t),center:c.c,zoom:c.z,pitch:62,bearing:c.b??-20,maxPitch:85,maxBounds:[[92,-6],[126,12]],attributionControl:false});
+    map.addControl(new gl.AttributionControl({compact:true}),'bottom-right');
+    map.on('load',()=>{this.setState({ready:true});let sv=null;try{sv=JSON.parse(localStorage.getItem('arah.view.v2'));}catch(e){}if(sv&&sv.auto){this.setState({autoView:true});this.applyAuto();}else if(sv&&sv.view&&sv.view!=='night')this.applyView(sv.view);else if(!sv)this.applyView('day');if(this.props.showLandmarks===false)['landmark-3d','lm-label'].forEach(l=>map.setLayoutProperty(l,'visibility','none'));this.renderReports();this.makeFlags();});
+    map.on('styleimagemissing',e=>{if(e.id==='route-arrow')this.addArrow();});
+    map.on('rotate',()=>{if(this._rq)return;this._rq=requestAnimationFrame(()=>{this._rq=0;this.setState({bearing:map.getBearing()});});});
+    map.on('pitchend',()=>this.setState({is3D:map.getPitch()>20}));
+    map.on('click','pois',e=>{const f=e.features[0];this.setPlace({name:f.properties.name,sub:f.properties.sub,kind:NK[f.properties.kind]?.label||'Place',c:f.geometry.coordinates},false);});
+    map.on('click','sights',e=>{const f=e.features[0],c=f.geometry.coordinates;this.setPlace({name:f.properties.name,sub:f.properties.state,kind:'Tempat terkenal',info:f.properties.info,c:c.slice()},true);});
+    map.on('click','landmark-3d',e=>{const l=LANDMARKS.find(x=>x.id===e.features[0].properties.lm);l&&this.openLandmark(l);});
+    ['pois','landmark-3d','sights'].forEach(l=>{map.on('mouseenter',l,()=>map.getCanvas().style.cursor='pointer');map.on('mouseleave',l,()=>map.getCanvas().style.cursor='');});
+    map.on('click',e=>{if(this.state.picking){const w=this.state.picking,ll=e.lngLat;this.setState({picking:null});this.setEndpoint(w,{name:`Pin · ${ll.lat.toFixed(4)}, ${ll.lng.toFixed(4)}`,c:[ll.lng,ll.lat]});return;}this.state.showResults&&this.setState({showResults:false});});
+    const drop=ll=>this.setPlace({name:'Dropped pin',sub:`${ll.lat.toFixed(5)}, ${ll.lng.toFixed(5)}`,kind:'Pin',c:[ll.lng,ll.lat]},false);
+    map.on('contextmenu',e=>drop(e.lngLat));
+    map.on('touchstart',e=>{clearTimeout(this.lp);if(e.points&&e.points.length>1)return;const ll=e.lngLat;this.lp=setTimeout(()=>drop(ll),600);});
+    ['touchend','touchmove','touchcancel','dragstart'].forEach(ev=>map.on(ev,()=>clearTimeout(this.lp)));
+    map.on('error',e=>console.warn('map',e&&e.error&&e.error.message));}
+  addArrow(){if(this.map.hasImage('route-arrow'))return;const c=document.createElement('canvas');c.width=c.height=48;const x=c.getContext('2d');x.strokeStyle='#fff';x.lineWidth=8;x.lineCap='round';x.lineJoin='round';x.beginPath();x.moveTo(17,11);x.lineTo(33,24);x.lineTo(17,37);x.stroke();this.map.addImage('route-arrow',x.getImageData(0,0,48,48),{pixelRatio:2});}
+  routeTheme(v){const m=this.map,T={night:['#2fd0ec','#0a0c1a','#80859f','#0a0c1a',.45],day:['#2f5bff','#ffffff','#a2a7c2','#ffffff',0],satellite:['#2fd0ec','#0a0c1a','#dfe2f1','#0a0c1a',.3]}[v==='terrain'?'day':v];const s=(id,k,val)=>m.getLayer(id)&&m.setPaintProperty(id,k,val);s('route','line-color',T[0]);s('route-glow','line-color',T[0]);s('route-glow','line-opacity',T[4]);s('route-casing','line-color',T[1]);s('route-alt','line-color',T[2]);s('route-alt-casing','line-color',T[3]);}
+  checkAhead(p,n){const lang=this.state.lang;n.alerted=n.alerted||{};for(const x of this.reports){if(x.type==='shelter'||n.alerted[x.id]||hav(p,x.c)>500)continue;n.alerted[x.id]=1;let on=false;for(let i=0;i<n.coords.length;i+=2){if(hav(n.coords[i],x.c)<70){on=true;break;}}if(!on)continue;const msg=`${AHEAD[lang]}${repLabel(x.type,lang)} · ${fmtDist(hav(p,x.c))}`;this.toast(msg);this.speak(msg);break;}}
+  reportNames(r,lang){const cs=r.geometry.coordinates,st=Math.max(1,Math.floor(cs.length/300)),t=new Set();this.reports.forEach(x=>{if(x.type!=='shelter'&&cs.some((q,i)=>i%st===0&&hav(q,x.c)<150))t.add(repLabel(x.type,lang));});return[...t].join(' · ');}
+  makeFlags(){const gl=window.maplibregl,map=this.map;this.flagM=STATES.map(s=>{const el=document.createElement('div');el.title=s.n;el.style.cssText='display:flex;flex-direction:column;align-items:center;gap:2px;cursor:pointer';const img=document.createElement('img');img.src='https://commons.wikimedia.org/wiki/Special:FilePath/'+encodeURIComponent(s.f)+'?width=96';img.alt=s.n;img.style.cssText='width:32px;height:21px;object-fit:cover;border-radius:3px;border:1.5px solid #fff;box-shadow:0 2px 8px rgba(0,0,0,.5);background:#141729';img.onerror=()=>{const d=document.createElement('div');d.textContent=s.n.slice(0,3).toUpperCase();d.style.cssText='width:32px;height:21px;border-radius:3px;border:1.5px solid #fff;background:#141729;color:#fff;font:700 10px/18px Ubuntu,sans-serif;text-align:center';el.replaceChild(d,img);};const lb=document.createElement('div');lb.textContent=s.n;lb.style.cssText='font:700 10px/1 Ubuntu,sans-serif;color:#fff;text-shadow:0 0 3px #0a0c1a,0 0 3px #0a0c1a,0 0 3px #0a0c1a;white-space:nowrap';el.append(img,lb);el.onclick=ev=>{ev.stopPropagation();this.openState(s);};return{s,el,m:new gl.Marker({element:el}).setLngLat(s.c).addTo(map)};});map.on('zoom',()=>this.updFlags());this.updFlags();}
+  updFlags(){const z=this.map.getZoom(),on=this.state.flagsOn;(this.flagM||[]).forEach(f=>{f.el.style.display=on&&z>=3&&z<=(f.s.z>7?10.5:9.2)&&z>=(f.s.z>7?7.6:3)?'flex':'none';});}
+  openState(s){this.setPlace({name:s.n,sub:'Ibu negeri · Capital: '+s.cap,kind:'Negeri · State',info:s.info,c:s.c.slice()},false);this.map.flyTo({center:s.c,zoom:s.z>7?11:8.2,pitch:50,duration:2000,essential:true});}
+  tr(url,type){if(window.caches&&window.__arahProto&&/^https:\/\/tiles\.openfreemap\.org\//.test(url)&&(type==='Tile'||type==='Glyphs'||type==='Source')){if(type==='Tile'&&!this.tileTpl&&/\/\d+\/\d+\/\d+\.pbf/.test(url))this.tileTpl=url.replace(/\/(\d+)\/(\d+)\/(\d+)\.pbf.*$/,'/{z}/{x}/{y}.pbf');return{url:'arahcache://'+url};}return{url};}
+  tl(z,lng,lat){const n=2**z,r=lat*Math.PI/180;return[Math.min(n-1,Math.max(0,Math.floor((lng+180)/360*n))),Math.min(n-1,Math.max(0,Math.floor((1-Math.log(Math.tan(r)+1/Math.cos(r))/Math.PI)/2*n)))];}
+  tileUrl(z,x,y){return this.tileTpl.replace('{z}',z).replace('{x}',x).replace('{y}',y);}
+  measure(){try{navigator.storage&&navigator.storage.estimate().then(e=>{this.usage=Math.round((e.usage||0)/1048576);this.forceUpdate();});}catch(e){}}
+  dlArea(){if(!this.tileTpl||!window.caches)return this.toast('Map not ready or cache unsupported');const b=this.map.getBounds(),dx=(b.getEast()-b.getWest())*.2,dy=(b.getNorth()-b.getSouth())*.2,keys=[];for(let z=6;z<=14;z++){const[x0,y0]=this.tl(z,b.getWest()-dx,b.getNorth()+dy),[x1,y1]=this.tl(z,b.getEast()+dx,b.getSouth()-dy),cnt=(x1-x0+1)*(y1-y0+1);if(keys.length+cnt>1500)break;for(let x=x0;x<=x1;x++)for(let y=y0;y<=y1;y++)keys.push(z+'/'+x+'/'+y);}this.prefetch(keys);}
+  dlRoute(){const r=this.curRoute();if(!r||!this.tileTpl||!window.caches)return;const set=new Set(),cs=r.geometry.coordinates;for(let z=8;z<=14;z++){const zs=new Set();for(let i=0;i<cs.length;i+=Math.max(1,Math.floor(cs.length/1500))){const[x,y]=this.tl(z,cs[i][0],cs[i][1]),rad=z>=12?1:0;for(let a=-rad;a<=rad;a++)for(let b=-rad;b<=rad;b++)zs.add(z+'/'+(x+a)+'/'+(y+b));}if(set.size+zs.size>3000)break;zs.forEach(k=>set.add(k));}this.prefetch([...set]);}
+  async prefetch(keys){const c=await caches.open('arah-tiles-v1');let done=0;const total=keys.length,q=[...keys];this.setState({off:{run:true,done:0,total}});const w=async()=>{while(q.length){const k=q.shift().split('/'),u=this.tileUrl(k[0],k[1],k[2]);try{if(!(await c.match(u))){const r=await fetch(u);if(r.ok)await c.put(u,r);}}catch(e){}done++;if(done%15===0)this.setState({off:{run:true,done,total}});}};await Promise.all(Array.from({length:6},w));this.setState({off:{run:false,done,total}});this.measure();this.toast('Peta luar talian siap · Offline map ready');}
+  async clearOff(){try{await caches.delete('arah-tiles-v1');}catch(e){}this.measure();this.toast('Offline cache cleared');}
+  urbanShare(cs){const st=Math.max(1,Math.floor(cs.length/60));let n=0,t=0;for(let i=0;i<cs.length;i+=st){t++;if(CITYR.some(c=>hav(cs[i],[c[0],c[1]])<c[2]))n++;}return t?n/t:0;}
+  congestion(d){const P=new Intl.DateTimeFormat('en-GB',{timeZone:'Asia/Kuala_Lumpur',hour:'numeric',minute:'numeric',weekday:'short',hour12:false}).formatToParts(d),g=k=>(P.find(x=>x.type===k)||{}).value,h=(+g('hour')%24)+(+g('minute'))/60,wd=g('weekday');if(wd==='Sat'||wd==='Sun')return h>=10&&h<21?1.25:h>=21||h<6?.97:1.05;let f=h>=7&&h<9.5?1.5:h>=16.5&&h<20?1.6:h>=12&&h<14?1.22:h>=9.5&&h<16.5?1.15:h>=20&&h<22?1.1:h>=22||h<5.5?.96:1.1;if(wd==='Fri'&&h>=12.3&&h<14.5)f=Math.max(f,1.3);return f;}
+  rainAt(d){const w=this.wx;if(!w)return 0;const k=d.toLocaleString('sv-SE',{timeZone:'Asia/Kuala_Lumpur'}).slice(0,13).replace(' ','T')+':00',i=w.time.indexOf(k);return i<0?0:(w.precipitation[i]||0);}
+  predFactor(r,off){const d=new Date(Date.now()+off*60e3),cong=this.congestion(d),rain=this.rainAt(d),f=1+(cong-1)*(.3+.7*(r.urban||0)),rf=rain>7?1.25:rain>2.5?1.15:rain>.3?1.06:1;return{f:f*rf,cong,rain};}
+  fetchWx(r){if(!r)return;const cs=r.geometry.coordinates,m=cs[Math.floor(cs.length/2)];fetch('https://api.open-meteo.com/v1/forecast?latitude='+m[1].toFixed(3)+'&longitude='+m[0].toFixed(3)+'&hourly=precipitation&forecast_days=2&timezone=Asia%2FKuala_Lumpur').then(x=>x.json()).then(j=>{this.wx=j.hourly;this.forceUpdate();}).catch(()=>{});}
+  savePrefs(){try{localStorage.setItem('arah.prefs.v1',JSON.stringify({avoidTolls:this.state.avoidTolls,avoidHw:this.state.avoidHw,mode:this.state.mode}));}catch(e){}}
+  saveRoute(){const r=this.state.routes[0],s=this.state;if(!r)return;try{localStorage.setItem('arah.saved.v1',JSON.stringify({origin:s.origin,dest:s.dest,mode:s.mode,route:{geometry:r.geometry,duration:r.duration,distance:r.distance,legs:[{steps:r.legs[0].steps.map(t=>({name:t.name,ref:t.ref,distance:t.distance,duration:t.duration,maneuver:t.maneuver,intersections:(t.intersections||[]).slice(0,1).map(i=>({lanes:i.lanes}))}))}]}}));this.setState({saved:true});}catch(e){}}
+  loadSaved(){let v=null;try{v=JSON.parse(localStorage.getItem('arah.saved.v1'));}catch(e){}if(!v)return;const r={...v.route,...this.toll(v.route,v.mode),reports:this.countReports(v.route),via:this.via(v.route),urban:this.urbanShare(v.route.geometry.coordinates)};this.setState({origin:v.origin,dest:v.dest,mode:v.mode,routes:[r],sel:0,tab:'route',panelOpen:true,busy:false},()=>{this.pinOrigin(v.origin.c);this.pinDest(v.dest.c);this.drawRoutes();this.fit();this.toast('Laluan tersimpan dimuatkan');});}
+  startSensors(){clearInterval(this._dr);this._dr=setInterval(()=>{const n=this.nav;if(!this.state.navigating||!n.live)return;if(Date.now()-n.lastFix>3500){n.dr=true;const v=this.imuStill?0:(n.lastV||8);n.speed=v*3.6;n.prog=Math.min(n.total,n.prog+v*.5);this.update();}},500);if(!this._mot){this._mot=1;const add=()=>window.addEventListener('devicemotion',e=>{const a=e.accelerationIncludingGravity;if(!a)return;const m=Math.hypot(a.x||0,a.y||0,a.z||0),w=this._mw=this._mw||[];w.push(m);if(w.length>50)w.shift();if(w.length>=30){const mu=w.reduce((s,x)=>s+x,0)/w.length;this.imuStill=w.reduce((s,x)=>s+(x-mu)**2,0)/w.length<.015;}});if(window.DeviceMotionEvent&&typeof DeviceMotionEvent.requestPermission==='function')DeviceMotionEvent.requestPermission().then(r=>r==='granted'&&add()).catch(()=>{});else add();}}
+  // map views
+  applyView(v,keepAuto){const m=this.map;if(!m||!m.isStyleLoaded&&!this.state.ready)return;const P=themePaint(v);
+    Object.entries(P).forEach(([id,props])=>{if(!m.getLayer(id))return;Object.entries(props).forEach(([k,val])=>{try{m.setPaintProperty(id,k,val);}catch(e){}});});
+    const sat=v==='satellite';m.setLayoutProperty('sat','visibility',sat?'visible':'none');['landcover','park','landuse','hillshade','water','water-edge','waterway'].forEach(id=>m.getLayer(id)&&m.setLayoutProperty(id,'visibility',sat?'none':'visible'));
+    this.routeTheme(v);m.setSky&&m.setSky(SKY[v==='terrain'?'day':v]);
+    const prev=this.state.view;let terrain=this.state.terrain;if(v==='terrain')terrain=true;else if(prev==='terrain')terrain=false;
+    if(terrain!==this.state.terrain){m.setTerrain(terrain?{source:'dem3d',exaggeration:1.4}:null);m.setFilter('landmark-3d',terrain?['!=',['get','lm'],'kinabalu']:null);if(terrain&&m.getPitch()<45)m.easeTo({pitch:65,duration:900});}
+    const autoView=keepAuto?this.state.autoView:false;this.setState({view:v,terrain,autoView});try{localStorage.setItem('arah.view.v2',JSON.stringify({view:v,auto:autoView}));}catch(e){}}
+  applyAuto(){const d=new Date(),h=d.getHours()+d.getMinutes()/60;this.applyView(h>=7.1&&h<19.3?'day':'night',true);clearInterval(this._av);this._av=setInterval(()=>this.state.autoView&&this.applyAuto(),5*60e3);}
+  // reports
+  loadReports(){let r=null;try{r=JSON.parse(localStorage.getItem('arah.reports.v1'));}catch(e){}if(!r){r=SEED();}const n=Date.now();this.reports=r.filter(x=>RT[x.type]&&(!RT[x.type].ttl||n-x.ts<RT[x.type].ttl*3600e3));if(!localStorage.getItem('arah.seed2')){SEED2().forEach(s=>this.reports.push(s));try{localStorage.setItem('arah.seed2','1');}catch(e){}}this.saveReports();}
+  saveReports(){try{localStorage.setItem('arah.reports.v1',JSON.stringify(this.reports));}catch(e){}}
+  renderReports(){const gl=window.maplibregl;(this.rMarkers||[]).forEach(m=>m.remove());this.rMarkers=this.reports.map(r=>{const t=RT[r.type];const el=document.createElement('div');el.style.cssText=`width:34px;height:34px;border-radius:50%;display:grid;place-items:center;background:#141729;border:1.5px solid ${t.color};box-shadow:0 0 12px ${t.color}99;color:${t.color};font-size:18px;cursor:pointer`;el.innerHTML=`<i class="ph-fill ${t.icon}"></i>`;const pop=new gl.Popup({offset:22,closeButton:false}).setDOMContent(this.reportPopup(r));return new gl.Marker({element:el}).setLngLat(r.c).setPopup(pop).addTo(this.map);});}
+  reportPopup(r){const t=RT[r.type],d=document.createElement('div'),mins=Math.round((Date.now()-r.ts)/60e3);const age=mins<60?`${mins} min ago`:mins<1440?`${Math.round(mins/60)} h ago`:`${Math.round(mins/1440)} d ago`;
+    d.innerHTML=`<div style="font-family:'Barlow Condensed';font-weight:800;font-style:italic;text-transform:uppercase;font-size:20px;line-height:1">${t.bm}</div><div style="font-size:12px;color:#a2a7c2;margin:2px 0 8px">${t.en} · ${age}${r.demo?' · sample':''}</div>`;
+    const row=document.createElement('div');row.style.cssText='display:flex;gap:6px';const mk=(lbl,fn,col)=>{const b=document.createElement('button');b.textContent=lbl;b.style.cssText=`font:600 13px 'Barlow Condensed';text-transform:uppercase;letter-spacing:.06em;padding:8px 10px;border-radius:8px;background:transparent;color:#eef0fa;border:1px solid ${col};cursor:pointer`;b.onclick=fn;row.appendChild(b);};
+    mk('Masih ada',()=>{r.ts=Date.now();this.saveReports();this.renderReports();this.toast('Thanks — report confirmed');},'#a865f5');
+    mk('Dah tiada',()=>{this.reports=this.reports.filter(x=>x!==r);this.saveReports();this.renderReports();this.toast('Report cleared');},'#474b61');d.appendChild(row);return d;}
+  addReport(type){const c=this.nav&&this.state.navigating?this.posAt(this.nav.prog):(this.userLoc||(()=>{const m=this.map.getCenter();return[m.lng,m.lat];})());this.reports.push({id:'r'+Date.now(),type,c,ts:Date.now()});this.saveReports();this.renderReports();this.setState({reportOpen:false});this.toast(`${RT[type].bm} reported — terima kasih!`);if(this.state.routes.length)this.setState({routes:this.state.routes.map(r=>({...r,reports:this.countReports(r)}))});}
+  countReports(r){const cs=r.geometry.coordinates,st=Math.max(1,Math.floor(cs.length/300));return this.reports.filter(x=>x.type!=='shelter'&&cs.some((p,i)=>i%st===0&&hav(p,x.c)<150)).length;}
+  // search
+  onQuery(v){this.setState({query:v,showResults:true});clearTimeout(this._q);if(v.trim().length<2){this.setState({results:[]});return;}this._q=setTimeout(()=>this.search(v.trim()),350);}
+  async search(q){const lq=q.toLowerCase();const local=[...LANDMARKS.filter(l=>l.name.toLowerCase().includes(lq)||l.city.toLowerCase().includes(lq)).map(l=>({title:l.name,sub:`${l.city} · 3D landmark`,icon:'ph ph-cube',c:l.c,lm:l.id})),...CITIES.filter(c=>c.name.toLowerCase().includes(lq)).map(c=>({title:c.name,sub:'City',icon:'ph ph-buildings',c:c.c,city:c}))];
+    this.setState({results:local});const m=this.map.getCenter();
+    try{const r=await fetch(`https://photon.komoot.io/api/?q=${encodeURIComponent(q)}&limit=7&lat=${m.lat}&lon=${m.lng}&bbox=99.5,0.8,119.5,7.5`);const j=await r.json();if(this.state.query.trim()!==q)return;
+      const rem=(j.features||[]).map(f=>{const p=f.properties;return{title:p.name||[p.housenumber,p.street].filter(Boolean).join(' '),sub:[p.street,p.district||p.city,p.state].filter(Boolean).join(', '),icon:'ph ph-map-pin',c:f.geometry.coordinates,kind:(p.osm_value||'place').replace(/_/g,' ')};}).filter(x=>x.title);
+      this.setState({results:[...local,...rem].slice(0,9)});}catch(e){console.warn('search',e);}}
+  pick(r){this.setState({query:r.title,showResults:false,results:[]});if(r.lm)return this.openLandmark(LANDMARKS.find(l=>l.id===r.lm));if(r.city)return this.flyCity(r.city);this.setPlace({name:r.title,sub:r.sub,kind:r.kind||'Place',c:r.c},true);}
+  setPlace(p,fly){this.preCenter=this.map.getCenter();this.setState({place:p,panelOpen:true,tab:this.state.tab==='route'?'explore':this.state.tab});this.pinDest(p.c);if(fly)this.map.flyTo({center:p.c,zoom:16.2,pitch:60,duration:2200,essential:true});}
+  pinDest(c){const gl=window.maplibregl;if(!this.destM){const el=document.createElement('div');el.style.cssText='width:26px;height:26px;cursor:grab';el.innerHTML='<div style="width:22px;height:22px;margin:2px;border-radius:50% 50% 50% 0;transform:rotate(-45deg);background:#ec4899;border:2px solid #eef0fa;box-shadow:0 0 14px #ec4899"></div>';this.destM=new gl.Marker({element:el,anchor:'bottom',draggable:true});this.destM.on('dragend',()=>{const ll=this.destM.getLngLat();this.setEndpoint('to',{name:`Pin · ${ll.lat.toFixed(4)}, ${ll.lng.toFixed(4)}`,c:[ll.lng,ll.lat]},true);});}this.destM.setLngLat(c).addTo(this.map);}
+  pinOrigin(c){const gl=window.maplibregl;if(!this.originM){const el=document.createElement('div');el.style.cssText='width:22px;height:22px;border-radius:50%;background:#141729;border:3px solid #2fd0ec;box-shadow:0 0 14px #2fd0ec;cursor:grab';this.originM=new gl.Marker({element:el,draggable:true});this.originM.on('dragend',()=>{const ll=this.originM.getLngLat();this.setEndpoint('from',{name:`Pin · ${ll.lat.toFixed(4)}, ${ll.lng.toFixed(4)}`,c:[ll.lng,ll.lat]},true);});}this.originM.setLngLat(c).addTo(this.map);}
+  setEndpoint(which,p,noFly){const k=which==='from'?'origin':'dest';this.setState({[k]:p,editing:null,epQuery:'',epResults:[],tab:'route',panelOpen:true},async()=>{if(which==='from')this.pinOrigin(p.c);else this.pinDest(p.c);
+      if(this.state.dest&&!this.state.origin){const u=this.userLoc||await this.getLoc();if(u){this.setState({origin:{name:'Lokasi saya · My location',c:u}},()=>{this.pinOrigin(u);this.route();});return;}}
+      if(this.state.origin&&this.state.dest)this.route();else if(!noFly)this.map.flyTo({center:p.c,zoom:15.5,duration:1400});});}
+  epQuery(v){this.setState({epQuery:v});clearTimeout(this._eq);if(v.trim().length<2)return this.setState({epResults:[]});this._eq=setTimeout(()=>this.epSearch(v.trim()),350);}
+  async epSearch(q){const lq=q.toLowerCase();const local=[...LANDMARKS.filter(l=>l.name.toLowerCase().includes(lq)||l.city.toLowerCase().includes(lq)).map(l=>({title:l.name,sub:l.city,icon:'ph ph-cube',c:l.c})),...CITIES.filter(c=>c.name.toLowerCase().includes(lq)).map(c=>({title:c.name,sub:'City',icon:'ph ph-buildings',c:c.c}))];this.setState({epResults:local});const m=this.map.getCenter();
+    try{const r=await fetch(`https://photon.komoot.io/api/?q=${encodeURIComponent(q)}&limit=6&lat=${m.lat}&lon=${m.lng}&bbox=99.5,0.8,119.5,7.5`);const j=await r.json();if(this.state.epQuery.trim()!==q)return;
+      const rem=(j.features||[]).map(f=>{const p=f.properties;return{title:p.name||[p.housenumber,p.street].filter(Boolean).join(' '),sub:[p.street,p.district||p.city,p.state].filter(Boolean).join(', '),icon:'ph ph-map-pin',c:f.geometry.coordinates};}).filter(x=>x.title);this.setState({epResults:[...local,...rem].slice(0,7)});}catch(e){}}
+  playGuide(id){const g=GUIDE[id];if(!g||!window.speechSynthesis)return;this.speak(g[this.state.lang]||g.en,true,()=>this.setState({guidePlaying:false}));this.setState({guidePlaying:true});}
+  openLandmark(l){this.setPlace({name:l.name,sub:`${l.city} · ${l.h}`,kind:'Ikon 3D',info:l.info,lm:l.id,c:l.c},false);this.playGuide(l.id);this.map.flyTo({center:l.c,zoom:l.v.z,pitch:l.v.p,bearing:l.v.b,duration:2800,essential:true});this.map.once('moveend',()=>{if(!this.state.navigating)this.map.easeTo({bearing:this.map.getBearing()+50,duration:18000,easing:t=>t});});}
+  flyCity(c){this.map&&this.map.flyTo({center:c.c,zoom:c.z,pitch:62,bearing:c.b||-20,duration:2600,essential:true});}
+  // location
+  getLoc(){return new Promise(res=>{if(!navigator.geolocation)return res(null);navigator.geolocation.getCurrentPosition(p=>{this.userLoc=[p.coords.longitude,p.coords.latitude];this.pinUser(this.userLoc);res(this.userLoc);},()=>res(null),{enableHighAccuracy:true,timeout:7000,maximumAge:30000});});}
+  pinUser(c){const gl=window.maplibregl;if(!this.userM){const el=document.createElement('div');el.style.cssText='position:relative;width:20px;height:20px';el.innerHTML='<div style="position:absolute;inset:0;border-radius:50%;background:#2fd0ec55;animation:arahPulse 1.8s ease-out infinite"></div><div style="position:absolute;inset:3px;border-radius:50%;background:#2fd0ec;border:2px solid #eef0fa;box-shadow:0 0 12px #2fd0ec"></div>';this.userM=new gl.Marker({element:el});}this.userM.setLngLat(c).addTo(this.map);}
+  async locate(){const p=await this.getLoc();if(!p)return this.toast('Location unavailable — allow location access');if(hav(p,[109,4])>2000e3)this.toast('You appear to be outside Malaysia');this.map.flyTo({center:p,zoom:16,pitch:60,duration:1800});}
+  // routing
+  curRoute(){return this.state.routes[this.state.sel]||null;}
+  async directions(){const p=this.state.place;if(!p)return;let origin=this.state.origin;if(!origin){const u=this.userLoc||await this.getLoc();if(u)origin={name:'Lokasi saya · My location',c:u,auto:true};else{const m=this.preCenter||this.map.getCenter();origin={name:'Map centre (no GPS)',c:[m.lng,m.lat],auto:true};}}
+    this.setState({dest:p,origin,tab:'route',panelOpen:true},()=>{this.pinOrigin(origin.c);this.route();});}
+  async route(){const{origin,dest,mode,avoidTolls,avoidHw}=this.state;if(!origin||!dest)return;this.setState({busy:true,routes:[]});const a=`${origin.c[0]},${origin.c[1]};${dest.c[0]},${dest.c[1]}`,qs='overview=full&geometries=geojson&steps=true&alternatives=true';
+    const urls=mode==='walk'?[`https://routing.openstreetmap.de/routed-foot/route/v1/foot/${a}?${qs}`]:[...((avoidTolls||avoidHw)&&mode!=='walk'?[`https://router.project-osrm.org/route/v1/driving/${a}?${qs}&exclude=${[avoidTolls&&'toll',avoidHw&&'motorway'].filter(Boolean).join(',')}`]:[]),`https://router.project-osrm.org/route/v1/driving/${a}?${qs}`,`https://routing.openstreetmap.de/routed-car/route/v1/driving/${a}?${qs}`];
+    let data=null;for(const u of urls){try{const r=await fetch(u);const j=await r.json();if(j.code==='Ok'&&j.routes&&j.routes.length){data=j;break;}}catch(e){}}
+    if(!data){this.setState({busy:false});return this.toast(navigator.onLine?'No route found — try another place':'Offline — routing needs internet. Use your saved route.');}
+    const routes=data.routes.slice(0,3).map(r=>({...r,duration:r.duration*({car:1,moto:.88,truck:1.25,bus:1.15,walk:1}[mode]||1),...this.toll(r,mode),reports:this.countReports(r),via:this.via(r),urban:this.urbanShare(r.geometry.coordinates)}));
+    this.setState({routes,sel:0,busy:false},()=>{this.drawRoutes();this.fit();this.saveRoute();this.fetchWx(routes[0]);});}
+  toll(r,mode){if(mode==='moto')return{toll:0,tolls:[],tollTxt:'Toll-free (motorcycle)'};if(mode==='walk')return{toll:0,tolls:[],tollTxt:'No toll'};const tm={car:1,truck:2,bus:.6}[mode]||1;const g={};r.legs[0].steps.forEach(s=>{const m=/\bE\d+[A-Z]?\b/.exec(s.ref||'');if(!m&&!/lebuhraya|expressway/i.test(s.name||''))return;const k=m?m[0]:(s.name||'Toll road');const o=g[k]||(g[k]={ref:k,km:0});o.km+=s.distance/1000;});const tolls=Object.values(g).filter(o=>o.km>.5).map(o=>({...o,rm:o.km*tm*(URB.includes(o.ref)?.22:.11)}));const t=tolls.reduce((s,o)=>s+o.rm,0);return{toll:t,tolls,tollTxt:t>=.5?`Toll ~RM ${t.toFixed(2)} · ${{car:'Class 1',truck:'Class 3',bus:'Class 5'}[mode]}`:'No toll'};}
+  via(r){const c={};r.legs[0].steps.forEach(s=>{const k=s.ref||s.name;if(k)c[k]=(c[k]||0)+s.distance;});const top=Object.entries(c).sort((a,b)=>b[1]-a[1])[0];return top?'via '+top[0].split(';')[0]:'Local roads';}
+  drawRoutes(){const rs=this.state.routes,s=this.state.sel;const feat=r=>({type:'Feature',properties:{},geometry:r.geometry});this.map.getSource('route').setData(rs[s]?feat(rs[s]):EMPTY);this.map.getSource('routeAlt').setData({type:'FeatureCollection',features:rs.filter((_,i)=>i!==s).map(feat)});}
+  fit(){const r=this.curRoute();if(!r)return;const b=new window.maplibregl.LngLatBounds();r.geometry.coordinates.forEach(c=>b.extend(c));const w=window.innerWidth,h=window.innerHeight,narrow=w<760;this.map.fitBounds(b,{padding:narrow?{top:80,bottom:Math.min(h*.58,640)+20,left:30,right:70}:{top:90,bottom:60,left:450,right:80},pitch:45,bearing:0,duration:1600,maxZoom:16});}
+  // navigation
+  posAt(d){const n=this.nav,cum=n.cum,cs=n.coords;if(d<=0)return cs[0];if(d>=n.total)return cs[cs.length-1];let lo=0,hi=cum.length-1;while(hi-lo>1){const m=(lo+hi)>>1;if(cum[m]<=d)lo=m;else hi=m;}const t=(d-cum[lo])/((cum[hi]-cum[lo])||1);return[cs[lo][0]+(cs[hi][0]-cs[lo][0])*t,cs[lo][1]+(cs[hi][1]-cs[lo][1])*t];}
+  startNav(live){const r=this.curRoute();if(!r)return;if(live&&!navigator.geolocation){this.toast('GPS unavailable — starting preview');live=false;}
+    const cs=r.geometry.coordinates,cum=[0];for(let i=1;i<cs.length;i++)cum.push(cum[i-1]+hav(cs[i-1],cs[i]));const steps=r.legs[0].steps,starts=[];let acc=0;steps.forEach(s=>{starts.push(acc);acc+=s.distance;});const k=cum[cum.length-1]/(acc||1);
+    this.nav={coords:cs,cum,total:cum[cum.length-1],steps,starts:starts.map(v=>v*k),prog:0,live,bearing:brg(cs[0],cs[Math.min(3,cs.length-1)]),stepIdx:-1,spoke:false,last:performance.now(),dur:r.duration*this.predFactor(r,0).f,speed:0,lastUi:0,lastFix:Date.now(),lastV:8,dr:false,acc:0};
+    const gl=window.maplibregl;if(!this.puck){const el=document.createElement('div');el.style.cssText='width:30px;height:36px;filter:drop-shadow(0 0 10px #2fd0ec)';el.innerHTML='<div style="width:100%;height:100%;clip-path:polygon(50% 0,100% 100%,50% 76%,0 100%);background:linear-gradient(180deg,#2fd0ec,#a865f5)"></div>';this.puck=new gl.Marker({element:el,rotationAlignment:'map',pitchAlignment:'map'});}
+    this._bo=this.map.getPaintProperty('building-3d','fill-extrusion-opacity');this.map.setPaintProperty('building-3d','fill-extrusion-opacity',.4);this.puck.setLngLat(cs[0]).addTo(this.map);this.map.stop();this.map.setPadding({top:window.innerHeight*.32,bottom:90,left:0,right:0});this.setState({navigating:true,showResults:false});
+    if(live){this.watch=navigator.geolocation.watchPosition(p=>this.onGps(p),()=>{this.toast('GPS lost — switching to preview');this.nav.live=false;this.loop();},{enableHighAccuracy:true,maximumAge:1000,timeout:15000});this.update(true);this.startSensors();}else this.loop();}
+  loop(){cancelAnimationFrame(this.raf);this.nav.last=performance.now();const tick=now=>{const n=this.nav;if(!this.state.navigating||n.live)return;const dt=Math.min(.1,(now-n.last)/1000);n.last=now;const st=n.steps[Math.max(0,n.stepIdx)];const v=st&&st.duration>0?st.distance/st.duration:12;n.speed=v*3.6;n.prog+=v*6*dt;this.update();this.raf=requestAnimationFrame(tick);};this.raf=requestAnimationFrame(tick);}
+  onGps(pos){const n=this.nav,p=[pos.coords.longitude,pos.coords.latitude];this.userLoc=p;let best=1e12,bi=0;const lo=0;for(let i=lo;i<n.coords.length;i++){const d=hav(p,n.coords[i]);if(d<best){best=d;bi=i;}}
+    n.speed=pos.coords.speed!=null?pos.coords.speed*3.6:n.speed;if(best>80&&Date.now()-(this.lastRe||0)>15000){this.lastRe=Date.now();this.toast('Mengira semula laluan…');this.setState({origin:{name:'Lokasi saya · My location',c:p}},async()=>{this.stopNav(true);await this.route();this.startNav(true);});return;}if(pos.coords.accuracy>120)return;n.lastFix=Date.now();n.acc=Math.round(pos.coords.accuracy||0);if(pos.coords.speed!=null&&pos.coords.speed>=0)n.lastV=pos.coords.speed;n.prog=n.dr?n.cum[bi]:Math.max(n.prog,n.cum[bi]);n.dr=false;this.update(true);}
+  update(force){const n=this.nav,p=this.posAt(n.prog),ah=this.posAt(n.prog+30);const tb=brg(p,ah);let d=((tb-n.bearing+540)%360)-180;n.bearing+=d*(n.live?.5:.08);this.puck.setLngLat(p).setRotation(n.bearing);
+    this.map.jumpTo({center:p,bearing:n.bearing,pitch:62,zoom:this.state.mode==='walk'?18:17.2});
+    let i=0;while(i+1<n.starts.length&&n.starts[i+1]<=n.prog)i++;const next=n.steps[i+1],toNext=next?n.starts[i+1]-n.prog:n.total-n.prog;
+    if(i!==n.stepIdx){n.stepIdx=i;n.spoke=false;if(next)this.speak(instr(next,this.state.lang));}
+    if(next&&!n.spoke&&toNext<160&&n.steps[i].distance>300){n.spoke=true;this.speak(LX[this.state.lang].in150+instr(next,this.state.lang));}
+    this.checkAhead(p,n);const now=performance.now();if(force||now-n.lastUi>220){n.lastUi=now;const rem=(n.total-n.prog)/n.total*n.dur;const eta=new Date(Date.now()+rem*1000).toLocaleTimeString('en-MY',{hour:'2-digit',minute:'2-digit'});const after=n.steps[i+2];
+      this.setState({nav:{icon:'ph-fill '+stepIcon(next||n.steps[i]),text:next?instr(next,this.state.lang):instr(n.steps[i],this.state.lang),dist:fmtDist(Math.max(0,toNext)),then:after?LX[this.state.lang].then+instr(after,this.state.lang):'',eta:LX[this.state.lang].arrive+eta,remain:`${fmtDur(rem)} · ${fmtDist(n.total-n.prog)}`,speed:Math.round(n.speed||0),mode:n.live?(n.dr?'DEAD RECKONING · IMU':'LIVE GPS ±'+(n.acc||0)+' m'):'PREVIEW · 6× SPEED',lanes:(next&&next.intersections&&next.intersections[0]&&next.intersections[0].lanes&&toNext<700)?next.intersections[0].lanes.map(l=>({icon:'ph-fill '+(LANEI[(l.indications&&l.indications[0])||'none']||'ph-arrow-up'),on:!!l.valid})):[]}});}
+    if(n.prog>=n.total-5){this.speak(LX[this.state.lang].arrived);this.toast('Tiba di destinasi!');cancelAnimationFrame(this.raf);setTimeout(()=>this.state.navigating&&this.stopNav(),1500);n.prog=n.total;}}
+  pickVoice(L){const ss=window.speechSynthesis;if(!ss)return null;this._vc=this._vc||{};if(this._vc[L.speech])return this._vc[L.speech];
+    const vs=ss.getVoices();if(!vs.length){if(!this._vw){this._vw=1;ss.addEventListener&&ss.addEventListener('voiceschanged',()=>{this._vc={};});}return null;}
+    const norm=s=>(s||'').toLowerCase().replace('_','-'),want=norm(L.speech),pre=L.pre;
+    const score=v=>{const n=(v.name||'').toLowerCase(),l=norm(v.lang);let s=0;if(l===want)s+=40;else if(l.startsWith(pre))s+=25;else return -1;
+      if(/natural|neural|wavenet|premium|enhanced|siri/.test(n))s+=30;if(/online/.test(n))s+=18;if(/google/.test(n))s+=14;if(/microsoft/.test(n)&&!/online|natural/.test(n))s-=4;if(/compact|espeak|robot/.test(n))s-=25;if(!v.localService)s+=6;
+      if(pre==='en'&&/en-(gb|au|sg|in|my)/.test(l))s+=4;if(pre==='zh'&&/zh-(cn|sg)/.test(l))s+=4;return s;};
+    const best=vs.map(v=>[score(v),v]).filter(x=>x[0]>=0).sort((a,b)=>b[0]-a[0])[0];return this._vc[L.speech]=best?best[1]:null;}
+  stopSpeech(keepTok){if(!keepTok)this._spk=(this._spk||0)+1;if(this._aud){try{this._aud.pause();}catch(e){}}clearInterval(this._ka);if(window.speechSynthesis)window.speechSynthesis.cancel();}
+  unlockAudio(){if(this._aud)return;this._aud=new Audio();this._aud.preload='auto';const u=()=>{document.removeEventListener('pointerdown',u,true);try{this._aud.src='data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQAAAAA=';const pr=this._aud.play();pr&&pr.catch(()=>{});}catch(e){}};document.addEventListener('pointerdown',u,true);}
+  async cloudSpeak(ep,t,onEnd){const L=LX[this.state.lang]||LX.en,key=L.speech+'|'+t;this.stopSpeech();const tok=this._spk;this._tc=this._tc||new Map();let url=this._tc.get(key);
+    if(!url){const ctl=new AbortController(),to=setTimeout(()=>ctl.abort(),9000);const r=await fetch(ep,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({text:t,lang:L.speech}),signal:ctl.signal});clearTimeout(to);
+      if(!r.ok||!/audio/.test(r.headers.get('content-type')||''))throw new Error('tts '+r.status);url=URL.createObjectURL(await r.blob());this._tc.set(key,url);}
+    if(this._spk!==tok)return;this.unlockAudio();const a=this._aud;a.onended=()=>{if(this._spk===tok&&onEnd)onEnd();};a.onerror=null;a.src=url;await a.play();}
+  speak(t,force,onEnd){if((!this.state.voice&&!force)||!t)return;const ep=this.props.ttsEndpoint??'/api/tts',deviceOnly=this.state.lang==='zh'||this.state.lang==='ta';
+    if(ep&&!this._ttsDown&&!deviceOnly){this.cloudSpeak(ep,t,onEnd).catch(e=>{if(e&&e.name==='AbortError'&&this._spk)console.warn('tts timeout');this._ttsDown=true;this.webSpeak(t,onEnd);});return;}this.webSpeak(t,onEnd);}
+  webSpeak(t,onEnd){const ss=window.speechSynthesis;if(!ss){onEnd&&onEnd();return;}try{
+    const L=LX[this.state.lang]||LX.en,v=this.pickVoice(L),tok=(this._spk=(this._spk||0)+1);ss.cancel();clearInterval(this._ka);
+    const parts=t.replace(/\s+/g,' ').match(/[^.!?。！？]+[.!?。！？]*\s*/g)||[t];const rate=L.pre==='zh'?1:L.pre==='ta'?.92:.96;
+    const done=()=>{clearInterval(this._ka);onEnd&&onEnd();};
+    parts.map(p=>p.trim()).filter(Boolean).forEach((p,i,arr)=>{const u=new SpeechSynthesisUtterance(p);u.lang=L.speech;if(v)u.voice=v;u.rate=rate;u.pitch=1;u.volume=1;
+      if(i===arr.length-1){u.onend=()=>this._spk===tok&&done();u.onerror=e=>{if(e&&e.error==='interrupted')return;this._spk===tok&&done();};}ss.speak(u);});
+    this._ka=setInterval(()=>{if(!ss.speaking){clearInterval(this._ka);return;}if(!ss.paused){ss.pause();ss.resume();}},10000);
+  }catch(e){onEnd&&onEnd();}}
+  stopNav(silent){cancelAnimationFrame(this.raf);clearInterval(this._dr);if(this.watch!=null){navigator.geolocation.clearWatch(this.watch);this.watch=null;}this.puck&&this.puck.remove();if(this._bo!=null){this.map.setPaintProperty('building-3d','fill-extrusion-opacity',this._bo);this._bo=null;}this.stopSpeech();this.map.setPadding({top:0,bottom:0,left:0,right:0});this.setState({navigating:false});if(silent!==true)setTimeout(()=>this.fit(),50);}
+  // nearby
+  async nearby(kind,around){const r=around?null:this.curRoute();let area;if(around){area=`(around:3500,${around[1]},${around[0]})`;}else if(r){const cs=r.geometry.coordinates,st=Math.max(1,Math.floor(cs.length/70)),pts=[];for(let i=0;i<cs.length;i+=st)pts.push(cs[i][1].toFixed(5)+','+cs[i][0].toFixed(5));const l=cs[cs.length-1];pts.push(l[1].toFixed(5)+','+l[0].toFixed(5));area=`(around:${kind==='rnr'?800:350},${pts.join(',')})`;}
+    else{if(this.map.getZoom()<11.5){this.map.easeTo({zoom:13,duration:800});return this.toast('Zoomed in — tap again to search this area');}const b=this.map.getBounds();area=`(${b.getSouth()},${b.getWest()},${b.getNorth()},${b.getEast()})`;}
+    this.setState({poiKind:kind,poiBusy:true,pois:[]});const q=`[out:json][timeout:25];${NK[kind].q}${area};out center 150;`;
+    try{const res=await fetch('https://overpass-api.de/api/interpreter',{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:'data='+encodeURIComponent(q)});const j=await res.json();const ref=around||this.userLoc||(()=>{const m=this.map.getCenter();return[m.lng,m.lat];})();
+      const pois=(j.elements||[]).map(e=>{const c=e.center?[e.center.lon,e.center.lat]:[e.lon,e.lat];const t=e.tags||{};const d=hav(ref,c);return{name:t.name||t.brand||NK[kind].label,sub:[t.brand&&t.brand!==t.name?t.brand:null,t.opening_hours==='24/7'?'24 jam':null,t['addr:street']||t.operator].filter(Boolean).join(' · ')||NK[kind].label,c,d,distTxt:fmtDist(d),color:NK[kind].color,kind};}).filter(p=>p.c[0]).sort((a,b)=>a.d-b.d);
+      this.map.getSource('pois').setData({type:'FeatureCollection',features:pois.map(p=>({type:'Feature',properties:{name:p.name,sub:p.sub,color:p.color,kind},geometry:{type:'Point',coordinates:p.c}}))});this.setState({pois,poiBusy:false});}
+    catch(e){this.setState({poiBusy:false});this.toast('Nearby search busy — try again shortly');}}
+  renderVals(){const s=this.state,R=this.curRoute(),lang=s.lang;const tc=t=>s.tab===t?'btn btn-primary':'btn btn-secondary';const mc=m=>s.mode===m?'btn btn-primary':'btn btn-secondary';const steps=R?R.legs[0].steps:[];const setMode=m=>()=>this.setState({mode:m},()=>{this.savePrefs();this.route();});const n=s.nav||{};
+    const on=navigator.onLine,mb=this.usage||0,rn=this.state.routes.length>0;
+    return{hwCls:s.avoidHw?'btn btn-primary':'btn btn-secondary',toggleHw:()=>this.setState({avoidHw:!s.avoidHw},()=>{this.savePrefs();this.route();}),
+      departs:[[0,'Sekarang'],[30,'+30 min'],[60,'+1 j'],[120,'+2 j']].map(([v,l])=>({label:l,cls:s.depart===v?'btn btn-primary':'btn btn-secondary',onClick:()=>this.setState({depart:v})})),
+      hasWx:!!this.wx&&rn,wxLine:(()=>{if(!this.wx)return'';const r=this.rainAt(new Date(Date.now()+s.depart*60e3));return r>.3?'Cuaca: hujan '+r.toFixed(1)+' mm/j dijangka · slower roads':'Cuaca: kering · no rain expected';})(),
+      hasSaved:s.saved&&!s.navigating,loadSaved:()=>this.loadSaved(),
+      netCls:on?'tag-accent':'tag-neutral',netTxt:on?'ONLINE':'LUAR TALIAN',offRun:s.off.run,offPct:s.off.total?Math.round(s.off.done/s.off.total*100):0,hasRoute:rn,
+      offInfo:s.off.run?'Memuat turun '+s.off.done+' / '+s.off.total+' jubin…':(on?'':'Tiada internet — ')+'Cache '+mb+' MB. Viewed maps save automatically. Satellite and terrain need internet.',
+      dlArea:()=>this.dlArea(),dlRoute:()=>this.dlRoute(),clearOff:()=>this.clearOff(),
+      navLanes:(n0=>(n0.lanes||[]).map(l=>({icon:l.icon,bg:l.on?'color-mix(in srgb,var(--color-accent-2) 30%,transparent)':'transparent',bd:l.on?'var(--color-accent-2)':'var(--color-divider)',fg:l.on?'var(--color-text)':'var(--color-neutral-500)'})))(s.nav||{}),hasLanes:!!(s.nav&&s.nav.lanes&&s.nav.lanes.length),
+      mapRef:this.mapRef,notReady:!s.ready,showTop:!s.navigating,showPanel:!s.navigating,navigating:s.navigating,
+      query:s.query,hasQuery:!!s.query,onQuery:e=>this.onQuery(e.target.value),onSearchKey:e=>{if(e.key==='Enter'&&s.results.length){e.target.blur();this.pick(s.results[0]);}if(e.key==='Escape')this.setState({showResults:false});},onSearchFocus:()=>this.setState({showResults:true}),clearQuery:()=>this.setState({query:'',results:[],showResults:false}),
+      showResults:s.showResults&&s.results.length>0,results:s.results.map(r=>({...r,onPick:()=>this.pick(r)})),
+      viewLabel:s.is3D?'2D':'3D',toggle3D:()=>{const to3=!s.is3D;this.map.easeTo({pitch:to3?62:0,duration:900});this.setState({is3D:to3});},compassDeg:-s.bearing,resetNorth:()=>this.map.easeTo({bearing:0,duration:700}),
+      terrainCls:s.terrain?'btn btn-primary':'btn btn-secondary',toggleTerrain:()=>{const t=!s.terrain;this.map.setTerrain(t?{source:'dem3d',exaggeration:1.4}:null);this.map.setFilter('landmark-3d',t?['!=',['get','lm'],'kinabalu']:null);this.setState({terrain:t});this.toast(t?'3D terrain on':'3D terrain off');},
+      locate:()=>this.locate(),openReport:()=>this.setState({reportOpen:true}),closeReport:()=>this.setState({reportOpen:false}),stop:e=>e.stopPropagation(),
+      panelOpen:s.panelOpen,togglePanel:()=>this.setState({panelOpen:!s.panelOpen}),panelIcon:s.panelOpen?'ph ph-caret-down':'ph ph-caret-up',
+      tabExplore:tc('explore'),tabRoute:tc('route'),tabNearby:tc('nearby'),goExplore:()=>this.setState({tab:'explore',panelOpen:true}),goRoute:()=>this.setState({tab:'route',panelOpen:true}),goNearby:()=>this.setState({tab:'nearby',panelOpen:true}),
+      isExplore:s.tab==='explore',isRoute:s.tab==='route',isNearby:s.tab==='nearby',
+      showPlace:!!s.place&&s.tab!=='route',place:s.place||{},hasInfo:!!(s.place&&s.place.info),
+      placeInfo:s.place&&s.place.lm&&GUIDE[s.place.lm]?(GUIDE[s.place.lm][lang]||GUIDE[s.place.lm].en):(s.place?s.place.info:''),isGuide:!!(s.place&&s.place.lm),
+      guideIcon:s.guidePlaying?'ph-fill ph-stop':'ph-fill ph-speaker-high',guideLabel:s.guidePlaying?({bm:'Henti',en:'Stop',zh:'停止',ta:'நிறுத்து'}[lang]):({bm:'Dengar panduan',en:'Listen to guide',zh:'收听导览',ta:'வழிகாட்டியைக் கேளுங்கள்'}[lang]),
+      toggleGuide:()=>{if(s.guidePlaying){this.stopSpeech();this.setState({guidePlaying:false});}else this.playGuide(s.place.lm);},
+      guideLang:()=>{const nl=LANGS[(LANGS.indexOf(lang)+1)%LANGS.length];try{localStorage.setItem('arah.lang.v1',nl);}catch(e){}this.setState({lang:nl},()=>this.playGuide(s.place.lm));},placeDirections:()=>this.directions(),
+      placeAttr:()=>{const p=s.place;this.setState({tab:'nearby',poiKind:'attr',panelOpen:true});this.map.flyTo({center:p.c,zoom:14.5,duration:1200});this.nearby('attr',p.c);},placeStartHere:()=>{const p=s.place;this.setState({origin:{name:p.name,c:p.c},tab:'route'},()=>{this.pinOrigin(p.c);this.route();});this.toast('Start point set');},
+      clearPlace:()=>{if(s.guidePlaying)this.stopSpeech();this.setState({place:null,guidePlaying:false});this.destM&&!s.dest&&this.destM.remove();},
+      landmarks:LANDMARKS.map(l=>({name:l.name,city:l.city,h:l.h,onClick:()=>this.openLandmark(l)})),cities:CITIES.map(c=>({name:c.name,onClick:()=>this.flyCity(c)})),
+      fromLabel:s.origin?s.origin.name:(this.userLoc?'Lokasi saya · My location':'Lokasi saya · My location'),toLabel:s.dest?s.dest.name:'Pilih destinasi · Choose destination',noDest:!s.dest,
+      swap:()=>{if(!s.dest&&!s.origin)return;this.setState({origin:s.dest,dest:s.origin},()=>{const o=this.state.origin,d=this.state.dest;if(o)this.pinOrigin(o.c);else this.originM&&this.originM.remove();if(d)this.pinDest(d.c);else this.destM&&this.destM.remove();this.route();});},
+      editing:!!s.editing,fromBorder:s.editing==='from'?'var(--color-accent-2)':'var(--color-divider)',toBorder:s.editing==='to'?'var(--color-neon-magenta)':'var(--color-divider)',
+      fromText:s.editing==='from'?s.epQuery:(s.origin?s.origin.name:''),toText:s.editing==='to'?s.epQuery:(s.dest?s.dest.name:''),
+      editFrom:()=>this.setState({editing:'from',epQuery:'',epResults:[]}),editTo:()=>this.setState({editing:'to',epQuery:'',epResults:[]}),onEpQuery:e=>this.epQuery(e.target.value),
+      epResults:s.epResults.map(r=>({...r,onPick:()=>this.setEndpoint(s.editing||'to',{name:r.title,c:r.c})})),
+      epUseMe:async()=>{const w=s.editing||'from';const u=await this.getLoc();if(!u)return this.toast('Location unavailable — allow location access');this.setEndpoint(w,{name:'Lokasi saya · My location',c:u});},
+      epPickMap:()=>{const w=s.editing||'to';this.setState({picking:w,editing:null});if(window.innerWidth<760)this.setState({panelOpen:false});},
+      epCancel:()=>this.setState({editing:null,picking:null,epQuery:'',epResults:[],panelOpen:true}),
+      picking:!!s.picking,pickText:s.picking==='from'?'Ketik peta untuk titik mula · Tap map for start':'Ketik peta untuk destinasi · Tap map for destination',
+      modeCar:mc('car'),modeMoto:mc('moto'),modeWalk:mc('walk'),modeTruck:mc('truck'),modeBus:mc('bus'),setTruck:setMode('truck'),setBus:setMode('bus'),setCar:setMode('car'),setMoto:setMode('moto'),setWalk:setMode('walk'),
+      tollCls:s.avoidTolls?'btn btn-primary':'btn btn-secondary',toggleToll:()=>this.setState({avoidTolls:!s.avoidTolls},()=>{this.savePrefs();this.route();}),voiceLabel:(LX[lang]||LX.en).label,toggleLang:()=>{const nl=LANGS[(LANGS.indexOf(lang)+1)%LANGS.length];this.setState({lang:nl});try{localStorage.setItem('arah.lang.v1',nl);}catch(e){}if(window.speechSynthesis&&!speechSynthesis.getVoices().some(v=>v.lang.toLowerCase().startsWith(LX[nl].pre)))this.toast(`${LX[nl].label} — install this voice in device settings for spoken guidance`);},
+      busy:s.busy,hasRoutes:s.routes.length>0,tollNote:s.mode==='moto'?'Motorcycles ride toll-free on most expressways. Use Report → rider shelter to find cover from rain.':s.mode==='car'?'Toll is an estimate for Class 1 cars from expressway distance (Touch ’n Go / RFID). Not official rates.':s.mode==='truck'?'Lori: Class 3 toll (about 2× car), 90 km/h limit and slower ETA. Height, weight and lorry-ban hours are not checked.':s.mode==='bus'?'Bas: Class 5 toll (about 0.6× car), slower ETA. Stops and bus-lane rules are not checked.':'',
+      routes:s.routes.map((r,i)=>({time:fmtDur(r.duration*this.predFactor(r,s.depart).f),trend:(()=>{const P=this.predFactor(r,s.depart);return(P.cong>1.3?'Trafik sibuk':P.cong>1.1?'Trafik sederhana':'Trafik lancar')+(P.f>1.04?' · +'+Math.round(r.duration*(P.f-1)/60)+' min':'')+(P.rain>.3?' · '+(P.rain>7?'Hujan lebat':P.rain>2.5?'Hujan':'Gerimis'):'');})(),dist:fmtDist(r.distance),toll:r.tollTxt,hasToll:!!(r.tolls&&r.tolls.length),tollDetail:(r.tolls||[]).map(o=>`${o.ref} · ${Math.round(o.km)} km · RM${o.rm.toFixed(2)}`).join('   '),via:r.via,label:i===0?'Terpantas':'Alternatif '+i,hasReports:r.reports>0,reportsTxt:s.navigating?'':this.reportNames(r,lang),border:i===s.sel?'var(--color-accent)':'var(--color-divider)',bg:i===s.sel?'color-mix(in srgb, var(--color-accent) 10%, transparent)':'transparent',onClick:()=>this.setState({sel:i},()=>this.drawRoutes())})),
+      steps:steps.map(st=>({icon:'ph '+stepIcon(st),text:instr(st,lang),dist:st.distance>0?fmtDist(st.distance):''})),startLive:()=>this.startNav(true),startSim:()=>this.startNav(false),
+      nearbyHint:R?'Sepanjang laluan · Along your route':'Dalam paparan · In this map view',nearKinds:NEAR.map(k=>({label:k.label,icon:'ph '+k.icon,cls:s.poiKind===k.id?'btn btn-primary':'btn btn-secondary',onClick:()=>this.nearby(k.id)})),
+      poiBusy:s.poiBusy,poiEmpty:!!s.poiKind&&!s.poiBusy&&!s.pois.length,pois:s.pois.slice(0,40).map(p=>({...p,onClick:()=>{this.setPlace({name:p.name,sub:p.sub,kind:NK[p.kind].label,c:p.c},true);this.setState({tab:'explore'});}})),
+      navIcon:n.icon||'ph-fill ph-arrow-up',navText:n.text||'',navDist:n.dist||'',navThen:n.then||'',navEta:n.eta||'',navRemain:n.remain||'',navSpeed:n.speed??0,navMode:n.mode||'',
+      toggleVoice:()=>{this.setState({voice:!s.voice});if(s.voice)this.stopSpeech();},voiceIcon:s.voice?'ph ph-speaker-high':'ph ph-speaker-slash',stopNav:()=>this.stopNav(),
+      reportOpen:s.reportOpen,rtypes:RTYPES.map(t=>({label:RTX[lang]?RTX[lang][t.id]:lang==='bm'?t.bm:t.en,sub:lang==='en'?t.bm:t.en,icon:'ph-fill '+t.icon,color:t.color,onClick:()=>this.addReport(t.id)})),
+      hasToast:!!s.toast,toast:s.toast,
+      layersOpen:s.layersOpen,toggleLayers:()=>this.setState({layersOpen:!s.layersOpen}),layersCls:s.layersOpen?'btn btn-primary':'btn btn-secondary',
+      vNight:s.view==='night'?'var(--color-accent)':'var(--color-divider)',vDay:s.view==='day'?'var(--color-accent)':'var(--color-divider)',vSat:s.view==='satellite'?'var(--color-accent)':'var(--color-divider)',vTerrain:s.view==='terrain'?'var(--color-accent)':'var(--color-divider)',
+      setNight:()=>this.applyView('night'),setDay:()=>this.applyView('day'),setSat:()=>this.applyView('satellite'),setTerrainView:()=>this.applyView('terrain'),
+      flagsCls:s.flagsOn?'btn btn-primary':'btn btn-secondary',sightsCls:s.sightsOn?'btn btn-primary':'btn btn-secondary',toggleFlags:()=>this.setState({flagsOn:!s.flagsOn},()=>this.updFlags()),toggleSights:()=>{const v=!s.sightsOn;['sights','sights-label'].forEach(l=>this.map.setLayoutProperty(l,'visibility',v?'visible':'none'));this.setState({sightsOn:v});},autoCls:s.autoView?'btn btn-primary':'btn btn-secondary',toggleAuto:()=>{if(s.autoView){this.setState({autoView:false},()=>this.applyView(this.state.view));}else{this.setState({autoView:true},()=>this.applyAuto());}}};}
+}
+</script>
+</body>
+</html>
