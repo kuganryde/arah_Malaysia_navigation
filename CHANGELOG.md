@@ -4,6 +4,13 @@ Every module has its own version (see `versions.json` and `VERSIONING.md`). Each
 
 ## [Unreleased]
 
+## [0.7.0] - 2026-11-03
+- **keepawake 0.1.0** (new): the screen stays on while ARAH is open and visible. Screen Wake Lock API where available (Android, desktop, Safari 16.4+ incl. installed app) with automatic re-request, silent looping video fallback for older iOS and refused locks, always on during a trip, remembered off switch
+
+- **ci 0.6.0**: keep-awake tests (fake browser: lock, retry, release, video fallback, off switch)
+- **docs 0.7.0**: README: screen stays awake
+- **pwa 0.1.4**: precache covers the keep-awake module and its silent video
+- **app 0.2.4**: head loads assets/keepawake/arah-keepawake.js
 ## [0.6.0] - 2026-11-03
 - **festive 0.1.0** (new): festival themes for 15 Malaysian celebrations (CNY, Ramadan, Raya Aidilfitri/Aidiladha, Muharram, Maulidur Rasul, Deepavali, Thaipusam, Wesak, Kaamatan, Gawai, Merdeka, Malaysia Day, Mid-Autumn, Christmas). Auto by date or manual, palette tokens and glowing icons, lit route with travelling lights, pulsing sights, string-light bunting, floating lanterns/diyas/ketupat/lotus, tap fireworks, daily greeting. Calm during trips and AR, honours reduce-motion
 

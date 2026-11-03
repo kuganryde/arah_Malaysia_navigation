@@ -141,6 +141,10 @@ ARAH dresses up for the festivals Malaysians celebrate: **Chinese New Year, Rama
 
 All graphics are drawn in code (no image files, no network). While you are **driving a trip, or AR is on, the animation stops** and nothing flashes. It also respects your device's *reduce motion* setting. Dates for moon-based festivals can be a day off because Malaysia announces them after moon sighting, which is why the window starts early and you can always pick by hand.
 
+### ☀️ Screen stays awake
+
+While ARAH is open and on screen, the display does not sleep, on every device. It uses the browser's Screen Wake Lock (Android Chrome/Edge/Samsung Internet, desktop, Safari 16.4+ including the installed app) and falls back to a tiny silent video on older iPhones and iPads, which starts on your first tap. It is always on during a trip. Otherwise a short notice offers *Matikan · Turn off*, remembered for next time. Limits: the system still sleeps if you switch apps or lock the phone, and a browser may refuse the lock in battery-saver mode (ARAH keeps retrying).
+
 ### 📴 Offline ready
 
 Map tiles you have viewed and your saved route are cached on the device, so *Luar talian · Offline* still shows your map and route. Fresh routing needs a connection.
