@@ -9,9 +9,11 @@ Email **rydetechwizsolutions@proton.me** with steps to reproduce. Please do not 
 ## What is protected
 
 - **`/api/tts`** (Gemini voice) checks the request origin, rate-limits per IP (`TTS_RATE_PER_MIN`, default 30), validates and caps input (600 characters, allow-listed languages), times out upstream calls after 15 s, caches audio, and logs only structured metadata, never the spoken text.
-- **Headers** (`vercel.json`): HSTS, `nosniff`, `Referrer-Policy`, `X-Frame-Options: DENY`, a restrictive `Permissions-Policy` (geolocation for this origin only) and a Content-Security-Policy in **report-only** mode.
+- **Headers** (`vercel.json`): HSTS, `nosniff`, `Referrer-Policy`, `X-Frame-Options: DENY`, a restrictive `Permissions-Policy` (geolocation and camera for this origin only) and a Content-Security-Policy in **report-only** mode.
 - **Secrets**: `GEMINI_API_KEY` lives only in Vercel's environment settings. `npm run check` fails the build on committed key shapes.
 - **CI**: tests, guard rails and CodeQL run on every pull request; GitHub Actions are pinned to commit SHAs and updated by Dependabot.
+
+- **AR driver assist** (`assets/ar/`): the camera is requested only after an explicit tap and a notice, runs only in a secure context, and is released when AR closes, the trip ends or the page is hidden for good. Frames never leave the device (the page makes no network request carrying image data). The detection model is fetched from this origin and its SHA-256 is verified in the browser before use, so a tampered or swapped model is refused. The AI runtime is vendored (`assets/ar/vendor/`, MIT) rather than loaded from a CDN. Alerts are assistive only.
 
 ## Hardening you can turn on
 

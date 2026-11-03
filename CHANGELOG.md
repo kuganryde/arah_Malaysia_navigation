@@ -4,6 +4,22 @@ Every module has its own version (see `versions.json` and `VERSIONING.md`). Each
 
 ## [Unreleased]
 
+## [0.3.2] - 2026-11-03
+
+- **docs 0.3.1**: README describes the single AR window
+- **ar-vision 0.2.0**: one window: speed, gap, lane and alerts are drawn over the camera picture instead of a second data window
+## [0.3.1] - 2026-11-03
+
+- **ar-vision 0.1.1**: worker builds its script, engine and model URLs from its own location instead of trusting the init message (CodeQL)
+## [0.3.0] - 2026-11-03
+
+- **docs 0.3.0**: README: AR driver assist, privacy and repository notes
+- **ci 0.2.0**: AR core tests, model-hash check, camera permission guard, scripts/ar/webgl_compat.py
+- **privacy 0.2.0**: camera / AR driver assist section: on-device analysis, nothing uploaded or stored
+- **security-headers 0.3.0**: Permissions-Policy allows the camera for this origin only (AR driver assist); SECURITY.md documents the AR model pinning and camera handling
+- **enhancements 0.2.0**: loads the AR module's small UI script (assets/ar/arah-ar.js); nothing else changes
+- **ar-vision 0.1.0** (new): AR driver assist. Camera view and data card while navigating, YOLOX-nano on WebGL (onnxruntime-web, in a Web Worker so the map stays smooth; main-thread fallback) finding vehicles, pedestrians, riders, animals, traffic lights and stop signs; monocular distance, following gap and time-to-collision; GPS speed; lane position, drift and lane-change events; alerts in BM, EN, 中文 and தமிழ். On-device only, opt-in with a safety notice, model SHA-256 pinned.
+
 ## [0.2.2] - 2026-11-03
 
 - **ci 0.1.1**: check.mjs reads each file once (fixes CodeQL file-system-race alerts)

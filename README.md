@@ -71,6 +71,22 @@ Start from one of **nine cities**: Kuala Lumpur, George Town, Melaka, Putrajaya,
 
 Next-step previews read *Kemudian · Then · 然后 · பிறகு*. Landmark and place guides speak in the language you pick, and a **Dengar panduan · Listen to guide** button replays it.
 
+### 🎥 AR driver assist (Beta)
+
+Turn on **AR** (top-left of the map) and one small window appears while you navigate: the live camera view with detection boxes, and all the readings and alerts written over it. The AI (**YOLOX-nano**, running on your phone's **WebGL** in a background worker, so the map stays smooth) works entirely on the device. No video is uploaded, recorded or saved.
+
+| Reads | How |
+| --- | --- |
+| **Hazards** | Cars, buses, trucks, motorcycles, pedestrians, cyclists, animals, traffic lights (red/amber/green) and stop signs |
+| **Distance** | Estimated from apparent size, to the vehicle in your lane |
+| **Following gap** | Seconds behind the lead vehicle (the two-second rule) and time-to-collision from how fast the gap closes |
+| **Speed** | Your speed from GPS, and the lead vehicle's approximate speed |
+| **Lane** | Position in the lane, drift warning and lane-change detection (lane lines found with image processing) |
+
+Alerts appear at the top of the window in Bahasa Malaysia, English, 中文 or தமிழ், with a short beep and vibration for danger. The window can be dragged and enlarged. The camera stops when you close AR, and AR that started with a trip stops when the trip ends.
+
+> **Assistance only.** Estimates come from one phone camera (about ±25%) and need a phone mounted level in a holder with a clear view of the road. Never hold the phone while driving. The model sees common road users, not potholes, debris or flooding; those need a custom-trained model (see `assets/ar/models/MODEL.md`).
+
 ### 📍 Along-the-route search
 
 Eight groups, powered by OpenStreetMap through Overpass:
@@ -126,6 +142,7 @@ Map tiles you have viewed and your saved route are cached on the device, so *Lua
 - **On-device storage.** Preferences, last map view, saved route and reports live in your browser's local storage; map tiles live in the browser cache.
 - **The only text sent to a server of ours** is the sentence to be spoken, to `/api/tts` (600 characters at most).
 - **Location** is requested only for the app itself (`Permissions-Policy: geolocation=(self)`).
+- **Camera** is used only if you turn on AR driver assist; frames are analysed on the device and never leave it (`Permissions-Policy: camera=(self)`).
 
 ## 🏗️ How it works
 
@@ -153,6 +170,7 @@ flowchart LR
 | Search | Photon (geocoding), Overpass (nearby places) |
 | Weather | Open-Meteo forecast |
 | Voice | Gemini TTS function for BM and English; device speech for 中文 and தமிழ் |
+| AR | YOLOX-nano on onnxruntime-web (WebGL), classical lane detection, all on-device |
 | Icons | Phosphor Icons 2.1.1 |
 | Hosting | Vercel (static site plus one serverless function) |
 
@@ -177,6 +195,7 @@ Type: **Barlow Condensed** (headings, 800 italic uppercase), **Ubuntu** (body), 
 .
 ├── index.html        # the self-contained app (site root)
 ├── api/tts.js        # optional Vercel function for the Gemini voice
+├── assets/ar/        # AR driver assist: UI, logic, YOLOX model, WebGL runtime
 ├── source/           # editable Design Component source
 ├── assets/           # logo and README art
 └── vercel.json       # clean URLs + geolocation permissions policy

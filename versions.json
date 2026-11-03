@@ -1,5 +1,5 @@
 {
-  "release": "0.2.2",
+  "release": "0.3.2",
   "modules": {
     "app": {
       "version": "0.2.0",
@@ -29,7 +29,7 @@
       ]
     },
     "enhancements": {
-      "version": "0.1.0",
+      "version": "0.2.0",
       "description": "Wake lock, accessibility labels and reduced motion (assets/arah-enhancements.js)",
       "paths": [
         "assets/arah-enhancements.js"
@@ -45,8 +45,37 @@
         }
       ]
     },
-    "security-headers": {
+    "ar-vision": {
       "version": "0.2.0",
+      "description": "AR driver assist: camera + WebGL YOLOX hazards, distance, speed and lane (assets/ar/)",
+      "paths": [
+        "assets/ar/**"
+      ],
+      "markers": [
+        {
+          "file": "assets/ar/arah-ar.js",
+          "text": "/*! ARAH AR driver assist v{v}"
+        },
+        {
+          "file": "assets/ar/arah-ar.js",
+          "text": "window.__arahAR = '{v}';"
+        },
+        {
+          "file": "assets/ar/ar-core.mjs",
+          "text": "// ar-vision v{v}"
+        },
+        {
+          "file": "assets/ar/ar-engine.mjs",
+          "text": "// ar-vision v{v}"
+        },
+        {
+          "file": "assets/ar/ar-worker.js",
+          "text": "// ar-vision v{v}"
+        }
+      ]
+    },
+    "security-headers": {
+      "version": "0.3.0",
       "description": "HTTP security headers and the security policy document",
       "paths": [
         "vercel.json",
@@ -55,7 +84,7 @@
       "markers": []
     },
     "privacy": {
-      "version": "0.1.0",
+      "version": "0.2.0",
       "description": "Privacy notice page (/privacy)",
       "paths": [
         "privacy.html"
@@ -68,7 +97,7 @@
       ]
     },
     "ci": {
-      "version": "0.1.1",
+      "version": "0.2.0",
       "description": "Tests, guard rails and GitHub Actions",
       "paths": [
         ".github/**",
@@ -78,7 +107,7 @@
       "markers": []
     },
     "docs": {
-      "version": "0.2.1",
+      "version": "0.3.1",
       "description": "README and its animated art",
       "paths": [
         "README.md",

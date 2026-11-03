@@ -2,6 +2,7 @@
 // 1) vercel.json parses and carries the security headers  2) page-weight budget  3) no committed secrets.
 import { readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
+import { createHash } from 'node:crypto';
 
 const errors = [];
 const fail = (m) => errors.push(m);
@@ -14,6 +15,13 @@ for (const k of ['strict-transport-security', 'x-content-type-options', 'referre
 }
 if (!hdrs['content-security-policy'] && !hdrs['content-security-policy-report-only']) fail('vercel.json has no Content-Security-Policy(-Report-Only)');
 if (!/geolocation=\(self\)/.test(hdrs['permissions-policy'] || '')) fail('Permissions-Policy must keep geolocation=(self) (navigation needs it)');
+if (!/camera=\(self\)/.test(hdrs['permissions-policy'] || '')) fail('Permissions-Policy must keep camera=(self) (AR driver assist needs it)');
+
+// 1b. AR model integrity: the file, the hash pinned in the browser code and MODEL.md must all agree.
+const modelSha = createHash('sha256').update(readFileSync('assets/ar/models/yolox_nano.onnx')).digest('hex');
+const pinned = /sha256: '([0-9a-f]{64})'/.exec(readFileSync('assets/ar/arah-ar.js', 'utf8'))?.[1];
+if (pinned !== modelSha) fail(`assets/ar/arah-ar.js pins model ${pinned} but the file is ${modelSha}`);
+if (!readFileSync('assets/ar/models/MODEL.md', 'utf8').includes(modelSha)) fail('assets/ar/models/MODEL.md does not list the shipped model SHA-256');
 
 // 2. Page weight budget: the app ships as one HTML file, so cap it. Lower BUDGET_MB as the bundle is slimmed.
 const BUDGET_MB = Number(process.env.INDEX_BUDGET_MB || 2.5);
