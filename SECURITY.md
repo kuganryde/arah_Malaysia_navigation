@@ -1,0 +1,26 @@
+# Security
+
+ARAH is a beta, non-profit navigation app. It collects no personal data, has no accounts, and keeps location and reports on the device.
+
+## Reporting a vulnerability
+
+Email **rydetechwizsolutions@proton.me** with steps to reproduce. Please do not open a public issue for security problems. We aim to acknowledge reports within 3 working days.
+
+## What is protected
+
+- **`/api/tts`** (Gemini voice) checks the request origin, rate-limits per IP (`TTS_RATE_PER_MIN`, default 30), validates and caps input (600 characters, allow-listed languages), times out upstream calls after 15 s, caches audio, and logs only structured metadata, never the spoken text.
+- **Headers** (`vercel.json`): HSTS, `nosniff`, `Referrer-Policy`, `X-Frame-Options: DENY`, a restrictive `Permissions-Policy` (geolocation for this origin only) and a Content-Security-Policy in **report-only** mode.
+- **Secrets**: `GEMINI_API_KEY` lives only in Vercel's environment settings. `npm run check` fails the build on committed key shapes.
+- **CI**: tests, guard rails and CodeQL run on every pull request; GitHub Actions are pinned to commit SHAs and updated by Dependabot.
+
+## Hardening you can turn on
+
+1. **Enforce the CSP.** Watch the browser console on a preview deploy for `Content-Security-Policy-Report-Only` violations while using every feature (map views, search, nearby, voice, offline). When it is quiet, rename the header to `Content-Security-Policy`. Then work toward removing `'unsafe-inline'` and `'unsafe-eval'` from `script-src`, which needs the single-file bundle replaced by a normal build.
+2. **Shared rate limit.** Set `UPSTASH_REDIS_REST_URL` and `UPSTASH_REDIS_REST_TOKEN` so the limit holds across serverless instances. Without them the limit is per instance (best effort).
+3. **Extra origins.** Set `ALLOWED_ORIGINS` (comma separated) if the app is served from a custom domain.
+4. **Self-host or pin third-party assets.** MapLibre loads from unpkg; pin an exact version and add Subresource Integrity, or serve it from the same origin.
+
+## Known limits
+
+- Origin checks stop casual cross-site use but are not authentication; the rate limit and cache are the cost controls.
+- Public routing, search and place services (OSRM demo, Photon, Overpass) have no SLA.
