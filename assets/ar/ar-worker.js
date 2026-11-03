@@ -1,4 +1,4 @@
-// ar-vision v0.1.1
+// ar-vision v0.2.0
 // Web Worker host for the AR engine. Running inference here keeps the WebGL work and pixel read-backs off the
 // main thread, so the map keeps rendering smoothly and its WebGL context is never shared with the model's.
 /* global ort */

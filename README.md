@@ -73,7 +73,7 @@ Next-step previews read *Kemudian · Then · 然后 · பிறகு*. Landmar
 
 ### 🎥 AR driver assist (Beta)
 
-Turn on **AR** (top-left of the map) and two small windows appear while you navigate: a live camera view with detection boxes, and a data card. The AI (**YOLOX-nano**, running on your phone's **WebGL** in a background worker, so the map stays smooth) works entirely on the device. No video is uploaded, recorded or saved.
+Turn on **AR** (top-left of the map) and one small window appears while you navigate: the live camera view with detection boxes, and all the readings and alerts written over it. The AI (**YOLOX-nano**, running on your phone's **WebGL** in a background worker, so the map stays smooth) works entirely on the device. No video is uploaded, recorded or saved.
 
 | Reads | How |
 | --- | --- |
@@ -83,7 +83,7 @@ Turn on **AR** (top-left of the map) and two small windows appear while you navi
 | **Speed** | Your speed from GPS, and the lead vehicle's approximate speed |
 | **Lane** | Position in the lane, drift warning and lane-change detection (lane lines found with image processing) |
 
-Alerts appear in the data card in Bahasa Malaysia, English, 中文 or தமிழ், with a short beep and vibration for danger. The windows can be dragged and enlarged. The camera stops when you close AR, and AR that started with a trip stops when the trip ends.
+Alerts appear at the top of the window in Bahasa Malaysia, English, 中文 or தமிழ், with a short beep and vibration for danger. The window can be dragged and enlarged. The camera stops when you close AR, and AR that started with a trip stops when the trip ends.
 
 > **Assistance only.** Estimates come from one phone camera (about ±25%) and need a phone mounted level in a holder with a clear view of the road. Never hold the phone while driving. The model sees common road users, not potholes, debris or flooding; those need a custom-trained model (see `assets/ar/models/MODEL.md`).
 

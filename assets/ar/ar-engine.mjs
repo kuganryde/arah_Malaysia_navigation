@@ -1,4 +1,4 @@
-// ar-vision v0.1.1
+// ar-vision v0.2.0
 // The heavy half of AR driver assist: model verification, WebGL inference, post-processing, lane finding and
 // traffic-light colour. It has no UI and runs identically in a Web Worker (preferred: keeps the map's main
 // thread and WebGL context untouched) or on the main thread (fallback for browsers without OffscreenCanvas).

@@ -1,4 +1,4 @@
-// ar-vision v0.1.1
+// ar-vision v0.2.0
 // Pure, DOM-free logic for the ARAH AR driving assistant: YOLOX decoding, NMS, tracking,
 // monocular distance, closing speed, lane finding and the alert rules. Everything here is
 // deterministic and unit-tested (test/ar-core.test.mjs); the camera, WebGL and UI live in arah-ar.js.

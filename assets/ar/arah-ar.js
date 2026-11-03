@@ -1,4 +1,4 @@
-/*! ARAH AR driver assist v0.1.1
+/*! ARAH AR driver assist v0.2.0
  * Camera + on-device YOLOX (WebGL, onnxruntime-web) shown in two small windows while a trip runs:
  * hazards (vehicles, pedestrians, riders, animals, traffic lights, stop signs), lead-vehicle distance,
  * headway and time-to-collision, GPS speed, lane position and lane-change events.
@@ -11,7 +11,7 @@
 (function () {
   'use strict';
   if (window.__arahAR) return;
-  window.__arahAR = '0.1.1';
+  window.__arahAR = '0.2.0';
 
   /* ---------------------------------------------------------------- config */
   var SCRIPT = document.currentScript && document.currentScript.src;
@@ -68,19 +68,23 @@
     '.arah-ar-bar button{all:unset;box-sizing:border-box;min-width:26px;height:26px;display:grid;place-items:center;cursor:pointer;font:700 13px "JetBrains Mono",monospace;color:#eef0fa;border-radius:6px}' +
     '.arah-ar-vid{position:relative;background:#000;line-height:0}' +
     '.arah-ar-vid canvas{position:absolute;inset:0;width:100%;height:100%}' +
-    '.arah-ar-hud{padding:8px 10px;display:grid;gap:7px}' +
-    '.arah-ar-alert{min-height:34px;border-radius:8px;padding:6px 8px;font:800 15px/1.1 "Barlow Condensed","Ubuntu",sans-serif;text-transform:uppercase;letter-spacing:.03em;background:rgba(31,224,168,.12);color:#1fe0a8}' +
-    '.arah-ar-alert[data-l=info]{background:rgba(47,208,236,.14);color:#2fd0ec}' +
-    '.arah-ar-alert[data-l=warn]{background:#ff7a2f;color:#0a0c1a}' +
-    '.arah-ar-alert[data-l=danger]{background:#ec4899;color:#fff;animation:arah-ar-p .6s ease-in-out infinite alternate}' +
+    '.arah-ar-ov{position:absolute;inset:0;display:flex;flex-direction:column;justify-content:space-between;pointer-events:none;font-family:"Ubuntu","Segoe UI",system-ui,sans-serif}' +
+    '.arah-ar-alert{align-self:flex-start;max-width:calc(100% - 8px);margin:4px;border-radius:6px;padding:2px 7px;font:800 calc(12px*var(--u,1))/1.15 "Barlow Condensed","Ubuntu",sans-serif;text-transform:uppercase;letter-spacing:.03em;background:rgba(5,6,16,.62);color:#1fe0a8;text-shadow:0 1px 2px #000}' +
+    '.arah-ar-alert[data-l=info]{color:#2fd0ec}' +
+    '.arah-ar-alert[data-l=warn]{background:#ff7a2f;color:#0a0c1a;text-shadow:none}' +
+    '.arah-ar-alert[data-l=danger]{align-self:stretch;text-align:center;background:#ec4899;color:#fff;text-shadow:none;animation:arah-ar-p .6s ease-in-out infinite alternate}' +
     '@keyframes arah-ar-p{to{filter:brightness(1.35)}}' +
-    '.arah-ar-row{display:grid;grid-template-columns:1fr auto;align-items:end;column-gap:6px;font:500 10px "JetBrains Mono",monospace;color:#9aa0c4}.arah-ar-row>span{grid-column:1/-1;letter-spacing:.04em}' +
-    '.arah-ar-row b{font:800 20px/1 "Barlow Condensed","Ubuntu",sans-serif;color:#eef0fa;letter-spacing:.02em}' +
-    '.arah-ar-row small{font:inherit;color:#9aa0c4}' +
-    '.arah-ar-lane{position:relative;height:8px;border-radius:4px;background:#1c2040}' +
-    '.arah-ar-lane i{position:absolute;top:-2px;width:12px;height:12px;margin-left:-6px;border-radius:50%;background:#2fd0ec;left:50%;transition:left .15s}' +
-    '.arah-ar-lane u{position:absolute;left:50%;top:0;width:2px;height:8px;background:#5b6194}' +
-    '.arah-ar-msg{padding:10px;font:500 12px/1.35 "Ubuntu",sans-serif;color:#eef0fa;max-width:260px}' +
+    '.arah-ar-foot{padding:16px 6px 6px;background:linear-gradient(to top,rgba(5,6,16,.9),rgba(5,6,16,.55) 60%,rgba(5,6,16,0))}' +
+    '.arah-ar-stats{display:flex;justify-content:space-between;align-items:flex-end;gap:6px;margin-bottom:5px}' +
+    '.arah-ar-st{display:flex;flex-direction:column;line-height:1;text-shadow:0 1px 2px #000}.arah-ar-st.r{align-items:flex-end;text-align:right}' +
+    '.arah-ar-st small{font:600 9px "JetBrains Mono",monospace;color:#b4b9da;letter-spacing:.03em;white-space:nowrap}' +
+    '.arah-ar-st b{font:800 calc(22px*var(--u,1))/1 "Barlow Condensed","Ubuntu",sans-serif;color:#eef0fa;letter-spacing:.02em;margin:1px 0}' +
+    '.arah-ar-lane{position:relative;height:6px;border-radius:3px;background:rgba(91,97,148,.55)}' +
+    '.arah-ar-lane i{position:absolute;top:-2px;width:10px;height:10px;margin-left:-5px;border-radius:50%;background:#2fd0ec;left:50%;transition:left .15s}' +
+    '.arah-ar-lane u{position:absolute;left:50%;top:0;width:2px;height:6px;background:#eef0fa;opacity:.7}' +
+    '.arah-ar-msg{position:absolute;inset:0;z-index:2;display:flex;flex-direction:column;justify-content:center;gap:8px;padding:10px;background:#141729;font:500 12px/1.35 "Ubuntu",sans-serif;color:#eef0fa;line-height:1.35}' +
+    '.arah-ar-msg[hidden]{display:none}' +
+    '.arah-ar-msg button{all:unset;box-sizing:border-box;align-self:flex-start;min-height:36px;padding:0 16px;display:grid;place-items:center;border-radius:8px;border:1px solid #a865f5;color:#eef0fa;cursor:pointer;font:700 13px "Ubuntu",sans-serif;pointer-events:auto}' +
     '.arah-ar-scrim{position:fixed;inset:0;z-index:60;background:rgba(5,6,16,.78);display:grid;place-items:center;padding:16px}' +
     '.arah-ar-dlg{max-width:380px;width:100%;background:#141729;border:1px solid #a865f5;border-radius:14px;padding:18px;color:#eef0fa;font:400 14px/1.45 "Ubuntu",sans-serif}' +
     '.arah-ar-dlg h2{margin:0 0 8px;font:800 24px/1 "Barlow Condensed","Ubuntu",sans-serif;font-style:italic;text-transform:uppercase;color:#2fd0ec}' +
@@ -92,6 +96,7 @@
 
   /* ---------------------------------------------------------------- UI */
   var ui = null;
+  var LABELS = { ms: ['LAJU', 'JARAK'], en: ['SPEED', 'GAP'], zh: ['速度', '距离'], ta: ['வேகம்', 'தூரம்'] };
   function build() {
     if (ui) return;
     var st = el('style'); st.textContent = css; document.head.appendChild(st);
@@ -104,28 +109,28 @@
     var vidBox = el('div', { class: 'arah-ar-vid' }, [overlay]);
     video.style.cssText = 'position:fixed;left:0;top:0;width:1px;height:1px;opacity:0;pointer-events:none'; // decoded off-screen, painted via canvas
     document.body.appendChild(video);
-    var camTitle = el('span', { text: 'AR · Kamera' });
+    var camTitle = el('span', { text: 'AR' });
     var bigBtn = el('button', { type: 'button', 'aria-label': 'Besar/kecil · Larger/smaller', title: 'Besar/kecil · Larger/smaller', text: '⤢' });
     var closeBtn = el('button', { type: 'button', 'aria-label': 'Tutup AR · Close AR', title: 'Tutup AR · Close AR', text: '✕' });
     var camBar = el('div', { class: 'arah-ar-bar' }, [camTitle, bigBtn, closeBtn]);
-    var camWin = el('div', { class: 'arah-ar arah-ar-win', role: 'group', 'aria-label': 'Paparan kamera AR · AR camera view' }, [camBar, vidBox]);
+    var camWin = el('div', { class: 'arah-ar arah-ar-win', role: 'group', 'aria-label': 'AR pemandu · AR driver assist' }, [camBar, vidBox]);
 
+    var L = LABELS[LANG];
     var alertBox = el('div', { class: 'arah-ar-alert', 'data-l': 'ok', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', text: '…' });
-    var speed = el('b', { text: '—' }), lead = el('b', { text: '—' }), leadSub = el('small', { text: '' });
+    var speed = el('b', { text: '—' }), lead = el('b', { text: '—' }), leadSub = el('small', { text: ' ' });
     var laneDot = el('i'), laneBar = el('div', { class: 'arah-ar-lane', role: 'img', 'aria-label': 'Kedudukan lajur · Lane position' }, [el('u'), laneDot]);
-    var stat = el('small', { text: '' });
     var soundBtn = el('button', { type: 'button', 'aria-pressed': 'true', 'aria-label': 'Bunyi amaran · Alert sound', title: 'Bunyi amaran · Alert sound', text: '♪' });
-    var hudBar = el('div', { class: 'arah-ar-bar' }, [el('span', { text: 'AR · Data' }), soundBtn]);
-    var hud = el('div', { class: 'arah-ar-hud' }, [
-      alertBox,
-      el('div', { class: 'arah-ar-row' }, [el('span', { text: 'KELAJUAN · SPEED' }), speed, el('small', { text: 'km/h' })]),
-      el('div', { class: 'arah-ar-row' }, [el('span', { text: 'JARAK · GAP' }), lead, leadSub]),
-      laneBar, stat,
-    ]);
-    var hudWin = el('div', { class: 'arah-ar arah-ar-win', role: 'group', 'aria-label': 'Data AR · AR data' }, [hudBar, hud]);
+    var errBox = el('div', { class: 'arah-ar-msg', role: 'alert', hidden: '' });
+    var ov = el('div', { class: 'arah-ar-ov' }, [alertBox, el('div', { class: 'arah-ar-foot' }, [
+      el('div', { class: 'arah-ar-stats' }, [
+        el('div', { class: 'arah-ar-st' }, [el('small', { text: L[0] }), speed, el('small', { text: 'km/h' })]),
+        el('div', { class: 'arah-ar-st r' }, [el('small', { text: L[1] }), lead, leadSub]),
+      ]), laneBar])]);
+    vidBox.appendChild(ov); vidBox.appendChild(errBox);
+    camBar.insertBefore(soundBtn, bigBtn);
 
-    ui = { fab: fab, camWin: camWin, hudWin: hudWin, video: video, overlay: overlay, vidBox: vidBox, alertBox: alertBox, speed: speed,
-      lead: lead, leadSub: leadSub, laneDot: laneDot, stat: stat, soundBtn: soundBtn, camTitle: camTitle, camBar: camBar, hudBar: hudBar, closeBtn: closeBtn, bigBtn: bigBtn, hud: hud };
+    ui = { fab: fab, camWin: camWin, video: video, overlay: overlay, vidBox: vidBox, ov: ov, errBox: errBox, alertBox: alertBox, speed: speed,
+      lead: lead, leadSub: leadSub, laneDot: laneDot, soundBtn: soundBtn, camTitle: camTitle, camBar: camBar, closeBtn: closeBtn, bigBtn: bigBtn };
     document.body.appendChild(fab);
     closeBtn.addEventListener('click', function () { stop(true); });
     bigBtn.addEventListener('click', function () { prefs.big = !prefs.big; savePrefs(); layout(); });
@@ -134,7 +139,7 @@
     window.addEventListener('resize', layout);
   }
 
-  function winWidth() { return prefs.big ? Math.min(window.innerWidth - 24, 360) : 156; }
+  function winWidth() { return prefs.big ? Math.min(window.innerWidth - 24, 360) : 176; }
   // The turn banner occupies the top of the screen during a trip, so the AR button and windows sit below it.
   function topBase() { return tripActive() ? 118 : 76; }
   function layout() {
@@ -149,12 +154,7 @@
     var maxX = Math.max(0, window.innerWidth - w - 8), maxY = Math.max(0, window.innerHeight - h - 80);
     pos = { x: Math.min(Math.max(4, pos.x), maxX), y: Math.min(Math.max(4, pos.y), maxY) };
     ui.camWin.style.left = pos.x + 'px'; ui.camWin.style.top = pos.y + 'px';
-    // The data window rides along on the right of the camera; below it when there is no room.
-    var hudW = 140;
-    var side = pos.x + w + 6 + hudW <= window.innerWidth - 56;
-    ui.hudWin.style.width = hudW + 'px';
-    ui.hudWin.style.left = (side ? pos.x + w + 6 : pos.x) + 'px';
-    ui.hudWin.style.top = (side ? pos.y : pos.y + h + 32) + 'px';
+    ui.camWin.style.setProperty('--u', String(Math.max(1, w / 176))); // overlay text scales with the window
   }
 
   function drag(handle, win) {
@@ -314,7 +314,7 @@
     ctx.drawImage(v, 0, oy, v.videoWidth * k, v.videoHeight * k);
     if (!d || !C) return;
     ctx.translate(0, oy);
-    ctx.lineWidth = Math.max(1.5, 2 * k * 2); ctx.font = '600 ' + Math.max(9, 11 * (cv.width / 156)) + 'px "JetBrains Mono",monospace'; ctx.textBaseline = 'top';
+    ctx.lineWidth = Math.max(1.5, 2 * k * 2); ctx.font = '600 ' + Math.max(9, 11 * (cv.width / 176)) + 'px "JetBrains Mono",monospace'; ctx.textBaseline = 'top';
     var lane = d.lane;
     if (lane && lane.conf > 0.25 && S.laneW) {
       ctx.strokeStyle = 'rgba(31,224,168,.85)';
@@ -332,7 +332,7 @@
       ctx.strokeRect(t.x1 * k, t.y1 * k, (t.x2 - t.x1) * k, (t.y2 - t.y1) * k);
       var c = d.colors.get(t.id);
       var label = t.dist != null && !C.GROUP.trafficLight.has(t.cls) ? Math.round(t.dist) + 'm' : (c && c !== 'unknown' ? c : '');
-      if (label) { var tw = ctx.measureText(label).width + 4; ctx.fillRect(t.x1 * k, t.y1 * k, tw, 13 * (cv.width / 156)); ctx.fillStyle = '#0a0c1a'; ctx.fillText(label, t.x1 * k + 2, t.y1 * k + 1); }
+      if (label) { var tw = ctx.measureText(label).width + 4; ctx.fillRect(t.x1 * k, t.y1 * k, tw, 13 * (cv.width / 176)); ctx.fillStyle = '#0a0c1a'; ctx.fillText(label, t.x1 * k + 2, t.y1 * k + 1); }
     });
   }
   function paintLoop() {
@@ -355,7 +355,8 @@
     } else { ui.lead.textContent = '—'; ui.leadSub.textContent = ''; }
     ui.laneDot.style.left = (h.lane == null ? 50 : Math.max(5, Math.min(95, 50 - h.lane * 80))) + '%';
     ui.laneDot.style.background = h.lane != null && Math.abs(h.lane) > 0.35 ? '#ff7a2f' : '#2fd0ec';
-    ui.stat.textContent = 'WebGL · ' + (S.inferMs ? Math.round(1000 / Math.max(S.inferMs, 1)) : 0) + ' fps · ' + h.count + ' obj';
+    var fps = S.inferMs ? 1000 / Math.max(S.inferMs, 1) : 0;
+    ui.camTitle.textContent = 'AR · ' + (fps < 2 ? fps.toFixed(1) : Math.round(fps)) + ' fps';
     if (!res.alerts.length && Date.now() - S.lastAlertAt > 2500) setAlert('ok', OK_TEXT[LANG]);
   }
   var OK_TEXT = { ms: 'Memantau', en: 'Watching', zh: '监测中', ta: 'கண்காணிக்கிறது' };
@@ -420,7 +421,7 @@
     if (manual && !(await notice())) { S.starting = false; return; }
     ui.fab.setAttribute('aria-pressed', 'true');
     mount();
-    setAlert('info', '…'); ui.stat.textContent = 'Memuat AI · Loading AI…';
+    setAlert('info', 'Memuat AI · Loading AI…'); ui.camTitle.textContent = 'AR';
     try {
       S.stream = await navigator.mediaDevices.getUserMedia({ audio: false, video: { facingMode: { ideal: 'environment' }, width: { ideal: 640 }, height: { ideal: 480 }, frameRate: { ideal: 15, max: 30 } } });
       ui.video.srcObject = S.stream;
@@ -433,11 +434,14 @@
     startGps(); layout(); tick();
   }
 
-  function mount() { if (!ui.camWin.isConnected) { document.body.appendChild(ui.camWin); document.body.appendChild(ui.hudWin); } layout(); }
+  function mount() { if (!ui.camWin.isConnected) document.body.appendChild(ui.camWin); layout(); }
 
   function showError(text) {
     build(); mount();
-    ui.vidBox.style.display = 'none'; ui.hud.replaceChildren(el('div', { class: 'arah-ar-msg', role: 'alert', text: text }));
+    var ok = el('button', { type: 'button', text: 'OK' });
+    ok.addEventListener('click', function () { ui.errBox.hidden = true; ui.camWin.remove(); });
+    ui.errBox.replaceChildren(el('div', { text: text }), ok);
+    ui.errBox.hidden = false;
   }
 
   function stop(user, withError) {
@@ -448,17 +452,11 @@
     if (ui) {
       ui.video.srcObject = null;
       ui.fab.setAttribute('aria-pressed', 'false');
-      if (!withError) { ui.camWin.remove(); ui.hudWin.remove(); }
+      if (!withError) { ui.camWin.remove(); ui.errBox.hidden = true; }
     }
     disposeEngine(); // free the model and GPU memory; it reloads from the HTTP cache next time
     if (user) { prefs.on = false; savePrefs(); }
-    if (withError && err) {
-      showError(err);
-      // Leave the message up, with a way to dismiss it.
-      var x = el('button', { type: 'button', text: 'OK', style: 'margin:0 10px 10px;min-height:36px;padding:0 14px;border-radius:8px;border:1px solid #a865f5;background:transparent;color:#eef0fa;cursor:pointer' });
-      x.addEventListener('click', function () { ui.camWin.remove(); ui.hudWin.remove(); ui.vidBox.style.display = ''; });
-      ui.hud.appendChild(x);
-    }
+    if (withError && err) showError(err); // the message stays up until dismissed
   }
 
   /* ---------------------------------------------------------------- trip awareness (read-only DOM check) */

@@ -4,6 +4,10 @@ Every module has its own version (see `versions.json` and `VERSIONING.md`). Each
 
 ## [Unreleased]
 
+## [0.3.2] - 2026-11-03
+
+- **docs 0.3.1**: README describes the single AR window
+- **ar-vision 0.2.0**: one window: speed, gap, lane and alerts are drawn over the camera picture instead of a second data window
 ## [0.3.1] - 2026-11-03
 
 - **ar-vision 0.1.1**: worker builds its script, engine and model URLs from its own location instead of trusting the init message (CodeQL)
