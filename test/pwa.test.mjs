@@ -102,11 +102,16 @@ test('sw: AR model is fetched once then served from cache', async () => {
 });
 
 test('sw: SKIP_WAITING message activates the waiting worker', () => {
-  const s = boot(); s.listeners.message({ data: { type: 'SKIP_WAITING' } });
+  const s = boot(); s.listeners.message({ origin: 'https://x.test', data: { type: 'SKIP_WAITING' } });
   assert.ok(s.self.skipped);
 });
 
 test('gpu guard: software renderers are recognised, real GPUs are not', () => {
   for (const n of ['Google SwiftShader', 'llvmpipe (LLVM 15)', 'Microsoft Basic Render Driver', 'Mesa OffScreen']) assert.ok(isSoftwareGpu(n), n);
   for (const n of ['Apple GPU', 'Adreno (TM) 740', 'Mali-G78', 'ANGLE (NVIDIA GeForce RTX 3060)', '']) assert.ok(!isSoftwareGpu(n), n);
+});
+
+test('sw: ignores messages from another origin', () => {
+  const s = boot(); s.listeners.message({ origin: 'https://evil.test', data: { type: 'SKIP_WAITING' } });
+  assert.ok(!s.self.skipped);
 });

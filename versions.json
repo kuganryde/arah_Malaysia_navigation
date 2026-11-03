@@ -1,5 +1,5 @@
 {
-  "release": "0.4.0",
+  "release": "0.4.2",
   "modules": {
     "app": {
       "version": "0.2.1",
@@ -97,7 +97,7 @@
       ]
     },
     "ci": {
-      "version": "0.3.0",
+      "version": "0.3.1",
       "description": "Tests, guard rails and GitHub Actions",
       "paths": [
         ".github/**",
@@ -121,7 +121,7 @@
       "markers": []
     },
     "pwa": {
-      "version": "0.1.0",
+      "version": "0.1.1",
       "description": "Installable app: manifest, service worker, offline page, icons, install and update UI",
       "paths": [
         "sw.js",

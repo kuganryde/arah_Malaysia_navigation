@@ -4,6 +4,12 @@ Every module has its own version (see `versions.json` and `VERSIONING.md`). Each
 
 ## [Unreleased]
 
+## [0.4.2] - 2026-11-03
+
+- **ci 0.3.1**: pwa test: service worker ignores foreign-origin messages
+## [0.4.1] - 2026-11-03
+
+- **pwa 0.1.1**: service worker checks the message origin before acting on SKIP_WAITING / GET_VERSION (CodeQL)
 ## [0.4.0] - 2026-11-03
 
 - **pwa 0.1.0** (new): installable app. Web app manifest, maskable and Apple icons, 10 iOS splash screens, offline-first service worker (versioned precache, never touches map-tile cache, `/api` or cross-origin), Android install button, iOS Add to Home Screen guide, update notice that never reloads mid-trip, `?nosw=1` support switch

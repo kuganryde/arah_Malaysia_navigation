@@ -1,4 +1,4 @@
-// ARAH service worker  pwa v0.1.0
+// ARAH service worker  pwa v0.1.1
 // Offline-first app shell. The app is one self-contained HTML file (React, MapLibre and icons are bundled in
 // it), so the whole shell is a handful of same-origin files that are cached together and swapped atomically.
 //
@@ -33,6 +33,8 @@ self.addEventListener('activate', (event) => {
 });
 
 self.addEventListener('message', (event) => {
+  // Only pages of this origin may command the worker (defence in depth: the browser already scopes clients).
+  if (event.origin && event.origin !== self.location.origin) return;
   const d = event.data || {};
   if (d.type === 'SKIP_WAITING') self.skipWaiting();
   else if (d.type === 'GET_VERSION' && event.source) event.source.postMessage({ type: 'VERSION', release: P.release, build: P.coreHash });
