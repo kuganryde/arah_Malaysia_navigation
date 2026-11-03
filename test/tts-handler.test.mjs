@@ -25,6 +25,16 @@ const geminiOk = () => async () => ({
   json: async () => ({ candidates: [{ content: { parts: [{ inlineData: { mimeType: 'audio/L16;rate=24000', data: Buffer.alloc(64).toString('base64') } }] } }] }),
 });
 
+test('sends only the sentence to the model: no style or instruction text that could be read aloud', async () => {
+  let sent;
+  globalThis.fetch = async (_u, init) => { sent = JSON.parse(init.body); return geminiOk()(); };
+  const r = mkRes();
+  await handler(req({ headers: { origin: 'https://arah.test', host: 'arah.test', 'x-forwarded-for': '6.6.6.6' }, body: { text: 'Dalam 200 meter, belok kiri.', lang: 'ms-MY' } }), r);
+  assert.equal(r.code, 200);
+  assert.equal(sent.contents[0].parts[0].text, 'Dalam 200 meter, belok kiri.');
+  assert.ok(!/transcript|speak in|warm|friendly|accent/i.test(JSON.stringify(sent.contents)));
+});
+
 test('rejects non-POST, foreign origin and bad bodies without calling the model', async () => {
   let calls = 0; globalThis.fetch = async () => { calls++; throw new Error('should not be called'); };
   let r = mkRes(); await handler(req({ method: 'GET' }), r); assert.equal(r.code, 405); assert.equal(r.headers.Allow, 'POST');

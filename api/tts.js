@@ -1,15 +1,20 @@
 // Vercel serverless function: POST /api/tts  { text, lang }  ->  audio/wav
 // Env: GEMINI_API_KEY (required) · GEMINI_TTS_MODEL, GEMINI_TTS_VOICE (optional)
+//      TTS_STYLE (optional, short tone hint such as "Say calmly"; empty by default so only the text is read)
 //      ALLOWED_ORIGINS (optional, comma list of extra origins, e.g. a custom domain)
 //      TTS_RATE_PER_MIN (default 30) · UPSTASH_REDIS_REST_URL / UPSTASH_REDIS_REST_TOKEN (optional shared limiter)
-// api-tts v0.2.0
+// api-tts v0.2.1
 // Changes in 0.2.0: origin check, per-IP rate limit, audio cache, request timeout, no upstream detail in errors.
 import {
-  LANG, parseBody, originAllowed, clientIp, makeMemoryLimiter, makeUpstashLimiter,
+  parseBody, originAllowed, clientIp, makeMemoryLimiter, makeUpstashLimiter,
   makeAudioCache, cacheKey, wav,
 } from '../lib/tts-core.mjs';
 
-const STYLE = 'Warm, friendly local guide. Calm, clear and natural, with smooth pacing and short pauses between sentences.';
+// Gemini TTS speaks whatever it is given, so by default we send ONLY the sentence to read.
+// Earlier versions prefixed a style/language instruction, and the model sometimes read that aloud.
+// The voice persona comes from the voice name, and the language from the text itself (the app already
+// writes each instruction in the chosen language). An optional TTS_STYLE adds a short "<style>: " prefix.
+const STYLE = (process.env.TTS_STYLE || '').trim().replace(/[\r\n]+/g, ' ').slice(0, 80);
 const MAX = Math.max(1, parseInt(process.env.TTS_RATE_PER_MIN || '30', 10) || 30);
 
 const memory = makeMemoryLimiter({ windowMs: 60_000, max: MAX });
@@ -50,7 +55,7 @@ export default async function handler(req, res) {
 
   const model = process.env.GEMINI_TTS_MODEL || 'gemini-3.8-flash-tts';
   const voice = process.env.GEMINI_TTS_VOICE || 'Fola';
-  const ck = cacheKey([model, voice, p.lang, p.text]);
+  const ck = cacheKey([model, voice, STYLE, p.lang, p.text]);
 
   const hit = cache.get(ck);
   if (hit) {
@@ -61,7 +66,7 @@ export default async function handler(req, res) {
     return res.status(200).send(hit);
   }
 
-  const prompt = `${STYLE}\nSpeak in ${LANG[p.lang]}.\n## Transcript:\n${p.text}`;
+  const prompt = STYLE ? `${STYLE}: ${p.text}` : p.text; // nothing but the information is sent by default
   const t0 = Date.now();
   try {
     const r = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`, {

@@ -4,6 +4,7 @@ Every module has its own version (see `versions.json` and `VERSIONING.md`). Each
 
 ## [Unreleased]
 
+- **api-tts 0.2.1**: voice reads only the sentence: the style/language instruction is no longer sent to Gemini (it was sometimes spoken aloud); optional TTS_STYLE env restores a short tone hint
 ## [0.2.0] - 2026-11-03
 
 - **api-tts 0.2.0** (from 0.1.0): origin check, per-IP rate limit (default 30 per minute, optional shared Upstash store), strict input validation with an allow-listed `lang` (closes a prompt-injection path), 15 s upstream timeout, generic error responses (no upstream detail leaked), privacy-safe structured logs, in-memory audio cache with `Cache-Control: private, max-age=86400` (was `no-store`).
