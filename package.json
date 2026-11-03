@@ -1,0 +1,12 @@
+{
+  "name": "arah-navigasi-malaysia",
+  "version": "0.2.0",
+  "private": true,
+  "type": "module",
+  "description": "ARAH · Navigasi Malaysia: 3D low-poly navigation map (beta) by Rydetech Global Enterprise",
+  "scripts": {
+    "test": "node --test \"test/*.test.mjs\"",
+    "check": "node scripts/check.mjs"
+  },
+  "engines": { "node": ">=20" }
+}
