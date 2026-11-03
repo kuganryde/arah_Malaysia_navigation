@@ -198,6 +198,7 @@ export class Tracker {
       used.add(best);
       const d = dets[best];
       Object.assign(tr, { x1: d.x1, y1: d.y1, x2: d.x2, y2: d.y2, score: d.score, missed: 0, seen: tr.seen + 1 });
+      if (d.color) tr.color = d.color;
       if (d.dist != null) {
         tr.dist = tr.dist == null ? d.dist : tr.dist * 0.6 + d.dist * 0.4; // EMA: single-frame size jitter is large
         tr.hist.push({ t, d: tr.dist });
@@ -207,7 +208,7 @@ export class Tracker {
     }
     dets.forEach((d, i) => {
       if (used.has(i)) return;
-      const tr = { id: this.nextId++, cls: d.cls, x1: d.x1, y1: d.y1, x2: d.x2, y2: d.y2, score: d.score, missed: 0, seen: 1, dist: d.dist ?? null, hist: [], closing: null };
+      const tr = { id: this.nextId++, cls: d.cls, x1: d.x1, y1: d.y1, x2: d.x2, y2: d.y2, score: d.score, missed: 0, seen: 1, dist: d.dist ?? null, hist: [], closing: null, color: d.color || null };
       if (d.dist != null) tr.hist.push({ t, d: d.dist });
       this.tracks.push(tr);
     });

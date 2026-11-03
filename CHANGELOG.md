@@ -11,7 +11,7 @@ Every module has its own version (see `versions.json` and `VERSIONING.md`). Each
 - **privacy 0.2.0**: camera / AR driver assist section: on-device analysis, nothing uploaded or stored
 - **security-headers 0.3.0**: Permissions-Policy allows the camera for this origin only (AR driver assist); SECURITY.md documents the AR model pinning and camera handling
 - **enhancements 0.2.0**: loads the AR module's small UI script (assets/ar/arah-ar.js); nothing else changes
-- **ar-vision 0.1.0** (new): AR driver assist. Camera view and data card while navigating, YOLOX-nano on WebGL (onnxruntime-web) finding vehicles, pedestrians, riders, animals, traffic lights and stop signs; monocular distance, following gap and time-to-collision; GPS speed; lane position, drift and lane-change events; alerts in BM, EN, 中文 and தமிழ். On-device only, opt-in with a safety notice, model SHA-256 pinned.
+- **ar-vision 0.1.0** (new): AR driver assist. Camera view and data card while navigating, YOLOX-nano on WebGL (onnxruntime-web, in a Web Worker so the map stays smooth; main-thread fallback) finding vehicles, pedestrians, riders, animals, traffic lights and stop signs; monocular distance, following gap and time-to-collision; GPS speed; lane position, drift and lane-change events; alerts in BM, EN, 中文 and தமிழ். On-device only, opt-in with a safety notice, model SHA-256 pinned.
 
 ## [0.2.2] - 2026-11-03
 

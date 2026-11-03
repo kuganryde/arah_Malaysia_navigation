@@ -63,6 +63,14 @@
         {
           "file": "assets/ar/ar-core.mjs",
           "text": "// ar-vision v{v}"
+        },
+        {
+          "file": "assets/ar/ar-engine.mjs",
+          "text": "// ar-vision v{v}"
+        },
+        {
+          "file": "assets/ar/ar-worker.js",
+          "text": "// ar-vision v{v}"
         }
       ]
     },

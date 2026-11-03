@@ -105,6 +105,15 @@ test('Tracker confirms after two sightings, keeps ids, and drops lost tracks', (
   assert.equal(tk.tracks.length, 0);
 });
 
+test('Tracker keeps the traffic-light colour reported by the detector', () => {
+  const tk = new Tracker();
+  const d = (color) => ({ x1: 300, y1: 100, x2: 320, y2: 140, cls: LIGHT, score: 0.8, dist: 30, color });
+  tk.update([d('red')], 0);
+  const [t] = tk.update([d('green')], 100);
+  assert.equal(t.color, 'green');
+  assert.equal(tk.update([{ ...d(undefined) }], 200)[0].color, 'green'); // no new reading: keep the last one
+});
+
 // Synthetic road: grey asphalt with two white lane lines converging on a vanishing point.
 function road(w, h, { shift = 0 } = {}) {
   const g = new Uint8Array(w * h).fill(70);

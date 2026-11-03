@@ -73,7 +73,7 @@ Next-step previews read *Kemudian · Then · 然后 · பிறகு*. Landmar
 
 ### 🎥 AR driver assist (Beta)
 
-Turn on **AR** (top-left of the map) and two small windows appear while you navigate: a live camera view with detection boxes, and a data card. The AI (**YOLOX-nano**, running on your phone's **WebGL**) works entirely on the device. No video is uploaded, recorded or saved.
+Turn on **AR** (top-left of the map) and two small windows appear while you navigate: a live camera view with detection boxes, and a data card. The AI (**YOLOX-nano**, running on your phone's **WebGL** in a background worker, so the map stays smooth) works entirely on the device. No video is uploaded, recorded or saved.
 
 | Reads | How |
 | --- | --- |

@@ -49,11 +49,10 @@
     for (var i = 0; i < b.length; i++) if ((b[i].textContent || '').trim() === 'Tamat') return true;
     return false;
   }
-  function hex(buf) { return Array.prototype.map.call(new Uint8Array(buf), function (x) { return ('0' + x.toString(16)).slice(-2); }).join(''); }
 
   /* ---------------------------------------------------------------- state */
-  var S = { on: false, manual: false, starting: false, core: null, stream: null, session: null, inName: '', outName: '',
-    timer: 0, busy: false, frame: 0, gps: null, gpsId: null, ego: null, lane: null, laneW: 0, laneH: 0, fps: 0, inferMs: 0,
+  var S = { on: false, manual: false, starting: false, core: null, stream: null, worker: null, engine: null,
+    timer: 0, paintT: 0, painting: false, paint: null, busy: false, frame: 0, gps: null, gpsId: null, ego: null, lane: null, laneW: 0, laneH: 0, fps: 0, inferMs: 0,
     tracker: null, laneMon: null, gate: null, lastAlertAt: 0, audio: null, err: '' };
 
   /* ---------------------------------------------------------------- styles */
@@ -68,7 +67,7 @@
     '.arah-ar-bar span{flex:1;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;color:#2fd0ec}' +
     '.arah-ar-bar button{all:unset;box-sizing:border-box;min-width:26px;height:26px;display:grid;place-items:center;cursor:pointer;font:700 13px "JetBrains Mono",monospace;color:#eef0fa;border-radius:6px}' +
     '.arah-ar-vid{position:relative;background:#000;line-height:0}' +
-    '.arah-ar-vid video,.arah-ar-vid canvas{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}' +
+    '.arah-ar-vid canvas{position:absolute;inset:0;width:100%;height:100%}' +
     '.arah-ar-hud{padding:8px 10px;display:grid;gap:7px}' +
     '.arah-ar-alert{min-height:34px;border-radius:8px;padding:6px 8px;font:800 15px/1.1 "Barlow Condensed","Ubuntu",sans-serif;text-transform:uppercase;letter-spacing:.03em;background:rgba(31,224,168,.12);color:#1fe0a8}' +
     '.arah-ar-alert[data-l=info]{background:rgba(47,208,236,.14);color:#2fd0ec}' +
@@ -102,7 +101,9 @@
     var video = el('video', { playsinline: '', muted: '', autoplay: '', 'aria-hidden': 'true' });
     video.muted = true;
     var overlay = el('canvas', { 'aria-hidden': 'true' });
-    var vidBox = el('div', { class: 'arah-ar-vid' }, [video, overlay]);
+    var vidBox = el('div', { class: 'arah-ar-vid' }, [overlay]);
+    video.style.cssText = 'position:fixed;left:0;top:0;width:1px;height:1px;opacity:0;pointer-events:none'; // decoded off-screen, painted via canvas
+    document.body.appendChild(video);
     var camTitle = el('span', { text: 'AR · Kamera' });
     var bigBtn = el('button', { type: 'button', 'aria-label': 'Besar/kecil · Larger/smaller', title: 'Besar/kecil · Larger/smaller', text: '⤢' });
     var closeBtn = el('button', { type: 'button', 'aria-label': 'Tutup AR · Close AR', title: 'Tutup AR · Close AR', text: '✕' });
@@ -134,14 +135,17 @@
   }
 
   function winWidth() { return prefs.big ? Math.min(window.innerWidth - 24, 360) : 156; }
+  // The turn banner occupies the top of the screen during a trip, so the AR button and windows sit below it.
+  function topBase() { return tripActive() ? 118 : 76; }
   function layout() {
     if (!ui) return;
+    ui.fab.style.top = topBase() + 'px';
     var w = winWidth(), h = Math.round(w * 0.75);
     ui.camWin.style.width = w + 'px';
     ui.vidBox.style.height = h + 'px';
     var dpr = Math.min(2, window.devicePixelRatio || 1);
     ui.overlay.width = Math.round(w * dpr); ui.overlay.height = Math.round(h * dpr);
-    var pos = prefs.cam || { x: 12, y: 128 };
+    var pos = prefs.cam || { x: 12, y: topBase() + 52 };
     var maxX = Math.max(0, window.innerWidth - w - 8), maxY = Math.max(0, window.innerHeight - h - 80);
     pos = { x: Math.min(Math.max(4, pos.x), maxX), y: Math.min(Math.max(4, pos.y), maxY) };
     ui.camWin.style.left = pos.x + 'px'; ui.camWin.style.top = pos.y + 'px';
@@ -203,29 +207,60 @@
     });
   }
 
-  /* ---------------------------------------------------------------- loading */
+  /* ---------------------------------------------------------------- engine (worker, or main-thread fallback) */
+  // The model runs in a Web Worker when the browser supports OffscreenCanvas: the map's main thread and WebGL
+  // context stay untouched. Otherwise the same engine runs on the main thread.
   function loadScript(src) {
     return new Promise(function (res, rej) {
       var s = el('script', { src: src, async: '' });
-      s.onload = res; s.onerror = function () { rej(new Error('script load failed: ' + src)); };
+      s.onload = res; s.onerror = function () { rej(Object.assign(new Error('script load failed'), { code: 'load' })); };
       document.head.appendChild(s);
     });
   }
-  async function loadModel() {
-    if (S.session) return;
-    var gl = document.createElement('canvas');
-    if (!(gl.getContext('webgl2') || gl.getContext('webgl'))) throw new Error('nowebgl');
+  var rpcId = 0, pending = {};
+  function startWorker() {
+    return new Promise(function (resolve, reject) {
+      var w;
+      try { w = new Worker(BASE + 'ar-worker.js'); } catch (e) { return reject(Object.assign(new Error('worker'), { code: 'noworker' })); }
+      var settled = false;
+      w.onmessage = function (e) {
+        var m = e.data;
+        if (m.type === 'ready') { settled = true; resolve(w); }
+        else if (m.type === 'result' || m.type === 'error') {
+          if (!settled && m.type === 'error') { settled = true; return reject(Object.assign(new Error(m.message), { code: m.code })); }
+          var p = pending[m.id]; if (!p) return; delete pending[m.id];
+          if (m.type === 'error') p.rej(Object.assign(new Error(m.message), { code: m.code })); else p.res(m);
+        }
+      };
+      w.onerror = function () { if (!settled) { settled = true; reject(Object.assign(new Error('worker'), { code: 'noworker' })); } };
+      w.postMessage({ type: 'init', ortUrl: BASE + ORT_URL, engineUrl: BASE + 'ar-engine.mjs', modelUrl: BASE + MODEL.url, sha256: MODEL.sha256, size: MODEL.size });
+    });
+  }
+  async function loadEngine() {
+    if (S.worker || S.engine) return;
     S.core = S.core || await import(BASE + 'ar-core.mjs');
+    if (typeof OffscreenCanvas !== 'undefined' && typeof createImageBitmap === 'function' && typeof Worker === 'function') {
+      try { S.worker = await startWorker(); return; } catch (e) {
+        if (e && e.code && e.code !== 'noworker') throw e; // a real failure (model hash, WebGL, network): do not mask it
+        /* worker unsupported or blocked: fall through to the main thread */
+      }
+    }
     if (!window.ort) await loadScript(BASE + ORT_URL);
-    var ort = window.ort;
-    ort.env.logLevel = 'error';
-    var res = await fetch(BASE + MODEL.url, { credentials: 'omit' });
-    if (!res.ok) throw new Error('model http ' + res.status);
-    var buf = await res.arrayBuffer();
-    var digest = hex(await crypto.subtle.digest('SHA-256', buf));
-    if (digest !== MODEL.sha256) throw new Error('modelhash'); // never run a model that is not the pinned one
-    S.session = await ort.InferenceSession.create(new Uint8Array(buf), { executionProviders: ['webgl'], graphOptimizationLevel: 'all' });
-    S.inName = S.session.inputNames[0]; S.outName = S.session.outputNames[0];
+    var mod = await import(BASE + 'ar-engine.mjs');
+    S.engine = await mod.Engine.create({ ort: window.ort, modelUrl: BASE + MODEL.url, sha256: MODEL.sha256, size: MODEL.size });
+  }
+  function disposeEngine() {
+    if (S.worker) { try { S.worker.postMessage({ type: 'close' }); } catch (e) { /* gone */ } S.worker.terminate(); S.worker = null; } // terminate frees the GPU at once
+    if (S.engine) { S.engine.dispose(); S.engine = null; }
+    Object.keys(pending).forEach(function (k) { pending[k].rej(new Error('closed')); delete pending[k]; });
+  }
+  async function detect(vw, vh, wantLane) {
+    if (S.worker) {
+      var bmp = await createImageBitmap(ui.video); // GPU-backed snapshot; transferred, not copied
+      var id = ++rpcId;
+      return new Promise(function (res, rej) { pending[id] = { res: res, rej: rej }; S.worker.postMessage({ type: 'frame', id: id, bitmap: bmp, vw: vw, vh: vh, lane: wantLane }, [bmp]); });
+    }
+    return S.engine.detect(ui.video, vw, vh, wantLane);
   }
 
   /* ---------------------------------------------------------------- GPS speed */
@@ -246,57 +281,20 @@
   function egoSpeed() { return S.gps && Date.now() - S.gps.t < 4000 ? S.gps.v : null; }
 
   /* ---------------------------------------------------------------- per-frame pipeline */
-  var pre = null, preCtx = null, input = null, laneC = null, laneCtx = null, lightC = null, lightCtx = null;
-  function canvases(vw, vh) {
-    var size = MODEL.size;
-    if (!pre) {
-      pre = document.createElement('canvas'); pre.width = pre.height = size;
-      preCtx = pre.getContext('2d', { willReadFrequently: true });
-      input = new Float32Array(3 * size * size);
-      lightC = document.createElement('canvas'); lightC.width = lightC.height = 24;
-      lightCtx = lightC.getContext('2d', { willReadFrequently: true });
-    }
-    var lw = 192, lh = Math.round(192 * vh / vw);
-    if (!laneC || laneC.width !== lw || laneC.height !== lh) {
-      laneC = document.createElement('canvas'); laneC.width = lw; laneC.height = lh;
-      laneCtx = laneC.getContext('2d', { willReadFrequently: true });
-      S.laneW = lw; S.laneH = lh;
-    }
-  }
-
   async function processFrame() {
     var C = S.core, v = ui.video, vw = v.videoWidth, vh = v.videoHeight;
     if (!vw || !vh) return;
-    canvases(vw, vh);
-    var size = MODEL.size, lb = C.letterbox(vw, vh, size), t0 = performance.now();
-    preCtx.fillStyle = 'rgb(114,114,114)'; preCtx.fillRect(0, 0, size, size);
-    preCtx.drawImage(v, 0, 0, lb.nw, lb.nh);
-    C.toCHW_BGR(preCtx.getImageData(0, 0, size, size).data, size, input);
-    var out = await S.session.run({ [S.inName]: new window.ort.Tensor('float32', input, [1, 3, size, size]) });
-    var boxes = C.toFrame(C.nms(C.decodeYolox(out[S.outName].data)), vw, vh, size);
-    S.inferMs = S.inferMs * 0.8 + (performance.now() - t0) * 0.2;
-
-    var fr = { w: vw, h: vh, laneW: S.laneW, laneH: S.laneH };
-    boxes.forEach(function (b) { b.dist = C.estimateDistance(b, fr, prefs.hfov); });
+    var r = await detect(vw, vh, S.frame % 2 === 0); // lanes change slowly: every other frame saves battery
+    S.inferMs = S.inferMs ? S.inferMs * 0.8 + r.inferMs * 0.2 : r.inferMs;
+    var fr = { w: vw, h: vh, laneW: r.laneW || S.laneW, laneH: r.laneH || S.laneH };
+    S.laneW = fr.laneW; S.laneH = fr.laneH;
     var now = performance.now();
-    var tracks = S.tracker.update(boxes, now);
-
-    if (S.frame % 2 === 0) { // lanes change slowly: every other frame is plenty and saves battery
-      laneCtx.drawImage(v, 0, 0, S.laneW, S.laneH);
-      var px = laneCtx.getImageData(0, 0, S.laneW, S.laneH).data, g = new Uint8Array(S.laneW * S.laneH);
-      for (var i = 0, p = 0; i < g.length; i++, p += 4) g[i] = (px[p] * 77 + px[p + 1] * 150 + px[p + 2] * 29) >> 8;
-      S.lane = C.detectLanes(g, S.laneW, S.laneH);
-      S.laneEvent = S.laneMon.update(S.lane, now);
-    }
+    r.boxes.forEach(function (b) { b.dist = C.estimateDistance(b, fr, prefs.hfov); });
+    var tracks = S.tracker.update(r.boxes, now);
+    if (r.lane) { S.lane = r.lane; S.laneEvent = S.laneMon.update(S.lane, now); }
     S.frame++;
-
     var colors = new Map();
-    tracks.forEach(function (t) {
-      if (!C.GROUP.trafficLight.has(t.cls)) return;
-      lightCtx.drawImage(v, t.x1, t.y1, Math.max(2, t.x2 - t.x1), Math.max(2, t.y2 - t.y1), 0, 0, 24, 24);
-      colors.set(t.id, C.classifyLight(lightCtx.getImageData(0, 0, 24, 24).data));
-    });
-
+    tracks.forEach(function (t) { if (t.color) colors.set(t.id, t.color); });
     var res = C.evaluate({ tracks: tracks, ego: { speed: egoSpeed() }, lane: S.lane && S.lane.conf > 0.25 ? S.lane : null, laneEvent: S.laneEvent, frame: fr, lightColors: colors });
     S.laneEvent = null;
     render(res, tracks, fr, colors);
@@ -305,28 +303,47 @@
   }
 
   var CLS_COLOR = function (cls, C) { return C.GROUP.vehicle.has(cls) && cls !== 3 ? '#2fd0ec' : C.GROUP.vulnerable.has(cls) ? '#ec4899' : C.GROUP.animal.has(cls) ? '#ff7a2f' : '#a865f5'; };
-  function render(res, tracks, fr, colors) {
-    var C = S.core, cv = ui.overlay, ctx = cv.getContext('2d'), k = cv.width / fr.w;
-    ctx.clearRect(0, 0, cv.width, cv.height);
+  // The camera picture is painted on a canvas (not shown as a <video> layer): cheaper to composite on phones, and the
+  // boxes are drawn in the same pass so they always line up with the frame on screen.
+  function paintOnce() {
+    var v = ui.video, cv = ui.overlay, ctx = cv.getContext('2d'), d = S.paint, C = S.core;
+    ctx.setTransform(1, 0, 0, 1, 0, 0);
+    ctx.fillStyle = '#000'; ctx.fillRect(0, 0, cv.width, cv.height);
+    if (v.readyState < 2 || !v.videoWidth) return;
+    var k = cv.width / v.videoWidth, oy = (cv.height - v.videoHeight * k) / 2;
+    ctx.drawImage(v, 0, oy, v.videoWidth * k, v.videoHeight * k);
+    if (!d || !C) return;
+    ctx.translate(0, oy);
     ctx.lineWidth = Math.max(1.5, 2 * k * 2); ctx.font = '600 ' + Math.max(9, 11 * (cv.width / 156)) + 'px "JetBrains Mono",monospace'; ctx.textBaseline = 'top';
-    var lane = S.lane;
-    if (lane && lane.conf > 0.25) {
+    var lane = d.lane;
+    if (lane && lane.conf > 0.25 && S.laneW) {
       ctx.strokeStyle = 'rgba(31,224,168,.85)';
+      var lk = cv.width / S.laneW;
       [lane.left, lane.right].forEach(function (l) {
         if (!l) return;
-        var y0 = S.laneH * 0.58, y1 = S.laneH * 0.95, sx = cv.width / S.laneW, sy = cv.height / S.laneH;
-        ctx.beginPath(); ctx.moveTo((l.a + l.b * y0) * sx, y0 * sy); ctx.lineTo((l.a + l.b * y1) * sx, y1 * sy); ctx.stroke();
+        var y0 = S.laneH * 0.58, y1 = S.laneH * 0.95;
+        ctx.beginPath(); ctx.moveTo((l.a + l.b * y0) * lk, y0 * lk); ctx.lineTo((l.a + l.b * y1) * lk, y1 * lk); ctx.stroke();
       });
     }
-    var leadId = res.hud.lead && res.hud.lead.id;
-    tracks.forEach(function (t) {
+    d.tracks.forEach(function (t) {
       var col = CLS_COLOR(t.cls, C);
       ctx.strokeStyle = col; ctx.fillStyle = col;
-      ctx.lineWidth = t.id === leadId ? 4 : 2;
+      ctx.lineWidth = t.id === d.leadId ? 4 : 2;
       ctx.strokeRect(t.x1 * k, t.y1 * k, (t.x2 - t.x1) * k, (t.y2 - t.y1) * k);
-      var label = t.dist != null && !C.GROUP.trafficLight.has(t.cls) ? Math.round(t.dist) + 'm' : (colors.get(t.id) && colors.get(t.id) !== 'unknown' ? colors.get(t.id) : '');
+      var c = d.colors.get(t.id);
+      var label = t.dist != null && !C.GROUP.trafficLight.has(t.cls) ? Math.round(t.dist) + 'm' : (c && c !== 'unknown' ? c : '');
       if (label) { var tw = ctx.measureText(label).width + 4; ctx.fillRect(t.x1 * k, t.y1 * k, tw, 13 * (cv.width / 156)); ctx.fillStyle = '#0a0c1a'; ctx.fillText(label, t.x1 * k + 2, t.y1 * k + 1); }
     });
+  }
+  function paintLoop() {
+    if (!ui || (!S.on && !S.starting)) { S.painting = false; return; }
+    paintOnce();
+    if (ui.video.requestVideoFrameCallback) ui.video.requestVideoFrameCallback(paintLoop); else S.paintT = setTimeout(paintLoop, 66);
+  }
+  function startPaint() { if (S.painting) return; S.painting = true; paintLoop(); }
+
+  function render(res, tracks, fr, colors) {
+    S.paint = { tracks: tracks, colors: colors, lane: S.lane, leadId: res.hud.lead && res.hud.lead.id };
     var h = res.hud;
     ui.speed.textContent = h.egoKmh == null ? '—' : String(Math.round(h.egoKmh));
     if (h.lead) {
@@ -367,7 +384,11 @@
     var t0 = performance.now();
     if (!document.hidden && !S.busy && ui.video.readyState >= 2) {
       S.busy = true;
-      try { await processFrame(); } catch (e) { fatal(e); S.busy = false; return; }
+      try { await processFrame(); } catch (e) {
+        S.busy = false;
+        if (S.on) fatal(e); // a frame still in flight when the user closed AR is not an error
+        return;
+      }
       S.busy = false;
     }
     // Aim for ~9 fps; back off to ~5 fps if the device is slow, to protect battery and the map's frame rate.
@@ -386,7 +407,7 @@
   };
   function fatal(e) {
     var m = String(e && e.name) + ': ' + String(e && e.message ? e.message : e);
-    var key = /nowebgl/.test(m) ? 'nowebgl' : /NotAllowed|Permission/i.test(m) ? 'denied' : /NotFound|Devices/i.test(m) ? 'nocam' : /modelhash/.test(m) ? 'modelhash' : /load failed|model http|Failed to fetch/i.test(m) ? 'load' : 'run';
+    var key = (e && e.code && MSG[e.code]) ? e.code : /nowebgl/.test(m) ? 'nowebgl' : /NotAllowed|Permission/i.test(m) ? 'denied' : /NotFound|Devices/i.test(m) ? 'nocam' : /modelhash/.test(m) ? 'modelhash' : /load failed|model http|Failed to fetch/i.test(m) ? 'load' : 'run';
     S.err = MSG[key]; stop(false, true);
     console.warn('[ARAH AR]', m, e && e.stack ? String(e.stack).split('\n').slice(0, 3).join(' | ') : ''); // visible in devtools for support, never sent anywhere
   }
@@ -404,7 +425,8 @@
       S.stream = await navigator.mediaDevices.getUserMedia({ audio: false, video: { facingMode: { ideal: 'environment' }, width: { ideal: 640 }, height: { ideal: 480 }, frameRate: { ideal: 15, max: 30 } } });
       ui.video.srcObject = S.stream;
       await ui.video.play().catch(function () { /* autoplay policies: the muted inline video normally plays */ });
-      await loadModel();
+      startPaint();
+      await loadEngine();
     } catch (e) { S.starting = false; return fatal(e); }
     S.tracker = new S.core.Tracker(); S.laneMon = new S.core.LaneMonitor(); S.gate = new S.core.AlertGate(); S.frame = 0; S.inferMs = 0;
     S.on = true; S.starting = false; prefs.on = true; savePrefs();
@@ -420,7 +442,7 @@
 
   function stop(user, withError) {
     var err = S.err;
-    S.on = false; S.starting = false; clearTimeout(S.timer); S.timer = 0;
+    S.on = false; S.starting = false; clearTimeout(S.timer); S.timer = 0; clearTimeout(S.paintT); S.paint = null;
     stopGps();
     if (S.stream) { S.stream.getTracks().forEach(function (t) { t.stop(); }); S.stream = null; } // release the camera: the indicator light must go off
     if (ui) {
@@ -428,7 +450,7 @@
       ui.fab.setAttribute('aria-pressed', 'false');
       if (!withError) { ui.camWin.remove(); ui.hudWin.remove(); }
     }
-    if (S.session && user) { try { S.session.release(); } catch (e) { /* already gone */ } S.session = null; }
+    disposeEngine(); // free the model and GPU memory; it reloads from the HTTP cache next time
     if (user) { prefs.on = false; savePrefs(); }
     if (withError && err) {
       showError(err);
@@ -448,11 +470,12 @@
     var now = tripActive();
     if (now && !wasTrip && prefs.on && !S.on && !S.starting && lsGet(ACK_KEY) && await cameraGranted()) start(false); // resume on the next trip only if already allowed
     if (!now && wasTrip && S.on && !S.manual) stop(false); // trip ended: release the camera (the choice to use AR is kept)
+    if (now !== wasTrip) layout();
     wasTrip = now;
   }
 
   function init() {
-    build();
+    build(); layout();
     setInterval(watchTrip, 1500);
     document.addEventListener('visibilitychange', function () { if (!document.hidden && S.on && !S.timer) tick(); });
     window.addEventListener('pagehide', function () { if (S.on) stop(false); });
