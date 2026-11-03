@@ -4,6 +4,18 @@ Every module has its own version (see `versions.json` and `VERSIONING.md`). Each
 
 ## [Unreleased]
 
+## [0.5.1] - 2026-11-03
+
+- **ci 0.4.1**: places test: escapeRegex emits no backslash or quote
+- **places 0.1.1**: queries contain no backslashes or quotes: regex specials become character classes (CodeQL incomplete-escaping)
+## [0.5.0] - 2026-11-03
+- **places 0.1.0** (new): Makan & Mall. Directory of 39 fast-food/cafe chains and 48 malls with logos loaded lazily from each brand's website (initials badge fallback, switch to turn off, no referrer), live outlets from OpenStreetMap around the map view, logo markers, route hand-off to the app's search; hidden during a trip
+
+- **ci 0.4.0**: places tests (directory, query safety, parsing); inject-head adds places script and map handle
+- **docs 0.5.0**: README: Makan & Mall directory
+- **privacy 0.4.0**: Makan & Mall section: brand logos load from brand sites, what they can see, how to switch off
+- **pwa 0.1.2**: precache list covers the places module
+- **app 0.2.2**: exposes the map as window.__arahMap (read-only handle for the Makan & Mall layer); head loads assets/places/arah-places.js
 ## [0.4.2] - 2026-11-03
 
 - **ci 0.3.1**: pwa test: service worker ignores foreign-origin messages

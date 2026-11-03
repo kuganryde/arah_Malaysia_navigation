@@ -1,8 +1,8 @@
 {
-  "release": "0.4.2",
+  "release": "0.5.1",
   "modules": {
     "app": {
-      "version": "0.2.1",
+      "version": "0.2.2",
       "description": "The map app: bundled index.html and its editable source",
       "paths": [
         "index.html",
@@ -84,7 +84,7 @@
       "markers": []
     },
     "privacy": {
-      "version": "0.3.0",
+      "version": "0.4.0",
       "description": "Privacy notice page (/privacy)",
       "paths": [
         "privacy.html"
@@ -97,7 +97,7 @@
       ]
     },
     "ci": {
-      "version": "0.3.1",
+      "version": "0.4.1",
       "description": "Tests, guard rails and GitHub Actions",
       "paths": [
         ".github/**",
@@ -107,7 +107,7 @@
       "markers": []
     },
     "docs": {
-      "version": "0.4.0",
+      "version": "0.5.0",
       "description": "README and its animated art",
       "paths": [
         "README.md",
@@ -121,7 +121,7 @@
       "markers": []
     },
     "pwa": {
-      "version": "0.1.1",
+      "version": "0.1.2",
       "description": "Installable app: manifest, service worker, offline page, icons, install and update UI",
       "paths": [
         "sw.js",
@@ -148,6 +148,31 @@
         {
           "file": "offline.html",
           "text": "<meta name=\"module-version\" content=\"pwa {v}\">"
+        }
+      ]
+    },
+    "places": {
+      "version": "0.1.1",
+      "description": "Makan & Mall: Malaysian fast-food and mall directory with logos, live OpenStreetMap outlets (assets/places/)",
+      "paths": [
+        "assets/places/**"
+      ],
+      "markers": [
+        {
+          "file": "assets/places/arah-places.js",
+          "text": "/*! ARAH Makan & Mall v{v}"
+        },
+        {
+          "file": "assets/places/arah-places.js",
+          "text": "window.__arahPlaces = '{v}';"
+        },
+        {
+          "file": "assets/places/places-core.mjs",
+          "text": "// places v{v}"
+        },
+        {
+          "file": "assets/places/brands.mjs",
+          "text": "// places v{v}"
         }
       ]
     }

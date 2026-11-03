@@ -124,6 +124,12 @@ Reports are stored on your device only. The sample reports shown on first launch
 
 Forecast rain from **Open-Meteo** nudges arrival estimates up when it is heavy, and a weather line shows conditions for your trip.
 
+### 🍔 Makan & Mall (Beta)
+
+A directory of **39 Malaysian fast-food and cafe chains and 48 shopping malls**, each with its logo. Tap a brand to find its outlets around the map, or tap *All nearby* for anything not on the list. Outlets are found live from OpenStreetMap, so results are only as complete as the map data, and a missing chain can still show up under *All nearby*. Results appear as logo markers on the map, and *Find route* hands the place to the normal search and routing. The button is hidden during a trip.
+
+Logos load from each brand's own website, only for the tiles you scroll to, with no referrer sent. If a logo cannot be loaded, or you are offline, a coloured initials badge is shown. Untick *Logos from brand sites* in the sheet to make no requests to brand sites. Logos are trademarks of their owners and are not stored or redistributed by this repository.
+
 ### 📴 Offline ready
 
 Map tiles you have viewed and your saved route are cached on the device, so *Luar talian · Offline* still shows your map and route. Fresh routing needs a connection.

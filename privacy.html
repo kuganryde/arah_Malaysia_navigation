@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#0a0c1a">
-<meta name="module-version" content="privacy 0.3.0">
+<meta name="module-version" content="privacy 0.4.0">
 <title>Privacy · ARAH Navigasi Malaysia</title>
 <meta name="description" content="What ARAH stores on your device, which services it talks to, and what it does not collect.">
 <style>
@@ -50,6 +50,8 @@ th{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--mute
 <p>AR driver assist is optional and off until you turn it on. When on, the camera feed is analysed <strong>on your phone</strong> by an AI model that runs in your browser. No video or image is uploaded, recorded or saved, and the camera stops when you close AR or the trip ends. Your device speed from GPS is used the same way, on the device only. The only things stored are your choices (AR on or off, window position, alert sound).</p>
 <p>Distance, speed and lane readings are estimates from a single camera and can be wrong. Mount the phone in a holder and never hold it while driving.</p>
 
+<h2>Makan &amp; Mall (brand logos)</h2>
+<p>When you open the Makan &amp; Mall sheet, your browser may load a brand's logo from that brand's own website (only for logos you scroll to). The brand site can see your IP address and which logo file was requested, but not your location, and no referrer is sent. Outlet searches go to Overpass (OpenStreetMap) with the map area you are viewing. You can switch logos off in the sheet, and the list then makes no requests to brand sites.</p>
 <h2>Offline copy (installed app)</h2>
 <p>When you use ARAH in a browser or install it to your home screen, a service worker saves the app's own files (and, after you first use AR, the AI model file) on your device so it opens without signal. These are public files, not your data. Your trips and locations are not added to this copy. Clear it any time in your browser's site settings, or open the app once with <code>?nosw=1</code>.</p>
 <h2>Services the app contacts</h2>

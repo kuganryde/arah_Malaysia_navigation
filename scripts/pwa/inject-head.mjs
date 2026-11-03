@@ -13,12 +13,17 @@ export const TAGS = [
 ].join('\n');
 const MARK = 'rel="manifest"';
 const PWA_SCRIPT = '<script src="assets/arah-pwa.js" defer></script>';
+const PLACES_SCRIPT = '<script src="assets/places/arah-places.js" defer></script>';
+// Read-only handle so the Makan & Mall layer can place markers; the app's own code is otherwise untouched.
+const MAP_FROM = 'this.map=new gl.Map(', MAP_TO = 'this.map=window.__arahMap=new gl.Map(';
 const ENH = '<script src="assets/arah-enhancements.js" defer></script>';
 
 export function patchHead(html) { // for plain HTML heads
   let out = html;
   if (!out.includes(MARK)) out = out.replace('</head>', TAGS + '\n</head>');
   if (!out.includes('arah-pwa.js')) out = out.replace(ENH, ENH + '\n' + PWA_SCRIPT);
+  if (!out.includes('arah-places.js')) out = out.replace(PWA_SCRIPT, PWA_SCRIPT + '\n' + PLACES_SCRIPT);
+  if (out.includes(MAP_FROM)) out = out.replace(MAP_FROM, MAP_TO);
   return out;
 }
 
@@ -38,6 +43,8 @@ function patchBundle(file) {
   const headPart = t.slice(0, head);
   if (!headPart.includes(MARK)) t = t.slice(0, head) + TAGS + '\n' + t.slice(head);
   if (!t.includes('arah-pwa.js')) t = t.replace(ENH, ENH + '\n' + PWA_SCRIPT);
+  if (!t.includes('arah-places.js')) t = t.replace(PWA_SCRIPT, PWA_SCRIPT + '\n' + PLACES_SCRIPT);
+  if (t.includes(MAP_FROM)) t = t.replace(MAP_FROM, MAP_TO);
   const enc = encode(t);
   s = s.replace(re, (_, a, _b, c) => a + enc + c);
   // outer shell: manifest tags in the static head; dark loading screen instead of a white flash
