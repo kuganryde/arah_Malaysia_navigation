@@ -1,4 +1,4 @@
-/*! ARAH enhancements v0.1.0
+/*! ARAH enhancements v0.2.0
  * A small, separate layer on top of the app bundle. It reads the DOM only and never calls the app's
  * code, so it cannot change routing, voice or map behaviour. If it fails, the app is unaffected.
  *  1. Screen wake lock while a trip is active (the "Tamat" end-trip button is on screen).
@@ -8,7 +8,7 @@
 (function () {
   'use strict';
   if (window.__arahEnh) return;
-  window.__arahEnh = '0.1.0';
+  window.__arahEnh = '0.2.0';
 
   // 3. Reduced motion: stop decorative animation and smooth scrolling. Map camera animation is
   //    controlled by the app; this only covers CSS animation and transitions.
@@ -79,4 +79,14 @@
     try { new MutationObserver(schedule).observe(document.body, { childList: true, subtree: true }); } catch (e) {}
   }
   if (document.body) start(); else document.addEventListener('DOMContentLoaded', start);
+
+  // 4. AR driver assist is its own module (assets/ar/). Only its small UI script loads here; the camera, the
+  //    AI runtime and the 3.6 MB model are fetched only when the user turns AR on. Failure here is harmless.
+  try {
+    var me = document.currentScript && document.currentScript.src;
+    var ar = document.createElement('script');
+    ar.src = me ? new URL('ar/arah-ar.js', me).href : 'assets/ar/arah-ar.js';
+    ar.defer = true;
+    document.head.appendChild(ar);
+  } catch (e) { /* the app works without AR */ }
 })();
