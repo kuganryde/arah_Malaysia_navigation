@@ -1,6 +1,6 @@
 {
   "name": "arah-navigasi-malaysia",
-  "version": "0.7.1",
+  "version": "0.8.0",
   "private": true,
   "type": "module",
   "description": "ARAH · Navigasi Malaysia: 3D low-poly navigation map (beta) by Rydetech Global Enterprise",
@@ -12,9 +12,14 @@
     "version:release": "node scripts/version.mjs release",
     "version:check": "node scripts/version.mjs check",
     "pwa:stamp": "node scripts/pwa/stamp.mjs",
-    "pwa:inject": "node scripts/pwa/inject-head.mjs"
+    "pwa:inject": "node scripts/pwa/inject-head.mjs",
+    "e2e": "node --test --test-timeout=120000 --test-concurrency=1 \"test/e2e/*.e2e.mjs\""
   },
   "engines": {
     "node": ">=20"
+  },
+  "devDependencies": {
+    "maplibre-gl": "5.24.0",
+    "playwright": "1.63.0"
   }
 }

@@ -4,6 +4,9 @@ Every module has its own version (see `versions.json` and `VERSIONING.md`). Each
 
 ## [Unreleased]
 
+## [0.8.0] - 2026-11-03
+
+- **ci 0.7.0**: browser E2E tests (Playwright, mocked network) as a parallel CI job; maplibre-gl pinned as a dev dependency for hermetic runs
 ## [0.7.1] - 2026-11-03
 
 - **ci 0.6.1**: keepawake test: remove a no-op string replacement (CodeQL)

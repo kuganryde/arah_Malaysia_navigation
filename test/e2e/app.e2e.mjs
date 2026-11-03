@@ -1,0 +1,108 @@
+// End-to-end checks in a real browser. Run with: npm run e2e
+import test, { before, after } from 'node:test';
+import assert from 'node:assert/strict';
+import { serve, launch, openApp, OVERPASS } from './helpers.mjs';
+
+let srv;
+before(async () => { srv = await serve(); });
+after(async () => { await srv.close(); });
+
+test('app boots, map handle is exposed, every module announces its version, no page errors', async () => {
+  const b = await launch(); const p = await b.page();
+  try {
+    await openApp(p, srv.url);
+    const v = await p.evaluate(() => ({ enh: window.__arahEnh, pwa: window.__arahPWA, places: window.__arahPlaces, festive: window.__arahFestive, awake: window.__arahKeepAwake, ar: window.__arahAR }));
+    for (const [k, x] of Object.entries(v)) assert.match(String(x), /^\d+\.\d+\.\d+$/, k);
+    assert.deepEqual(p.errors, []);
+  } finally { await b.close(); }
+});
+
+test('PWA: installable, precached, and the whole app reloads with no network', async () => {
+  const b = await launch({ serviceWorkers: 'allow' }); const p = await b.page();
+  try {
+    await p.goto(srv.url + '/?source=pwa', { waitUntil: 'load' });
+    await p.waitForFunction(() => navigator.serviceWorker.controller !== null, null, { timeout: 30000 });
+    const caches = await p.evaluate(() => caches.keys());
+    assert.ok(caches.some((k) => k.startsWith('arah-pwa-core-')));
+    const cdp = await b.ctx.newCDPSession(p);
+    const inst = await cdp.send('Page.getInstallabilityErrors'); assert.deepEqual(inst.installabilityErrors, []);
+    const man = await cdp.send('Page.getAppManifest'); assert.deepEqual(man.errors, []);
+    await b.ctx.setOffline(true);
+    await p.reload({ waitUntil: 'load' });
+    await p.waitForFunction(() => !!document.querySelector('canvas'), null, { timeout: 30000 });
+    assert.match(await p.title(), /ARAH/);
+    await b.ctx.setOffline(false);
+  } finally { await b.close(); }
+});
+
+test('PWA install prompts: iPhone shows the Add-to-Home-Screen guide', async () => {
+  const { devices } = await import('playwright');
+  const { chromium } = await import('playwright');
+  const br = await chromium.launch({ args: ['--use-gl=swiftshader', '--use-angle=swiftshader', '--enable-webgl', '--enable-unsafe-swiftshader'] });
+  try {
+    const ctx = await br.newContext({ ...devices['iPhone 14'], serviceWorkers: 'block' }); const p = await ctx.newPage();
+    await ctx.route('**/*', (r) => { const u = r.request().url(); if (/localhost/.test(u)) return r.continue(); if (/maplibre-gl.*\.js$/.test(u)) return r.fulfill({ path: 'node_modules/maplibre-gl/dist/maplibre-gl.js', contentType: 'application/javascript' }); if (/maplibre-gl.*\.css$/.test(u)) return r.fulfill({ path: 'node_modules/maplibre-gl/dist/maplibre-gl.css', contentType: 'text/css' }); return r.abort(); });
+    await p.goto(srv.url + '/index.html'); await p.waitForSelector('.arah-pwa-pill', { state: 'visible', timeout: 30000 });
+    await p.click('.arah-pwa-pill'); await p.waitForSelector('.arah-pwa-dlg');
+    assert.match(await p.innerText('.arah-pwa-dlg'), /Add to Home Screen/);
+    await p.keyboard.press('Escape'); assert.equal(await p.locator('.arah-pwa-dlg').count(), 0);
+  } finally { await br.close(); }
+});
+
+test('Makan & Mall: brand sheet, live results as plain text, marker on the map', async () => {
+  const b = await launch(); const p = await b.page();
+  try {
+    await openApp(p, srv.url);
+    await p.click('.ap-btn'); await p.waitForSelector('.ap-sheet');
+    assert.ok((await p.locator('.ap-chip').count()) >= 40);
+    await p.locator('.ap-tab').nth(1).click(); await p.fill('.ap-q', 'suria'); assert.equal(await p.locator('.ap-chip').count(), 2);
+    await p.fill('.ap-q', ''); await p.locator('.ap-tab').nth(0).click();
+    await p.locator('.ap-chip', { hasText: 'KFC' }).first().click();
+    await p.waitForSelector('.ap-row');
+    assert.equal(await p.locator('.ap-row').count(), OVERPASS.elements.length);
+    assert.equal(await p.locator('.ap-row b b').count(), 0, 'outlet names must never become markup');
+    assert.ok(b.seen.overpass.some((q) => q.includes('"KFC|Kentucky Fried"') && !/\\/.test(q.split('~"')[2] || '')));
+    await p.locator('.ap-row').first().click();
+    await p.waitForSelector('.ap-mk');
+    assert.equal(await p.locator('.ap-mk').count(), 1);
+  } finally { await b.close(); }
+});
+
+test('Festive: Deepavali by date, manual pick, off, and calm during a trip', async () => {
+  const b = await launch({ init: "Date.now = (() => { const t = new Date('2026-11-03T04:00:00Z').getTime(); const O = Date; globalThis.Date = class extends O { constructor(...a) { a.length ? super(...a) : super(t); } static now() { return t; } }; return () => t; })();" });
+  const p = await b.page();
+  try {
+    await openApp(p, srv.url);
+    assert.equal(await p.evaluate(() => window.__arahFestiveApi.current()), 'deepavali');
+    await p.click('.af-btn'); await p.waitForSelector('.af-sheet');
+    await p.locator('.af-row', { hasText: 'Hari Merdeka' }).click();
+    assert.equal(await p.evaluate(() => window.__arahFestiveApi.current()), 'merdeka');
+    await p.locator('.af-row', { hasText: 'Mati' }).click();
+    assert.equal(await p.evaluate(() => document.documentElement.hasAttribute('data-festive')), false);
+    await p.locator('.af-row', { hasText: 'Auto' }).first().click(); await p.keyboard.press('Escape');
+    await p.evaluate(() => { const x = document.createElement('button'); x.textContent = 'Tamat'; document.body.appendChild(x); });
+    await p.waitForFunction(() => getComputedStyle(document.querySelector('.af-cv')).display === 'none', null, { timeout: 8000 });
+    assert.deepEqual(p.errors, []);
+  } finally { await b.close(); }
+});
+
+test('Keep-awake: holds the screen (lock or silent video) and the off switch releases it', async () => {
+  const b = await launch(); const p = await b.page();
+  try {
+    await openApp(p, srv.url);
+    await p.waitForFunction(() => { const s = window.__arahAwake.status(); return s.locked || s.video; }, null, { timeout: 10000 });
+    await p.evaluate(() => window.__arahAwake.set(false));
+    const s = await p.evaluate(() => window.__arahAwake.status());
+    assert.equal(s.enabled, false); assert.equal(s.locked, false); assert.equal(s.video, false);
+  } finally { await b.close(); }
+});
+
+test('AR: refuses a software GPU with a clear message (no silent CPU inference)', async () => {
+  const b = await launch(); const p = await b.page();
+  try {
+    await openApp(p, srv.url);
+    await p.evaluate(() => { localStorage.setItem('arah.ar.ack.v1', '1'); window.__arahARApi.start(false); });
+    await p.waitForFunction(() => /GPU/.test(window.__arahARApi.state.err || ''), null, { timeout: 60000 });
+    assert.equal(await p.evaluate(() => window.__arahARApi.state.on), false);
+  } finally { await b.close(); }
+});
