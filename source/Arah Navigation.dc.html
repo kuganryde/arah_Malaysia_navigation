@@ -6,6 +6,7 @@
 <script src="./support.js"></script>
 <script src="assets/arah-enhancements.js" defer></script>
 <script src="assets/arah-pwa.js" defer></script>
+<script src="assets/places/arah-places.js" defer></script>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="apple-touch-icon" href="assets/icons/apple-touch-icon.png">
 <link rel="icon" type="image/png" sizes="48x48" href="assets/icons/favicon-48.png">
@@ -614,7 +615,7 @@ class Component extends DCLogic {
   waitGL(){if(window.maplibregl&&this.mapRef.current)this.initMap();else this._t=setTimeout(()=>this.waitGL(),80);}
   toast(t){this.setState({toast:t});clearTimeout(this._tt);this._tt=setTimeout(()=>this.setState({toast:''}),2800);}
   initMap(){const gl=window.maplibregl,c=this.startCity();if(!window.__arahProto&&window.caches){window.__arahProto=1;gl.addProtocol('arahcache',async params=>{const url=params.url.replace('arahcache://',''),json=params.type==='json',c=await caches.open('arah-tiles-v1');let res=json?null:await c.match(url);if(!res){try{const r=await fetch(url);if(r.ok){try{await c.put(url,r.clone());}catch(e){}res=r;}else if(json)res=await c.match(url);}catch(e){res=await c.match(url);}}if(!res)throw new Error('offline');return{data:json?await res.json():await res.arrayBuffer()};});}
-    const map=this.map=new gl.Map({container:this.mapRef.current,style:buildStyle(this.exag()),transformRequest:(u,t)=>this.tr(u,t),center:c.c,zoom:c.z,pitch:62,bearing:c.b??-20,maxPitch:85,maxBounds:[[92,-6],[126,12]],attributionControl:false});
+    const map=this.map=window.__arahMap=new gl.Map({container:this.mapRef.current,style:buildStyle(this.exag()),transformRequest:(u,t)=>this.tr(u,t),center:c.c,zoom:c.z,pitch:62,bearing:c.b??-20,maxPitch:85,maxBounds:[[92,-6],[126,12]],attributionControl:false});
     map.addControl(new gl.AttributionControl({compact:true}),'bottom-right');
     map.on('load',()=>{this.setState({ready:true});let sv=null;try{sv=JSON.parse(localStorage.getItem('arah.view.v2'));}catch(e){}if(sv&&sv.auto){this.setState({autoView:true});this.applyAuto();}else if(sv&&sv.view&&sv.view!=='night')this.applyView(sv.view);else if(!sv)this.applyView('day');if(this.props.showLandmarks===false)['landmark-3d','lm-label'].forEach(l=>map.setLayoutProperty(l,'visibility','none'));this.renderReports();this.makeFlags();});
     map.on('styleimagemissing',e=>{if(e.id==='route-arrow')this.addArrow();});
