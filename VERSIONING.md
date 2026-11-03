@@ -32,6 +32,8 @@ npm run version:release -- minor                          # cut a release: bump 
 npm run version:check -- origin/main                      # what CI runs on a pull request
 ```
 
+After changing any file the service worker caches, run `npm run pwa:stamp` (it rewrites `sw-precache.js`, which is what makes installed copies update). `npm run check` fails if it is stale.
+
 `bump` rewrites the module's in-file marker and `versions.json` together, so the running file and the manifest cannot drift; `npm run version:check` fails if they do.
 
 ## Adding a module

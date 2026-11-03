@@ -49,5 +49,29 @@ for (const f of walk('.')) {
 // index.html: scan only for the API-key shape, cheaply.
 if (/AIza[0-9A-Za-z_-]{35}/.test(indexBuf.toString('utf8'))) fail('possible Google API key inside index.html');
 
+// 4. PWA: manifest valid, icons real, offline file list complete, generated precache fresh, tags present.
+{
+  const { build, render } = await import('./pwa/stamp.mjs');
+  const mf = JSON.parse(readFileSync('manifest.webmanifest', 'utf8'));
+  for (const k of ['name', 'short_name', 'start_url', 'scope', 'display', 'background_color', 'theme_color', 'icons']) if (!mf[k]) fail(`manifest.webmanifest missing ${k}`);
+  if (mf.display !== 'standalone') fail('manifest display must be standalone');
+  if (!String(mf.start_url).startsWith(mf.scope || '/')) fail('manifest start_url is outside its scope');
+  const purposes = new Set();
+  for (const ic of mf.icons || []) {
+    const b = readFileSync(ic.src.replace(/^\//, ''));
+    const [w, h] = ic.sizes.split('x').map(Number);
+    if (b.readUInt32BE(16) !== w || b.readUInt32BE(20) !== h) fail(`icon ${ic.src} is not ${ic.sizes}`);
+    purposes.add(ic.purpose || 'any');
+  }
+  for (const p of ['any', 'maskable']) if (!purposes.has(p)) fail(`manifest needs a ${p} icon`);
+  if (!(mf.icons || []).some((i) => i.sizes === '512x512')) fail('manifest needs a 512x512 icon');
+  try {
+    if (readFileSync('sw-precache.js', 'utf8') !== render(build())) fail('sw-precache.js is stale: run npm run pwa:stamp');
+  } catch (e) { fail('sw-precache.js unreadable: ' + e.message); }
+  const html = indexBuf.toString('utf8');
+  for (const needle of ['rel="manifest"', 'rel=\\"manifest\\"', 'assets/arah-pwa.js']) if (!html.includes(needle)) fail(`index.html is missing ${needle} (run node scripts/pwa/inject-head.mjs)`);
+  console.log('pwa ok (' + mf.icons.length + ' icons)');
+}
+
 if (errors.length) { console.error(errors.map((e) => 'FAIL ' + e).join('\n')); process.exit(1); }
 console.log('check ok');

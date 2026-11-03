@@ -1,4 +1,4 @@
-// ar-vision v0.2.0
+// ar-vision v0.3.0
 // Pure, DOM-free logic for the ARAH AR driving assistant: YOLOX decoding, NMS, tracking,
 // monocular distance, closing speed, lane finding and the alert rules. Everything here is
 // deterministic and unit-tested (test/ar-core.test.mjs); the camera, WebGL and UI live in arah-ar.js.
@@ -433,3 +433,6 @@ export class AlertGate {
     return null;
   }
 }
+
+/** True for CPU-emulated WebGL renderers (no GPU acceleration). */
+export const isSoftwareGpu = (name) => /swiftshader|llvmpipe|softpipe|software|basic render|mesa offscreen/i.test(String(name || ''));

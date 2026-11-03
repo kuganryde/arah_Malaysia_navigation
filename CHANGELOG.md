@@ -4,6 +4,21 @@ Every module has its own version (see `versions.json` and `VERSIONING.md`). Each
 
 ## [Unreleased]
 
+## [0.4.2] - 2026-11-03
+
+- **ci 0.3.1**: pwa test: service worker ignores foreign-origin messages
+## [0.4.1] - 2026-11-03
+
+- **pwa 0.1.1**: service worker checks the message origin before acting on SKIP_WAITING / GET_VERSION (CodeQL)
+## [0.4.0] - 2026-11-03
+
+- **pwa 0.1.0** (new): installable app. Web app manifest, maskable and Apple icons, 10 iOS splash screens, offline-first service worker (versioned precache, never touches map-tile cache, `/api` or cross-origin), Android install button, iOS Add to Home Screen guide, update notice that never reloads mid-trip, `?nosw=1` support switch
+- **ci 0.3.0**: pwa tests (manifest, icons, service worker run in a sandbox), pwa:stamp and pwa:inject scripts, check.mjs validates manifest and precache freshness
+- **docs 0.4.0**: README: install on iPhone and Android, offline behaviour, hardware-acceleration explanation; VERSIONING: npm run pwa:stamp
+- **privacy 0.3.0**: offline copy section: what the service worker stores and how to clear it
+- **security-headers 0.4.0**: service-worker and manifest headers (no-store sw.js, Service-Worker-Allowed), icon caching, CSP manifest-src and worker-src; SECURITY.md PWA section
+- **app 0.2.1**: head: web app manifest, apple-touch-icon, 10 iOS startup images and the PWA script; dark loading shell
+- **ar-vision 0.3.0**: hardware-acceleration guard: AR refuses software-rendered WebGL (SwiftShader, llvmpipe) with a clear message instead of running on the CPU
 ## [0.3.2] - 2026-11-03
 
 - **docs 0.3.1**: README describes the single AR window

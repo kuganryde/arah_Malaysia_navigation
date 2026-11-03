@@ -1,4 +1,4 @@
-// ar-vision v0.2.0
+// ar-vision v0.3.0
 // The heavy half of AR driver assist: model verification, WebGL inference, post-processing, lane finding and
 // traffic-light colour. It has no UI and runs identically in a Web Worker (preferred: keeps the map's main
 // thread and WebGL context untouched) or on the main thread (fallback for browsers without OffscreenCanvas).
@@ -16,10 +16,15 @@ function makeCanvas(w, h) {
 
 export class Engine {
   /** Fetch + verify + load the model. Throws Error with .code: nowebgl | load | modelhash | run. */
-  static async create({ ort, modelUrl, sha256, size = core.SIZE }) {
+  static async create({ ort, modelUrl, sha256, size = core.SIZE, allowSoftware = false }) {
     let gl = null;
     try { gl = makeCanvas(1, 1).getContext('webgl2') || makeCanvas(1, 1).getContext('webgl'); } catch (e) { /* no GL */ }
     if (!gl) throw fail('nowebgl');
+    // Hardware-acceleration guard: a software renderer (SwiftShader, llvmpipe...) would run the model on the CPU at a
+    // few frames per second and drain the battery in a car mount, so refuse it unless explicitly allowed (tests).
+    let gpu = '';
+    try { const x = gl.getExtension('WEBGL_debug_renderer_info'); gpu = String(x ? gl.getParameter(x.UNMASKED_RENDERER_WEBGL) : gl.getParameter(gl.RENDERER)); } catch (e) { /* unknown */ }
+    if (!allowSoftware && core.isSoftwareGpu(gpu)) throw fail('nogpu', gpu);
     ort.env.logLevel = 'error';
     let buf;
     try {

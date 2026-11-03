@@ -1,8 +1,8 @@
 {
-  "release": "0.3.2",
+  "release": "0.4.2",
   "modules": {
     "app": {
-      "version": "0.2.0",
+      "version": "0.2.1",
       "description": "The map app: bundled index.html and its editable source",
       "paths": [
         "index.html",
@@ -46,7 +46,7 @@
       ]
     },
     "ar-vision": {
-      "version": "0.2.0",
+      "version": "0.3.0",
       "description": "AR driver assist: camera + WebGL YOLOX hazards, distance, speed and lane (assets/ar/)",
       "paths": [
         "assets/ar/**"
@@ -75,7 +75,7 @@
       ]
     },
     "security-headers": {
-      "version": "0.3.0",
+      "version": "0.4.0",
       "description": "HTTP security headers and the security policy document",
       "paths": [
         "vercel.json",
@@ -84,7 +84,7 @@
       "markers": []
     },
     "privacy": {
-      "version": "0.2.0",
+      "version": "0.3.0",
       "description": "Privacy notice page (/privacy)",
       "paths": [
         "privacy.html"
@@ -97,7 +97,7 @@
       ]
     },
     "ci": {
-      "version": "0.2.0",
+      "version": "0.3.1",
       "description": "Tests, guard rails and GitHub Actions",
       "paths": [
         ".github/**",
@@ -107,7 +107,7 @@
       "markers": []
     },
     "docs": {
-      "version": "0.3.1",
+      "version": "0.4.0",
       "description": "README and its animated art",
       "paths": [
         "README.md",
@@ -119,6 +119,37 @@
         "assets/rydetech-logo.png"
       ],
       "markers": []
+    },
+    "pwa": {
+      "version": "0.1.1",
+      "description": "Installable app: manifest, service worker, offline page, icons, install and update UI",
+      "paths": [
+        "sw.js",
+        "sw-precache.js",
+        "manifest.webmanifest",
+        "offline.html",
+        "assets/arah-pwa.js",
+        "assets/icons/**",
+        "assets/splash/**"
+      ],
+      "markers": [
+        {
+          "file": "sw.js",
+          "text": "// ARAH service worker  pwa v{v}"
+        },
+        {
+          "file": "assets/arah-pwa.js",
+          "text": "/*! ARAH PWA v{v}"
+        },
+        {
+          "file": "assets/arah-pwa.js",
+          "text": "window.__arahPWA = '{v}';"
+        },
+        {
+          "file": "offline.html",
+          "text": "<meta name=\"module-version\" content=\"pwa {v}\">"
+        }
+      ]
     }
   }
 }
