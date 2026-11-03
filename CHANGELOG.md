@@ -4,6 +4,13 @@ Every module has its own version (see `versions.json` and `VERSIONING.md`). Each
 
 ## [Unreleased]
 
+## [0.6.0] - 2026-11-03
+- **festive 0.1.0** (new): festival themes for 15 Malaysian celebrations (CNY, Ramadan, Raya Aidilfitri/Aidiladha, Muharram, Maulidur Rasul, Deepavali, Thaipusam, Wesak, Kaamatan, Gawai, Merdeka, Malaysia Day, Mid-Autumn, Christmas). Auto by date or manual, palette tokens and glowing icons, lit route with travelling lights, pulsing sights, string-light bunting, floating lanterns/diyas/ketupat/lotus, tap fireworks, daily greeting. Calm during trips and AR, honours reduce-motion
+
+- **ci 0.5.0**: festive tests (calendar, windows, shapes, scene); inject-head adds the festive script
+- **docs 0.6.0**: README: festive themes
+- **pwa 0.1.3**: precache covers the festive module
+- **app 0.2.3**: head loads assets/festive/arah-festive.js
 ## [0.5.1] - 2026-11-03
 
 - **ci 0.4.1**: places test: escapeRegex emits no backslash or quote

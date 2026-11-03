@@ -1,8 +1,8 @@
 {
-  "release": "0.5.1",
+  "release": "0.6.0",
   "modules": {
     "app": {
-      "version": "0.2.2",
+      "version": "0.2.3",
       "description": "The map app: bundled index.html and its editable source",
       "paths": [
         "index.html",
@@ -97,7 +97,7 @@
       ]
     },
     "ci": {
-      "version": "0.4.1",
+      "version": "0.5.0",
       "description": "Tests, guard rails and GitHub Actions",
       "paths": [
         ".github/**",
@@ -107,7 +107,7 @@
       "markers": []
     },
     "docs": {
-      "version": "0.5.0",
+      "version": "0.6.0",
       "description": "README and its animated art",
       "paths": [
         "README.md",
@@ -121,7 +121,7 @@
       "markers": []
     },
     "pwa": {
-      "version": "0.1.2",
+      "version": "0.1.3",
       "description": "Installable app: manifest, service worker, offline page, icons, install and update UI",
       "paths": [
         "sw.js",
@@ -173,6 +173,31 @@
         {
           "file": "assets/places/brands.mjs",
           "text": "// places v{v}"
+        }
+      ]
+    },
+    "festive": {
+      "version": "0.1.0",
+      "description": "Festival themes for Malaysia: glowing UI, lit route, lanterns, bunting, tap fireworks (assets/festive/)",
+      "paths": [
+        "assets/festive/**"
+      ],
+      "markers": [
+        {
+          "file": "assets/festive/arah-festive.js",
+          "text": "/*! ARAH festive theme v{v}"
+        },
+        {
+          "file": "assets/festive/arah-festive.js",
+          "text": "window.__arahFestive = '{v}';"
+        },
+        {
+          "file": "assets/festive/festivals.mjs",
+          "text": "// festive v{v}"
+        },
+        {
+          "file": "assets/festive/fx.mjs",
+          "text": "// festive v{v}"
         }
       ]
     }
