@@ -128,6 +128,19 @@ Forecast rain from **Open-Meteo** nudges arrival estimates up when it is heavy, 
 
 Map tiles you have viewed and your saved route are cached on the device, so *Luar talian · Offline* still shows your map and route. Fresh routing needs a connection.
 
+### 📲 Install it as an app (PWA)
+
+ARAH installs like a native app on iPhone, iPad and Android, opens full screen, and starts even with no signal.
+
+| Device | How |
+| --- | --- |
+| **Android** (Chrome, Edge, Samsung Internet) | Tap the **Pasang · Install** button in the app, or the browser menu → *Install app* |
+| **iPhone / iPad** (Safari, iOS 16.4+) | Tap **Share** → **Add to Home Screen** → **Add**. The in-app **Pasang · Install** button shows these steps |
+
+The app shell, icons and AR code are cached by a service worker, so the app opens offline. The AR model (about 416 KB) is cached the first time you turn AR on. A new version shows an *Update* notice and is never applied during a trip.
+
+**Hardware acceleration.** The AR model runs on the phone's **GPU through WebGL**, inside a Web Worker so the map stays smooth. If a device only offers software rendering, AR says so instead of running slowly on the CPU. WebGPU / NPU paths are not used yet. Support switch: open the app with `?nosw=1` once to remove the service worker and its caches.
+
 ### 🌴 Explore Malaysia
 
 - All **16 states and federal territories**, with capitals and flags.

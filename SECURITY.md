@@ -22,6 +22,13 @@ Email **rydetechwizsolutions@proton.me** with steps to reproduce. Please do not 
 3. **Extra origins.** Set `ALLOWED_ORIGINS` (comma separated) if the app is served from a custom domain.
 4. **Self-host or pin third-party assets.** MapLibre loads from unpkg; pin an exact version and add Subresource Integrity, or serve it from the same origin.
 
+## Installed app (PWA)
+
+- The service worker handles only same-origin GET requests for a fixed, hash-stamped list of files (`sw-precache.js`, generated and checked in CI). It never handles cross-origin requests, `/api/*` or non-GET requests, and it deletes only caches named `arah-pwa-*`.
+- `sw.js` and `sw-precache.js` are served `no-store`, so a fix reaches installed copies on the next visit. Updates are applied only when the user taps *Update* and never during a trip.
+- CSP (report-only) adds `manifest-src 'self'` and `worker-src 'self' blob:`.
+- AR refuses software-rendered WebGL (`nogpu`) so it cannot silently run on the CPU.
+
 ## Known limits
 
 - Origin checks stop casual cross-site use but are not authentication; the rate limit and cache are the cost controls.

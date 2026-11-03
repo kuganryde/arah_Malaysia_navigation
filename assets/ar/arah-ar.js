@@ -1,4 +1,4 @@
-/*! ARAH AR driver assist v0.2.0
+/*! ARAH AR driver assist v0.3.0
  * Camera + on-device YOLOX (WebGL, onnxruntime-web) shown in two small windows while a trip runs:
  * hazards (vehicles, pedestrians, riders, animals, traffic lights, stop signs), lead-vehicle distance,
  * headway and time-to-collision, GPS speed, lane position and lane-change events.
@@ -11,7 +11,7 @@
 (function () {
   'use strict';
   if (window.__arahAR) return;
-  window.__arahAR = '0.2.0';
+  window.__arahAR = '0.3.0';
 
   /* ---------------------------------------------------------------- config */
   var SCRIPT = document.currentScript && document.currentScript.src;
@@ -233,7 +233,7 @@
         }
       };
       w.onerror = function () { if (!settled) { settled = true; reject(Object.assign(new Error('worker'), { code: 'noworker' })); } };
-      w.postMessage({ type: 'init', sha256: MODEL.sha256, size: MODEL.size }); // the worker derives all URLs itself
+      w.postMessage({ type: 'init', sha256: MODEL.sha256, size: MODEL.size, allowSoftware: prefs.allowSoftware === true }); // the worker derives all URLs itself
     });
   }
   async function loadEngine() {
@@ -247,7 +247,7 @@
     }
     if (!window.ort) await loadScript(BASE + ORT_URL);
     var mod = await import(BASE + 'ar-engine.mjs');
-    S.engine = await mod.Engine.create({ ort: window.ort, modelUrl: BASE + MODEL.url, sha256: MODEL.sha256, size: MODEL.size });
+    S.engine = await mod.Engine.create({ ort: window.ort, modelUrl: BASE + MODEL.url, sha256: MODEL.sha256, size: MODEL.size, allowSoftware: prefs.allowSoftware === true });
   }
   function disposeEngine() {
     if (S.worker) { try { S.worker.postMessage({ type: 'close' }); } catch (e) { /* gone */ } S.worker.terminate(); S.worker = null; } // terminate frees the GPU at once
@@ -399,6 +399,7 @@
 
   var MSG = {
     nowebgl: 'WebGL tidak disokong pada peranti ini · WebGL is not supported on this device',
+    nogpu: 'Tiada pecutan GPU pada peranti ini · No GPU acceleration on this device',
     denied: 'Kebenaran kamera ditolak · Camera permission denied',
     nocam: 'Kamera tidak ditemui · No camera found',
     modelhash: 'Model AI gagal pengesahan · AI model failed verification',
@@ -408,7 +409,7 @@
   };
   function fatal(e) {
     var m = String(e && e.name) + ': ' + String(e && e.message ? e.message : e);
-    var key = (e && e.code && MSG[e.code]) ? e.code : /nowebgl/.test(m) ? 'nowebgl' : /NotAllowed|Permission/i.test(m) ? 'denied' : /NotFound|Devices/i.test(m) ? 'nocam' : /modelhash/.test(m) ? 'modelhash' : /load failed|model http|Failed to fetch/i.test(m) ? 'load' : 'run';
+    var key = (e && e.code && MSG[e.code]) ? e.code : /nowebgl/.test(m) ? 'nowebgl' : /nogpu/.test(m) ? 'nogpu' : /NotAllowed|Permission/i.test(m) ? 'denied' : /NotFound|Devices/i.test(m) ? 'nocam' : /modelhash/.test(m) ? 'modelhash' : /load failed|model http|Failed to fetch/i.test(m) ? 'load' : 'run';
     S.err = MSG[key]; stop(false, true);
     console.warn('[ARAH AR]', m, e && e.stack ? String(e.stack).split('\n').slice(0, 3).join(' | ') : ''); // visible in devtools for support, never sent anywhere
   }
