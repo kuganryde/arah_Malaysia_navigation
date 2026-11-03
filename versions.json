@@ -121,7 +121,7 @@
       "markers": []
     },
     "pwa": {
-      "version": "0.1.4",
+      "version": "0.1.5",
       "description": "Installable app: manifest, service worker, offline page, icons, install and update UI",
       "paths": [
         "sw.js",
