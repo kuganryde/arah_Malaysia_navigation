@@ -33,3 +33,22 @@ jobs:
         run: npm run check
       - name: Module versions (changed modules must be bumped)
         run: npm run version:check -- ${{ github.event_name == 'pull_request' && format('origin/{0}', github.base_ref) || '' }}
+  e2e:
+    # Real-browser tests: PWA offline + installability, places, festive, keep-awake, AR GPU guard.
+    # Separate job so a flaky browser never hides the fast unit/guard results, and so it runs in parallel.
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: 22
+          cache: npm
+      - name: Install pinned dependencies (lockfile only, no lifecycle scripts)
+        run: npm ci --ignore-scripts
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Browser tests (network fully mocked)
+        run: npm run e2e
