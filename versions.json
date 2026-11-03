@@ -1,5 +1,5 @@
 {
-  "release": "0.2.1",
+  "release": "0.2.2",
   "modules": {
     "app": {
       "version": "0.2.0",
@@ -68,7 +68,7 @@
       ]
     },
     "ci": {
-      "version": "0.1.0",
+      "version": "0.1.1",
       "description": "Tests, guard rails and GitHub Actions",
       "paths": [
         ".github/**",

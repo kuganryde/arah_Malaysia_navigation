@@ -4,6 +4,9 @@ Every module has its own version (see `versions.json` and `VERSIONING.md`). Each
 
 ## [Unreleased]
 
+## [0.2.2] - 2026-11-03
+
+- **ci 0.1.1**: check.mjs reads each file once (fixes CodeQL file-system-race alerts)
 ## [0.2.1] - 2026-11-03
 
 - **docs 0.2.1**: README documents TTS_STYLE; accent claims removed
