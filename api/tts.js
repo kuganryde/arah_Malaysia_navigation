@@ -2,7 +2,8 @@
 // Env: GEMINI_API_KEY (required) · GEMINI_TTS_MODEL, GEMINI_TTS_VOICE (optional)
 //      ALLOWED_ORIGINS (optional, comma list of extra origins, e.g. a custom domain)
 //      TTS_RATE_PER_MIN (default 30) · UPSTASH_REDIS_REST_URL / UPSTASH_REDIS_REST_TOKEN (optional shared limiter)
-// v0.2.0: origin check, per-IP rate limit, audio cache, request timeout, no upstream detail in errors.
+// api-tts v0.2.0
+// Changes in 0.2.0: origin check, per-IP rate limit, audio cache, request timeout, no upstream detail in errors.
 import {
   LANG, parseBody, originAllowed, clientIp, makeMemoryLimiter, makeUpstashLimiter,
   makeAudioCache, cacheKey, wav,

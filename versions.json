@@ -1,0 +1,55 @@
+{
+  "release": "0.2.0",
+  "modules": {
+    "app": {
+      "version": "0.2.0",
+      "description": "The map app: bundled index.html and its editable source",
+      "paths": ["index.html", "source/**"],
+      "markers": []
+    },
+    "api-tts": {
+      "version": "0.2.0",
+      "description": "Voice endpoint /api/tts and its helpers",
+      "paths": ["api/tts.js", "lib/**"],
+      "markers": [
+        { "file": "api/tts.js", "text": "// api-tts v{v}" },
+        { "file": "lib/tts-core.mjs", "text": "// api-tts v{v}" }
+      ]
+    },
+    "enhancements": {
+      "version": "0.1.0",
+      "description": "Wake lock, accessibility labels and reduced motion (assets/arah-enhancements.js)",
+      "paths": ["assets/arah-enhancements.js"],
+      "markers": [
+        { "file": "assets/arah-enhancements.js", "text": "/*! ARAH enhancements v{v}" },
+        { "file": "assets/arah-enhancements.js", "text": "window.__arahEnh = '{v}';" }
+      ]
+    },
+    "security-headers": {
+      "version": "0.2.0",
+      "description": "HTTP security headers and the security policy document",
+      "paths": ["vercel.json", "SECURITY.md"],
+      "markers": []
+    },
+    "privacy": {
+      "version": "0.1.0",
+      "description": "Privacy notice page (/privacy)",
+      "paths": ["privacy.html"],
+      "markers": [
+        { "file": "privacy.html", "text": "<meta name=\"module-version\" content=\"privacy {v}\">" }
+      ]
+    },
+    "ci": {
+      "version": "0.1.0",
+      "description": "Tests, guard rails and GitHub Actions",
+      "paths": [".github/**", "scripts/**", "test/**"],
+      "markers": []
+    },
+    "docs": {
+      "version": "0.2.0",
+      "description": "README and its animated art",
+      "paths": ["README.md", "VERSIONING.md", "assets/arah-banner.svg", "assets/arah-features.svg", "assets/arah-divider.svg", "assets/arah-logo*.png", "assets/rydetech-logo.png"],
+      "markers": []
+    }
+  }
+}

@@ -1,4 +1,4 @@
-/*! ARAH enhancements v0.2.0
+/*! ARAH enhancements v0.1.0
  * A small, separate layer on top of the app bundle. It reads the DOM only and never calls the app's
  * code, so it cannot change routing, voice or map behaviour. If it fails, the app is unaffected.
  *  1. Screen wake lock while a trip is active (the "Tamat" end-trip button is on screen).
@@ -8,7 +8,7 @@
 (function () {
   'use strict';
   if (window.__arahEnh) return;
-  window.__arahEnh = '0.2.0';
+  window.__arahEnh = '0.1.0';
 
   // 3. Reduced motion: stop decorative animation and smooth scrolling. Map camera animation is
   //    controlled by the app; this only covers CSS animation and transitions.
