@@ -1,4 +1,4 @@
-/*! ARAH Makan & Mall v0.1.0
+/*! ARAH Makan & Mall v0.1.1
  * A directory of Malaysian fast-food chains and shopping malls with logos. Separate layer, like arah-ar.js:
  * it reads the app's map through window.__arahMap and never calls the app's other code.
  *  - Outlets come live from OpenStreetMap (Overpass), searched around the centre of the map view.
@@ -9,7 +9,7 @@
 (function () {
   'use strict';
   if (window.__arahPlaces) return;
-  window.__arahPlaces = '0.1.0';
+  window.__arahPlaces = '0.1.1';
   var BASE = new URL('.', document.currentScript ? document.currentScript.src : location.href).href;
   var OVERPASS = 'https://overpass-api.de/api/interpreter';
   var LOGO_KEY = 'arah.places.logos';

@@ -4,6 +4,10 @@ Every module has its own version (see `versions.json` and `VERSIONING.md`). Each
 
 ## [Unreleased]
 
+## [0.5.1] - 2026-11-03
+
+- **ci 0.4.1**: places test: escapeRegex emits no backslash or quote
+- **places 0.1.1**: queries contain no backslashes or quotes: regex specials become character classes (CodeQL incomplete-escaping)
 ## [0.5.0] - 2026-11-03
 - **places 0.1.0** (new): Makan & Mall. Directory of 39 fast-food/cafe chains and 48 malls with logos loaded lazily from each brand's website (initials badge fallback, switch to turn off, no referrer), live outlets from OpenStreetMap around the map view, logo markers, route hand-off to the app's search; hidden during a trip
 

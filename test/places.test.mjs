@@ -67,3 +67,12 @@ test('parseOutlets: sorts by distance, dedupes, matches brand, keeps text plain'
   assert.equal(r[0].name, '<img src=x onerror=alert(1)>'); // returned verbatim as data; the UI inserts it with textContent
   assert.deepEqual(P.parseOutlets(null, ref, 'food'), []);
 });
+
+test('escapeRegex never emits a backslash or a quote, and still matches the literal text', () => {
+  for (const s of ['plain', 'A&W', 'J.CO (x)', 'a"b\\c^d', 'x"];out;node(1);//', '*+?{}|$']) {
+    const e = P.escapeRegex(s);
+    assert.ok(!/["\\]/.test(e), e);
+  }
+  assert.ok(new RegExp(P.escapeRegex('J.CO (x)'), 'i').test('j.co (x) donuts'));
+  assert.ok(!new RegExp(P.escapeRegex('J.CO'), 'i').test('JxCO'));
+});

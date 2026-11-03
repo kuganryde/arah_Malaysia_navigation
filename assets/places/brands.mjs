@@ -1,4 +1,4 @@
-// places v0.1.0
+// places v0.1.1
 // Curated directory: fast-food / quick-service chains and shopping malls in Malaysia.
 // This is a starting list, not a census: outlets themselves come live from OpenStreetMap, so a chain that is
 // missing here is still found by the "Semua berdekatan · All nearby" search. Add a chain by adding one line.
@@ -44,7 +44,7 @@ export const BRANDS = [
   F('krispy-kreme', 'Krispy Kreme', 'krispykreme.com.my', '#00a651'),
   F('dunkin', "Dunkin'", 'dunkin.com', '#ff671f', "Dunkin"),
   F('big-apple', 'Big Apple Donuts', 'bigappledonuts.com', '#e4002b', 'Big Apple'),
-  F('jco', 'J.CO Donuts', 'jcodonuts.com', '#4a2c2a', 'J\\.?CO'),
+  F('jco', 'J.CO Donuts', 'jcodonuts.com', '#4a2c2a', 'J[.]?CO'),
   F('baskin-robbins', 'Baskin-Robbins', 'baskinrobbins.com.my', '#ec008c', 'Baskin'),
   F('auntie-annes', "Auntie Anne's", 'auntieannes.com', '#f7941d', "Auntie Anne.?s"),
   F('cinnabon', 'Cinnabon', 'cinnabon.com', '#00539b'),

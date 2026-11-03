@@ -1,4 +1,4 @@
-// places v0.1.0
+// places v0.1.1
 // Pure logic for the Makan & Mall directory: validation, OpenStreetMap query building, result parsing.
 // No DOM and no network here, so it is unit-tested in Node.
 export const KINDS = ['food', 'mall'];
@@ -6,11 +6,15 @@ export const DOMAIN_RE = /^(?=.{4,80}$)([a-z0-9-]+\.)+[a-z]{2,}$/;
 export const COLOR_RE = /^#[0-9a-f]{6}$/i;
 export const MY_BBOX = '0.8,99.5,7.5,119.4'; // south,west,north,east: Peninsular + Borneo Malaysia
 
-/** Escape text for use inside an Overpass QL regex string literal. */
-export const escapeRegex = (s) => String(s).replace(/[.*+?^${}()|[\]\\]/g, '\\$&').replace(/"/g, '\\"');
+/**
+ * Make text safe as a literal inside an Overpass QL regex string, without using any backslash or quote: regex
+ * specials become one-character classes ("." -> "[.]"), and characters that cannot be classed ('"', "\\", "^") become
+ * "." (any character). So nothing in the result can end the string literal or start an escape.
+ */
+export const escapeRegex = (s) => String(s).replace(/["\\^]/g, '.').replace(/[.*+?{}()|[$\]]/g, '[$&]');
 
-/** Regex source (Overpass dialect) for a brand: an explicit override or the escaped name. */
-export const brandPattern = (b) => (b.osm ? String(b.osm).replace(/"/g, '\\"') : escapeRegex(b.name));
+/** Regex source for a brand: an explicit override (quotes and backslashes neutralised) or the escaped name. */
+export const brandPattern = (b) => (b.osm ? String(b.osm).replace(/["\\]/g, '.') : escapeRegex(b.name));
 
 export const initials = (name) => {
   const w = String(name).replace(/['’.]/g, '').replace(/[^\p{L}\p{N} ]/gu, ' ').split(/\s+/).filter(Boolean);
@@ -58,7 +62,7 @@ export function matchBrand(tags, kind, brands = []) {
   const hay = `${tags.brand || ''}|${tags.name || ''}|${tags['name:en'] || ''}`;
   for (const b of brands) {
     if (b.kind !== kind) continue;
-    try { if (new RegExp(brandPattern(b).replace(/\\"/g, '"'), 'i').test(hay)) return b; } catch (e) { /* skip bad pattern */ }
+    try { if (new RegExp(brandPattern(b), 'i').test(hay)) return b; } catch (e) { /* skip bad pattern */ }
   }
   return null;
 }
