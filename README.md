@@ -64,8 +64,8 @@ Start from one of **nine cities**: Kuala Lumpur, George Town, Melaka, Putrajaya,
 
 | Language | Guide voice | Sample |
 | --- | --- | --- |
-| Bahasa Malaysia | Gemini voice via `/api/tts`, Malaysian accent | “Belok kiri di hadapan.” |
-| English | Gemini voice via `/api/tts`, warm Malaysian accent | “Turn left ahead.” |
+| Bahasa Malaysia | Gemini voice via `/api/tts`, speaks the sentence as written | “Belok kiri di hadapan.” |
+| English | Gemini voice via `/api/tts`, speaks the sentence as written | “Turn left ahead.” |
 | 中文 | Your device's voice | “前方左转。” |
 | தமிழ் | Your device's voice | “முன்னால் இடதுபுறம் திரும்புங்கள்.” |
 
@@ -192,6 +192,7 @@ Type: **Barlow Condensed** (headings, 800 italic uppercase), **Ubuntu** (body), 
    | `GEMINI_API_KEY` | yes | Authenticates the TTS function (keep it in Vercel's secret store, never in the repo) |
    | `GEMINI_TTS_MODEL` | no | Override the speech model |
    | `GEMINI_TTS_VOICE` | no | Override the voice name |
+   | `TTS_STYLE` | no | Optional short tone hint (max 80 chars) placed before the sentence. Empty by default, so only the sentence is read |
 
    Without a key the app still works: voice falls back to the device's own speech.
 3. In Vercel, open **Settings → Deployment Protection** and disable protection to make the site public, then assign your domain.
