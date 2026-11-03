@@ -4,6 +4,9 @@ Every module has its own version (see `versions.json` and `VERSIONING.md`). Each
 
 ## [Unreleased]
 
+## [0.2.1] - 2026-11-03
+
+- **docs 0.2.1**: README documents TTS_STYLE; accent claims removed
 - **api-tts 0.2.1**: voice reads only the sentence: the style/language instruction is no longer sent to Gemini (it was sometimes spoken aloud); optional TTS_STYLE env restores a short tone hint
 ## [0.2.0] - 2026-11-03
 
