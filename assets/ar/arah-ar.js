@@ -1,4 +1,4 @@
-/*! ARAH AR driver assist v0.1.0
+/*! ARAH AR driver assist v0.1.1
  * Camera + on-device YOLOX (WebGL, onnxruntime-web) shown in two small windows while a trip runs:
  * hazards (vehicles, pedestrians, riders, animals, traffic lights, stop signs), lead-vehicle distance,
  * headway and time-to-collision, GPS speed, lane position and lane-change events.
@@ -11,7 +11,7 @@
 (function () {
   'use strict';
   if (window.__arahAR) return;
-  window.__arahAR = '0.1.0';
+  window.__arahAR = '0.1.1';
 
   /* ---------------------------------------------------------------- config */
   var SCRIPT = document.currentScript && document.currentScript.src;
@@ -233,7 +233,7 @@
         }
       };
       w.onerror = function () { if (!settled) { settled = true; reject(Object.assign(new Error('worker'), { code: 'noworker' })); } };
-      w.postMessage({ type: 'init', ortUrl: BASE + ORT_URL, engineUrl: BASE + 'ar-engine.mjs', modelUrl: BASE + MODEL.url, sha256: MODEL.sha256, size: MODEL.size });
+      w.postMessage({ type: 'init', sha256: MODEL.sha256, size: MODEL.size }); // the worker derives all URLs itself
     });
   }
   async function loadEngine() {

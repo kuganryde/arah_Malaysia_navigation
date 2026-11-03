@@ -4,6 +4,9 @@ Every module has its own version (see `versions.json` and `VERSIONING.md`). Each
 
 ## [Unreleased]
 
+## [0.3.1] - 2026-11-03
+
+- **ar-vision 0.1.1**: worker builds its script, engine and model URLs from its own location instead of trusting the init message (CodeQL)
 ## [0.3.0] - 2026-11-03
 
 - **docs 0.3.0**: README: AR driver assist, privacy and repository notes
