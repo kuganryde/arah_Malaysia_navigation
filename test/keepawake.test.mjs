@@ -17,7 +17,7 @@ function boot({ wakeLock = true, pref = null, hidden = false, trip = false, reje
   const ctx = vm.createContext({ window: win, document, navigator, URL, location: { href: 'https://x.test/' }, setTimeout, clearTimeout, setInterval: () => 0,
     localStorage: { getItem: (k) => (store.has(k) ? store.get(k) : null), setItem: (k, v) => store.set(k, v) } });
   win.window = win; Object.assign(ctx, { window: win });
-  vm.runInContext(readFileSync('assets/keepawake/arah-keepawake.js', 'utf8').replace(/window\./g, 'window.'), ctx);
+  vm.runInContext(readFileSync('assets/keepawake/arah-keepawake.js', 'utf8'), ctx);
   return { win, document, calls, docL, sentinels, store, fire: (t) => (docL[t] || []).forEach((f) => f()) };
 }
 const tick = () => new Promise((r) => setImmediate(r));

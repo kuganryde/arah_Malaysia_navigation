@@ -4,6 +4,9 @@ Every module has its own version (see `versions.json` and `VERSIONING.md`). Each
 
 ## [Unreleased]
 
+## [0.7.1] - 2026-11-03
+
+- **ci 0.6.1**: keepawake test: remove a no-op string replacement (CodeQL)
 ## [0.7.0] - 2026-11-03
 - **keepawake 0.1.0** (new): the screen stays on while ARAH is open and visible. Screen Wake Lock API where available (Android, desktop, Safari 16.4+ incl. installed app) with automatic re-request, silent looping video fallback for older iOS and refused locks, always on during a trip, remembered off switch
 
