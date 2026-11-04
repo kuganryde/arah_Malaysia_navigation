@@ -244,3 +244,21 @@ test('Fonts: every bundled icon has a real glyph, and the Latin UI fonts load', 
     for (const f of ['Phosphor', 'Phosphor-Fill', 'Ubuntu', 'Barlow Condensed']) assert.ok(r.families.includes(f), f + ' loaded');
   } finally { await b.close(); }
 });
+
+test('Keep-awake is a small button under the map button column, not a toast, and it toggles', async () => {
+  const b = await launch(); const p = await b.page();
+  try {
+    await openApp(p, srv.url);
+    await p.waitForSelector('.ak-btn:not([hidden])', { timeout: 15000 });
+    const g = await p.evaluate(() => {
+      const r = (e) => e.getBoundingClientRect(), k = document.querySelector('.ak-btn'), col = [...document.querySelectorAll('button.btn')].filter((x) => x !== k && Math.abs(r(x).left - r(k).left) < 1 && r(x).top < r(k).top);
+      const last = col.sort((a, c) => r(c).top - r(a).top)[0];
+      return { w: r(k).width, h: r(k).height, right: innerWidth - r(k).right, lastRight: innerWidth - r(last).right, gap: r(k).top - r(last).bottom, toast: !!document.querySelector('.ak-toast') };
+    });
+    assert.equal(g.toast, false); assert.ok(g.w >= 44 && g.h >= 44);
+    assert.ok(Math.abs(g.right - g.lastRight) <= 1, 'same right edge as the column'); assert.ok(g.gap >= 0 && g.gap <= 16, 'directly under it: ' + g.gap);
+    await p.click('.ak-btn');
+    assert.equal(await p.evaluate(() => localStorage.getItem('arah.awake.v1')), '0');
+    assert.equal(await p.getAttribute('.ak-btn', 'aria-pressed'), 'false');
+  } finally { await b.close(); }
+});
