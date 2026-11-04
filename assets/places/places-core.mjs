@@ -1,4 +1,4 @@
-// places v0.1.1
+// places v0.1.2
 // Pure logic for the Makan & Mall directory: validation, OpenStreetMap query building, result parsing.
 // No DOM and no network here, so it is unit-tested in Node.
 export const KINDS = ['food', 'mall'];

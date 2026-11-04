@@ -1,4 +1,4 @@
-/*! ARAH Makan & Mall v0.1.1
+/*! ARAH Makan & Mall v0.1.2
  * A directory of Malaysian fast-food chains and shopping malls with logos. Separate layer, like arah-ar.js:
  * it reads the app's map through window.__arahMap and never calls the app's other code.
  *  - Outlets come live from OpenStreetMap (Overpass), searched around the centre of the map view.
@@ -9,7 +9,7 @@
 (function () {
   'use strict';
   if (window.__arahPlaces) return;
-  window.__arahPlaces = '0.1.1';
+  window.__arahPlaces = '0.1.2';
   var BASE = new URL('.', document.currentScript ? document.currentScript.src : location.href).href;
   var OVERPASS = 'https://overpass-api.de/api/interpreter';
   var LOGO_KEY = 'arah.places.logos';
@@ -224,7 +224,7 @@
   }
   function init() {
     var st = el('style'); st.textContent = css; document.head.appendChild(st);
-    btn = el('button', { class: 'ap-btn', type: 'button', 'aria-label': 'Makan dan pusat beli-belah · Fast food and malls', onclick: open }, [el('b', { text: '◉' }), el('span', { text: 'Makan & Mall' })]);
+    btn = el('button', { class: 'ap-btn', type: 'button', 'aria-label': 'Makan & Mall · Makan dan pusat beli-belah, fast food and malls', onclick: open }, [el('b', { text: '◉', 'aria-hidden': 'true' }), el('span', { text: 'Makan & Mall' })]);
     document.body.appendChild(btn); place(); setInterval(place, 1500);
   }
   Promise.all([import(BASE + 'places-core.mjs'), import(BASE + 'brands.mjs')]).then(function (r) {

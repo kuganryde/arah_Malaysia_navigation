@@ -1,4 +1,4 @@
-// places v0.1.1
+// places v0.1.2
 // Curated directory: fast-food / quick-service chains and shopping malls in Malaysia.
 // This is a starting list, not a census: outlets themselves come live from OpenStreetMap, so a chain that is
 // missing here is still found by the "Semua berdekatan · All nearby" search. Add a chain by adding one line.

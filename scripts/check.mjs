@@ -109,5 +109,18 @@ if (/AIza[0-9A-Za-z_-]{35}/.test(indexBuf.toString('utf8'))) fail('possible Goog
   console.log('crash reporting ok (' + (dsn ? 'DSN set' : 'inactive: no DSN') + ', bundle ' + (bundle.length / 1024).toFixed(0) + ' KB)');
 }
 
+// 7. Performance and accessibility budgets for the layers that load on every visit.
+//    Eager layer scripts (gzip) stay under 40 KB together; the page declares its language for screen readers.
+{
+  const { gzipSync } = await import('node:zlib');
+  const EAGER = ['assets/arah-enhancements.js', 'assets/arah-pwa.js', 'assets/places/arah-places.js', 'assets/festive/arah-festive.js', 'assets/keepawake/arah-keepawake.js', 'assets/resilience/arah-resilience.js', 'assets/observability/arah-observe.js'];
+  const gz = EAGER.reduce((n, f) => n + gzipSync(readFileSync(f)).length, 0);
+  const BUDGET_KB = 40;
+  if (gz > BUDGET_KB * 1024) fail(`eager layer scripts are ${(gz / 1024).toFixed(1)} KB gzip, over the ${BUDGET_KB} KB budget: lazy-load something`);
+  const html = indexBuf.toString('utf8');
+  if (!/<html lang=(\\?")ms\1>/.test(html)) fail('index.html <html> needs lang="ms" (run node scripts/pwa/inject-head.mjs)');
+  console.log(`budgets ok (eager layers ${(gz / 1024).toFixed(1)} KB gzip of ${BUDGET_KB}, lang set)`);
+}
+
 if (errors.length) { console.error(errors.map((e) => 'FAIL ' + e).join('\n')); process.exit(1); }
 console.log('check ok');

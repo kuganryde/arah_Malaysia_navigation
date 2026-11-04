@@ -4,6 +4,14 @@ Every module has its own version (see `versions.json` and `VERSIONING.md`). Each
 
 ## [Unreleased]
 
+## [0.12.0] - 2026-11-04
+
+- **docs 0.9.1**: README: performance notes
+- **ci 0.11.0**: budgets: eager layer scripts <= 40 KB gzip and page language; E2E: idle map stays idle with a theme on, label-in-name
+- **app 0.2.7**: page declares lang=ms (screen reader voice selection)
+- **pwa 0.1.11**: accessibility: install button name starts with its visible text; precache stamp refreshed
+- **places 0.1.2**: accessibility: button name starts with its visible text (WCAG 2.5.3), decorative glyph hidden from screen readers
+- **festive 0.1.1**: performance: an idle map no longer redraws ~30x/s (style-change feedback loop fixed, pulses only while a route is lit); glow animations moved to opacity (compositor); motion check cached; frame rate self-tunes on slow devices. Main-thread load with a theme on: ~1000 ms/s -> ~130 ms/s
 ## [0.11.1] - 2026-11-04
 
 - **ci 0.10.1**: E2E: the no-DSN case forces an empty DSN now that the real one ships

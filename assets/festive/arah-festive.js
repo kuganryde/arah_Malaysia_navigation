@@ -1,4 +1,4 @@
-/*! ARAH festive theme v0.1.0
+/*! ARAH festive theme v0.1.1
  * Festival themes for Malaysia's celebrations: colours, glowing icons, a lit route with travelling lights, pulsing
  * sights, string-light bunting, floating lanterns and tap fireworks on the map.
  * Separate layer, like arah-ar.js: it reads the map through window.__arahMap and the DOM, and never calls the app's
@@ -9,7 +9,7 @@
 (function () {
   'use strict';
   if (window.__arahFestive) return;
-  window.__arahFestive = '0.1.0';
+  window.__arahFestive = '0.1.1';
   var BASE = new URL('.', document.currentScript ? document.currentScript.src : location.href).href;
   var PREF = 'arah.festive.v1', SEEN = 'arah.festive.hi';
   var F, FX, cur = null, canvas, ctx, scene, btn, scrim, raf = 0, last = 0, mapFx = null, forcedBy = 'auto';
@@ -18,7 +18,7 @@
   function lsGet(k) { try { return localStorage.getItem(k); } catch (e) { return null; } }
   function lsSet(k, v) { try { localStorage.setItem(k, v); } catch (e) { /* private mode */ } }
   function prefs() { var p = {}; try { p = JSON.parse(lsGet(PREF) || '{}') || {}; } catch (e) { p = {}; } return { mode: typeof p.mode === 'string' ? p.mode : 'auto', motion: p.motion !== false }; }
-  function savePrefs(p) { lsSet(PREF, JSON.stringify(p)); }
+  function savePrefs(p) { lsSet(PREF, JSON.stringify(p)); moAt = 0; }
   function el(tag, props, kids) {
     var n = document.createElement(tag);
     if (props) for (var k in props) { if (k === 'class') n.className = props[k]; else if (k === 'text') n.textContent = props[k]; else if (k.slice(0, 2) === 'on') n.addEventListener(k.slice(2), props[k]); else n.setAttribute(k, props[k]); }
@@ -28,7 +28,14 @@
   function tripActive() { var b = document.querySelectorAll('button'); for (var i = 0; i < b.length; i++) if ((b[i].textContent || '').trim() === 'Tamat') return true; return false; }
   function arOn() { try { return !!(window.__arahARApi && window.__arahARApi.state && window.__arahARApi.state.on); } catch (e) { return false; } }
   function map() { return window.__arahMap || null; }
-  var motionOk = function () { return !reduce && prefs().motion && !tripActive() && !arOn() && !document.hidden; };
+  // Cached for 300 ms: this runs 30x/s from the canvas loop and 9x/s from the map loop, and used to rescan every <button>
+  // and re-parse the stored preferences each time. A trip/AR/tab change is still noticed within a third of a second.
+  var moAt = 0, moVal = false;
+  var motionOk = function () {
+    var n = performance.now();
+    if (n - moAt > 300 || n < moAt) { moAt = n; moVal = !reduce && prefs().motion && !tripActive() && !arOn() && !document.hidden; }
+    return moVal;
+  };
 
   /* ---------- which festival */
   function resolve() {
@@ -54,13 +61,14 @@
     '.af-toast{position:fixed;z-index:55;left:50%;transform:translateX(-50%);top:calc(env(safe-area-inset-top,0px) + 132px);width:min(92vw,400px);padding:12px 16px;border-radius:14px;border:1px solid var(--af-c2,#2fd0ec);background:rgba(20,23,41,.94);color:#eef0fa;text-align:center;font:500 13px/1.4 "Ubuntu",system-ui,sans-serif;box-shadow:0 0 28px var(--af-glow,rgba(47,208,236,.45));animation:af-in .6s ease-out both}' +
     '.af-toast b{display:block;font:800 22px/1.1 "Barlow Condensed","Ubuntu",sans-serif;font-style:italic;text-transform:uppercase;color:var(--af-c2,#2fd0ec);margin-bottom:2px}' +
     '@keyframes af-in{from{opacity:0;transform:translate(-50%,-10px) scale(.96)}to{opacity:1;transform:translate(-50%,0) scale(1)}}' +
-    '@keyframes af-tw{0%,100%{text-shadow:0 0 6px var(--af-glow),0 0 12px var(--af-glow)}50%{text-shadow:0 0 12px var(--af-glow),0 0 26px var(--af-glow)}}' +
-    '@keyframes af-pu{0%,100%{filter:drop-shadow(0 0 4px var(--af-glow))}50%{filter:drop-shadow(0 0 14px var(--af-c2))}}' +
-    'html[data-festive] .ph{text-shadow:0 0 6px var(--af-glow)}' +
+    '/* twinkle = opacity only: it runs on the GPU compositor. Animating text-shadow/filter repaints on the main thread every frame (measured ~300 ms of CPU per second) */' +
+    '@keyframes af-tw{0%,100%{opacity:1}50%{opacity:.78}}' +
+    '@keyframes af-pu{0%,100%{opacity:1}50%{opacity:.82}}' +
+    'html[data-festive] .ph{text-shadow:0 0 7px var(--af-glow),0 0 14px var(--af-glow)}' +
     'html[data-festive]:not([data-festive-calm]) .ph:nth-of-type(3n){animation:af-tw 3.4s ease-in-out infinite}' +
     'html[data-festive]:not([data-festive-calm]) .ph:nth-of-type(3n+1){animation:af-tw 4.6s ease-in-out -1.4s infinite}' +
     'html[data-festive] .btn-primary{box-shadow:0 0 16px var(--af-glow)}' +
-    'html[data-festive] .maplibregl-marker{animation:af-pu 2.6s ease-in-out infinite}' +
+    'html[data-festive] .maplibregl-marker{filter:drop-shadow(0 0 7px var(--af-glow));animation:af-pu 2.6s ease-in-out infinite}' +
     'html[data-festive-still] *,html[data-festive-still] .maplibregl-marker{animation:none!important}' +
     '@media (prefers-reduced-motion:reduce){html[data-festive] .ph,html[data-festive] .maplibregl-marker,.af-toast{animation:none!important}}' +
     '.af-btn:focus-visible,.af-x:focus-visible,.af-row:focus-visible{outline:2px solid #fff;outline-offset:2px}';
@@ -98,12 +106,17 @@
     if (!run && !reduce) { ctx.clearRect(0, 0, canvas.width, canvas.height); canvas.style.display = 'none'; return schedule(500); } // paused: trip, AR, hidden tab
     canvas.style.display = '';
     var dt = Math.min(0.1, (ts - (last || ts)) / 1000); last = ts;
+    var t0 = performance.now();
     scene.update(dt);
     ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
     FX.garland(ctx, cur.f, window.innerWidth, scene.t);
     scene.draw(ctx);
-    schedule(33); // about 30 fps: smooth enough, easy on the battery
+    // Self-tuning frame rate: ~30 fps normally; a slow phone (frames costing >4 ms / >8 ms) backs off to ~20 / ~10 fps
+    // so the glow never competes with the map or the driver's navigation for the main thread.
+    cost = cost * 0.9 + (performance.now() - t0) * 0.1;
+    schedule(cost > 8 ? 100 : cost > 4 ? 50 : 33);
   }
+  var cost = 0;
   function schedule(ms) { if (raf || reduce) return; raf = setTimeout(function () { raf = requestAnimationFrame(frame); }, ms); }
   function drawStill() { if (!canvas || !cur) return; canvas.style.display = ''; ctx.clearRect(0, 0, window.innerWidth, window.innerHeight); FX.garland(ctx, cur.f, window.innerWidth, 0.5); scene.update(0); scene.draw(ctx); }
 
@@ -121,19 +134,26 @@
     if (mapFx && mapFx.m === m) return;
     mapFx = { m: m, t0: performance.now(), orig: {}, coords: null, cum: null, total: 0, sig: '', on: false, timer: 0 };
     var st = mapFx;
+    // Write a paint value only when it differs. setPaintProperty fires 'styledata', and our styledata handler calls ensure()
+    // again, so an unconditional write looped forever: the map redrew ~30x/s and never went idle (battery, heat, jank).
+    function sp(layer, prop, val) {
+      var cur0 = m.getPaintProperty(layer, prop);
+      if (cur0 === val || JSON.stringify(cur0) === JSON.stringify(val)) return;
+      m.setPaintProperty(layer, prop, val);
+    }
     function ensure() {
       if (!cur) return;
       try {
         if (m.getLayer('route-glow') && !('rg' in st.orig)) { st.orig.rg = [m.getPaintProperty('route-glow', 'line-color'), m.getPaintProperty('route-glow', 'line-opacity')]; st.orig.r = m.getPaintProperty('route', 'line-color'); }
-        if (m.getLayer('route-glow')) { m.setPaintProperty('route-glow', 'line-color', cur.f.c2); m.setPaintProperty('route', 'line-color', cur.f.c1); }
+        if (m.getLayer('route-glow')) { sp('route-glow', 'line-color', cur.f.c2); sp('route', 'line-color', cur.f.c1); }
         if (!m.getSource('festive-lights')) m.addSource('festive-lights', { type: 'geojson', data: { type: 'FeatureCollection', features: [] } });
         var before = m.getLayer('route-arrows') ? 'route-arrows' : undefined;
         if (!m.getLayer('festive-lights-halo')) m.addLayer({ id: 'festive-lights-halo', type: 'circle', source: 'festive-lights', paint: { 'circle-radius': 11, 'circle-color': cur.f.c2, 'circle-opacity': 0.5, 'circle-blur': 1 } }, before);
         if (!m.getLayer('festive-lights-core')) m.addLayer({ id: 'festive-lights-core', type: 'circle', source: 'festive-lights', paint: { 'circle-radius': 3.2, 'circle-color': '#fffdf0', 'circle-opacity': 0.95 } }, before);
         if (m.getSource('sights') && !m.getLayer('festive-sights-halo')) m.addLayer({ id: 'festive-sights-halo', type: 'circle', source: 'sights', paint: { 'circle-radius': 12, 'circle-color': cur.f.c2, 'circle-opacity': 0.25, 'circle-blur': 0.8 } }, m.getLayer('sights') ? 'sights' : undefined);
-        if (m.getLayer('festive-lights-halo')) { m.setPaintProperty('festive-lights-halo', 'circle-color', cur.f.c2); }
-        if (m.getLayer('festive-sights-halo')) m.setPaintProperty('festive-sights-halo', 'circle-color', cur.f.c2);
-        if (m.getLayer('lm-label')) { st.orig.lm = st.orig.lm || m.getPaintProperty('lm-label', 'text-color'); m.setPaintProperty('lm-label', 'text-color', cur.f.c2); }
+        if (m.getLayer('festive-lights-halo')) { sp('festive-lights-halo', 'circle-color', cur.f.c2); }
+        if (m.getLayer('festive-sights-halo')) sp('festive-sights-halo', 'circle-color', cur.f.c2);
+        if (m.getLayer('lm-label')) { st.orig.lm = st.orig.lm || m.getPaintProperty('lm-label', 'text-color'); sp('lm-label', 'text-color', cur.f.c2); }
       } catch (e) { /* style not ready yet: the next tick retries */ }
     }
     function tick() {
@@ -145,15 +165,24 @@
         if (sig !== st.sig) { st.sig = sig; st.coords = cs; if (cs) { st.cum = FX.cumulative(cs, HAV); st.total = st.cum[st.cum.length - 1] || 1; if (moving && scene) { var p = m.project(cs[cs.length - 1]); scene.burst(p.x, p.y); } } }
         var lights = m.getSource('festive-lights');
         if (lights) {
+          // Every setData and every changed paint value makes MapLibre redraw the whole 3D scene, so an idle map is left alone:
+          // the lights source is cleared once (not every tick) and the pulses run only where something is on screen.
           if (st.coords && moving) {
             var n = Math.min(14, Math.max(5, Math.round(st.total / 900))), gap = Math.max(60, st.total / (n + 2)), speed = Math.max(40, Math.min(160, st.total / 18)), dists = [];
             for (var i = 0; i < n; i++) dists.push(t * speed + i * gap);
             var pts = FX.alongLine(st.coords, dists, st.total, st.cum);
             lights.setData({ type: 'FeatureCollection', features: pts.map(function (c, k) { return { type: 'Feature', properties: {}, geometry: { type: 'Point', coordinates: c } }; }) });
-          } else lights.setData({ type: 'FeatureCollection', features: [] });
+            st.lit = true;
+          } else if (st.lit) { lights.setData({ type: 'FeatureCollection', features: [] }); st.lit = false; }
         }
-        if (m.getLayer('route-glow')) m.setPaintProperty('route-glow', 'line-opacity', moving ? 0.38 + 0.22 * Math.sin(t * 2.2) : 0.5); // slow breathing glow, never a flash
-        if (m.getLayer('festive-sights-halo')) { m.setPaintProperty('festive-sights-halo', 'circle-radius', moving ? 11 + 5 * Math.sin(t * 1.8) : 12); m.setPaintProperty('festive-sights-halo', 'circle-opacity', moving ? 0.2 + 0.12 * Math.sin(t * 1.8) : 0.25); }
+        var Q = function (v) { return Math.round(v * 24) / 24; }; // steps: an unchanged value is a no-op for MapLibre, so no redraw
+        if (m.getLayer('route-glow')) { var live = moving && !!st.coords; /* animate only while a route is lit: an idle map must stay idle */ var g = live ? Q(0.38 + 0.22 * Math.sin(t * 2.2)) : 0.5; sp('route-glow', 'line-opacity', g); } // slow breathing glow, never a flash
+        if (m.getLayer('festive-sights-halo')) {
+          var seen = m.getZoom() >= 6; // the sights layer is hidden below zoom 6: nothing to pulse
+          var pr = live && seen ? Q(11 + 5 * Math.sin(t * 1.8)) : 12, po = live && seen ? Q(0.2 + 0.12 * Math.sin(t * 1.8)) : 0.25;
+          sp('festive-sights-halo', 'circle-radius', pr);
+          sp('festive-sights-halo', 'circle-opacity', po);
+        }
       } catch (e) { /* never break the page */ }
     }
     st.timer = setInterval(tick, 110);

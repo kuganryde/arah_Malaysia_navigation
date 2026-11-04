@@ -194,3 +194,29 @@ test('Crash reports: "No thanks" means Sentry is never downloaded and nothing is
     assert.equal(await p.evaluate(() => localStorage.getItem('arah.observe.v1')), 'off');
   } finally { await b.close(); }
 });
+
+const DEEPAVALI = "Date.now = (() => { const t = new Date('2026-11-03T04:00:00Z').getTime(); const O = Date; globalThis.Date = class extends O { constructor(...a) { a.length ? super(...a) : super(t); } static now() { return t; } }; return () => t; })();";
+
+test('Performance: with a festival theme on, an idle map stays idle (no continuous redraw)', async () => {
+  const b = await launch({ init: DEEPAVALI }); const p = await b.page();
+  try {
+    await openApp(p, srv.url); await p.waitForTimeout(2500);
+    assert.equal(await p.evaluate(() => window.__arahFestiveApi.current()), 'deepavali');
+    const r = await p.evaluate(() => new Promise((res) => { const m = window.__arahMap; let n = 0; const f = () => n++; m.on('render', f); setTimeout(() => { m.off('render', f); res({ n, loaded: m.loaded() }); }, 3000); }));
+    // Before the fix a style-change feedback loop redrew the whole 3D map ~30x/s forever (battery, heat, jank).
+    assert.ok(r.n <= 3, `idle map rendered ${r.n} times in 3 s`);
+  } finally { await b.close(); }
+});
+
+test('Accessibility: page language is set and our buttons name their visible text', async () => {
+  const b = await launch(); const p = await b.page();
+  try {
+    await openApp(p, srv.url);
+    assert.equal(await p.evaluate(() => document.documentElement.lang), 'ms');
+    const mismatch = await p.evaluate(() => [...document.querySelectorAll('.ap-btn, .arah-pwa-pill')].map((bt) => {
+      const vis = (bt.querySelector('span') || bt).textContent.trim().toLowerCase(), name = (bt.getAttribute('aria-label') || '').toLowerCase();
+      return name.startsWith(vis) ? null : vis + ' !~ ' + name;
+    }).filter(Boolean));
+    assert.deepEqual(mismatch, [], 'WCAG 2.5.3 label in name');
+  } finally { await b.close(); }
+});

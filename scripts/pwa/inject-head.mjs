@@ -24,6 +24,7 @@ const ENH = '<script src="assets/arah-enhancements.js" defer></script>';
 
 export function patchHead(html) { // for plain HTML heads
   let out = html;
+  if (/^\s*(<!doctype[^>]*>\s*)?<html>/i.test(out)) out = out.replace('<html>', '<html lang="ms">'); // screen readers pick the voice from lang
   if (!out.includes(MARK)) out = out.replace('</head>', TAGS + '\n</head>');
   if (!out.includes('arah-pwa.js')) out = out.replace(ENH, ENH + '\n' + PWA_SCRIPT);
   if (!out.includes('arah-places.js')) out = out.replace(PWA_SCRIPT, PWA_SCRIPT + '\n' + PLACES_SCRIPT);
@@ -47,6 +48,7 @@ function patchBundle(file) {
   const roundTrip = encode(tpl);
   if (roundTrip !== raw.trim()) throw new Error('template does not round-trip byte-identically; refusing to rewrite');
   let t = tpl;
+  if (/^\s*(<!doctype[^>]*>\s*)?<html>/i.test(t)) t = t.replace('<html>', '<html lang="ms">');
   const head = t.indexOf('</head>');
   const headPart = t.slice(0, head);
   if (!headPart.includes(MARK)) t = t.slice(0, head) + TAGS + '\n' + t.slice(head);
