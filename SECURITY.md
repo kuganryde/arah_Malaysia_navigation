@@ -37,3 +37,7 @@ Email **rydetechwizsolutions@proton.me** with steps to reproduce. Please do not 
 ## Network resilience layer (assets/resilience)
 
 Wraps `window.fetch` only for a fixed allowlist of https hosts (Overpass and two mirrors, Photon, OSRM); everything else passes through. Fallback requests carry no cookies, only the fixed hosts above are contacted, the search text is URL-encoded into the Nominatim query, and every fallback body is parsed as JSON and rebuilt before the app reads it. CSP `connect-src` lists the added hosts.
+
+## Crash reporting (assets/observability)
+
+Opt-in Sentry. The SDK is built from pinned `@sentry/browser` into `vendor/sentry.min.js` and loaded with Subresource Integrity only after consent; `npm run check` fails if the pinned hash and the file disagree. Integrations are limited to global error handlers, API-error wrapping, linked errors and dedupe: no tracing, replay, feedback widget or breadcrumbs. `scrub.mjs` removes user data, request details, local variables, coordinates and query strings before send, drops extension and cross-origin noise, and allows at most 10 distinct events per page. Only `*.ingest.sentry.io` DSNs are accepted and the CSP `connect-src` allows only those hosts. The DSN is public by design; set "Prevent Storing of IP Addresses" server-side as a second layer.

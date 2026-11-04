@@ -4,6 +4,15 @@ Every module has its own version (see `versions.json` and `VERSIONING.md`). Each
 
 ## [Unreleased]
 
+## [0.11.0] - 2026-11-04
+
+- **observability 0.1.0** (new): opt-in crash reports to Sentry. One-time consent card (never during a trip or AR); nothing is downloaded or sent before yes. Vendored, SRI-pinned SDK (global handlers only, no breadcrumbs/tracing/replay); events scrubbed on the device (no coordinates, searches, URLs' queries, cookies, IP), 10 per visit; failover events counted. Inactive until a DSN is set in assets/observability/config.json
+- **docs 0.9.0**: README/SECURITY: opt-in Sentry crash reports and maintainer setup
+- **ci 0.10.0**: observability tests (scrub, consent flow, hostile DSN) and E2E with the real vendored SDK; guard for SRI, release stamp and DSN shape
+- **pwa 0.1.9**: precache covers crash-report loader, config and release stamp; Sentry bundle cached on first use
+- **app 0.2.6**: head loads assets/observability/arah-observe.js
+- **security-headers 0.6.0**: CSP connect-src allows *.ingest.sentry.io (crash reports, opt-in)
+- **privacy 0.7.0**: crash reports section and Sentry row (opt-in only), with an on/off switch
 ## [0.10.0] - 2026-11-04
 
 - **pwa 0.1.8**: no page reload on first install (only when an update takes over): fixes a flaky offline test and an interruption for new users

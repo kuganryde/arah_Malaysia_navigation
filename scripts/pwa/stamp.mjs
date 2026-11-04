@@ -26,6 +26,9 @@ export const CORE = {
   '/assets/keepawake/awake.mp4': 'assets/keepawake/awake.mp4',
   '/assets/keepawake/awake.webm': 'assets/keepawake/awake.webm',
   '/assets/resilience/arah-resilience.js': 'assets/resilience/arah-resilience.js',
+  '/assets/observability/arah-observe.js': 'assets/observability/arah-observe.js',
+  '/assets/observability/config.json': 'assets/observability/config.json',
+  '/assets/observability/release.json': 'assets/observability/release.json',
   '/assets/ar/arah-ar.js': 'assets/ar/arah-ar.js',
   '/assets/ar/ar-core.mjs': 'assets/ar/ar-core.mjs',
   '/assets/ar/ar-engine.mjs': 'assets/ar/ar-engine.mjs',
@@ -39,6 +42,7 @@ export const CORE = {
 // Cached the first time AR is used (4 MB): not worth downloading for people who never turn AR on.
 export const LAZY = {
   '/assets/ar/vendor/ort.webgl.min.js': 'assets/ar/vendor/ort.webgl.min.js',
+  '/assets/observability/vendor/sentry.min.js': 'assets/observability/vendor/sentry.min.js',
   '/assets/ar/models/yolox_nano.onnx': 'assets/ar/models/yolox_nano.onnx',
 };
 
@@ -56,10 +60,13 @@ export function render(b) {
     `self.__ARAH_PRECACHE = ${JSON.stringify(b, null, 2)};\n`;
 }
 
+// The release name Sentry groups crashes under; generated so it can never drift from versions.json.
+export const renderRelease = (b) => JSON.stringify({ release: b.release }) + '\n';
 const out = join(ROOT, 'sw-precache.js');
 if (process.argv[1] === fileURLToPath(import.meta.url)) {
   const missing = [...Object.values(CORE), ...Object.values(LAZY)].filter((f) => !existsSync(join(ROOT, f)));
   if (missing.length) { console.error('stamp: missing files: ' + missing.join(', ')); process.exit(1); }
+  writeFileSync(join(ROOT, 'assets/observability/release.json'), renderRelease(build()));
   writeFileSync(out, render(build()));
   console.log('sw-precache.js written (core ' + build().coreHash + ', lazy ' + build().lazyHash + ')');
 }

@@ -178,6 +178,12 @@ ARAH leans on free public map services. A small separate layer (`assets/resilien
 - A server that fails twice is skipped for a minute, then tried again. A short Bahasa/English note tells you when a backup is used (never during a trip).
 - Add `?nonet=1` to the address to switch the layer off. `window.__arahNet.status()` shows what it has seen.
 
+### Crash reports with Sentry (opt-in)
+
+ARAH can send anonymous crash reports to Sentry so bugs get fixed. It is **off until you say yes** (one small card, shown once, never during a trip or AR). Before consent no Sentry code is downloaded and nothing is sent. Reports are stripped on your device of coordinates, search text, addresses, query strings, cookies and breadcrumbs, capped at 10 per visit, and sent without an IP address. Change your mind on the Privacy page.
+
+Maintainers: put the project DSN in `assets/observability/config.json` (a public ingest URL, `{ "dsn": "https://<key>@o<org>.ingest.us.sentry.io/<project>" }`) and turn on **Prevent Storing of IP Addresses** in the Sentry project settings. The SDK is vendored and pinned (`npm run observe:build`, SRI checked by `npm run check`), never loaded from a CDN.
+
 ## 🔒 Privacy and transparency
 
 - **100% non-profit.** Free, no ads, sells nothing.
