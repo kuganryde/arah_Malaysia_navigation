@@ -24,7 +24,7 @@ if (pinned !== modelSha) fail(`assets/ar/arah-ar.js pins model ${pinned} but the
 if (!readFileSync('assets/ar/models/MODEL.md', 'utf8').includes(modelSha)) fail('assets/ar/models/MODEL.md does not list the shipped model SHA-256');
 
 // 2. Page weight budget: the app ships as one HTML file, so cap it. Lower BUDGET_MB as the bundle is slimmed.
-const BUDGET_MB = Number(process.env.INDEX_BUDGET_MB || 2.5);
+const BUDGET_MB = Number(process.env.INDEX_BUDGET_MB || 1.3);
 const indexBuf = readFileSync('index.html'); // read once; reused for the key scan below
 const mb = indexBuf.length / 1048576;
 if (mb > BUDGET_MB) fail(`index.html is ${mb.toFixed(2)} MB, over the ${BUDGET_MB} MB budget`);
@@ -120,6 +120,25 @@ if (/AIza[0-9A-Za-z_-]{35}/.test(indexBuf.toString('utf8'))) fail('possible Goog
   const html = indexBuf.toString('utf8');
   if (!/<html lang=(\\?")ms\1>/.test(html)) fail('index.html <html> needs lang="ms" (run node scripts/pwa/inject-head.mjs)');
   console.log(`budgets ok (eager layers ${(gz / 1024).toFixed(1)} KB gzip of ${BUDGET_KB}, lang set)`);
+}
+
+// 8. Font diet guards: only Latin UI fonts and the icon fonts are bundled, and every icon the code uses is in the trimmed font.
+{
+  const { usedIcons } = await import('./perf/trim-fonts.mjs');
+  const { execFileSync } = await import('node:child_process');
+  const html = indexBuf.toString('utf8');
+  const man = JSON.parse(html.match(/<script type="__bundler\/manifest">([\s\S]*?)<\/script>/)[1]);
+  const tpl = JSON.parse(html.match(/<script type="__bundler\/template">([\s\S]*?)<\/script>/)[1].replace(/<\\u002F/g, '</'));
+  const fontKB = Object.values(man).filter((e) => /font/.test(e.mime)).reduce((n, e) => n + Buffer.from(e.data, 'base64').length, 0) / 1024;
+  if (fontKB > 600) fail(`bundled fonts are ${fontKB.toFixed(0)} KB (budget 600 KB): run npm run perf:fonts`);
+  const faces = [...tpl.matchAll(/@font-face\s*\{[^}]*\}/g)].map((m) => m[0]).filter((b) => !/font-family:\s*"?Phosphor/.test(b) && !/U\+0000-00FF/.test(b));
+  if (faces.length) fail(`${faces.length} non-Latin font face(s) are bundled: run npm run perf:fonts`);
+  const repo = execFileSync('git', ['ls-files', 'assets']).toString().split('\n').filter((f) => /\.(m?js)$/.test(f)).map((f) => readFileSync(f, 'utf8'));
+  const used = usedIcons({ template: tpl, manifest: man, repoFiles: repo });
+  const have = new Set([...tpl.matchAll(/\.ph\.ph-([a-z0-9-]+):before/g)].map((m) => m[1]));
+  const missing = [...used].filter((n) => !have.has(n));
+  if (missing.length) fail(`icon(s) used in the code but missing from the trimmed icon font: ${missing.join(', ')} (run npm run perf:fonts after adding them)`);
+  console.log(`fonts ok (${fontKB.toFixed(0)} KB, ${used.size} icons)`);
 }
 
 if (errors.length) { console.error(errors.map((e) => 'FAIL ' + e).join('\n')); process.exit(1); }

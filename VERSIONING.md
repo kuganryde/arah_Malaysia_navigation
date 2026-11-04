@@ -39,3 +39,5 @@ After changing any file the service worker caches, run `npm run pwa:stamp` (it r
 ## Adding a module
 
 Add an entry to `versions.json` with `version`, `description`, `paths` (globs: `**` crosses folders, `*` does not) and optional `markers` (`{ "file", "text" }` where `{v}` is replaced by the version). Start at `0.1.0` and document it in the table above.
+
+After regenerating `index.html` from the design source, re-run in this order: `npm run pwa:inject`, `npm run perf:fonts`, `npm run pwa:stamp`.
