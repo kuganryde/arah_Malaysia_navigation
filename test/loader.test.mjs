@@ -5,7 +5,8 @@ import { LOADER_HTML, LOADER_CSS, LOADER_JS } from '../scripts/loader/loader-mar
 
 test('loader is self-contained: no network, no images, no inline handlers', () => {
   const all = LOADER_HTML + LOADER_CSS + LOADER_JS;
-  assert.ok(!/https?:\/\/(?!www\.w3\.org)/.test(all), 'no external URLs');
+  const urls = all.match(/https?:[^\s"'<>)]*/g) || []; // only the SVG namespace may appear
+  assert.deepEqual(urls.filter((u) => u !== 'http://www.w3.org/2000/svg'), [], 'no external URLs');
   assert.ok(!/url\((?!#)|<img|<link|onload=|onclick=|javascript:/i.test(all));
 });
 test('loader is announced to screen readers and keeps the bundler status element', () => {
