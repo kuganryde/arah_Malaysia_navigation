@@ -1,8 +1,8 @@
 {
-  "release": "0.17.0",
+  "release": "0.18.0",
   "modules": {
     "app": {
-      "version": "0.3.2",
+      "version": "0.4.0",
       "description": "The map app: bundled index.html and its editable source",
       "paths": [
         "index.html",
@@ -97,7 +97,7 @@
       ]
     },
     "ci": {
-      "version": "0.15.0",
+      "version": "0.16.0",
       "description": "Tests, guard rails and GitHub Actions",
       "paths": [
         ".github/**",
@@ -107,7 +107,7 @@
       "markers": []
     },
     "docs": {
-      "version": "0.11.0",
+      "version": "0.11.1",
       "description": "README and its animated art",
       "paths": [
         "README.md",
@@ -121,7 +121,7 @@
       "markers": []
     },
     "pwa": {
-      "version": "0.1.16",
+      "version": "0.1.17",
       "description": "Installable app: manifest, service worker, offline page, icons, install and update UI",
       "paths": [
         "sw.js",
@@ -296,13 +296,21 @@
       ]
     },
     "twa": {
-      "version": "0.1.0",
+      "version": "0.1.1",
       "description": "Android (Trusted Web Activity) packaging, Play listing drafts, asset links (twa/, .well-known/)",
       "paths": [
         "twa/**",
         "scripts/twa/**",
         ".well-known/**",
         ".github/workflows/android.yml"
+      ],
+      "markers": []
+    },
+    "loader": {
+      "version": "0.1.0",
+      "description": "Branded 3D loading screen, injected into the page shell (scripts/loader/)",
+      "paths": [
+        "scripts/loader/**"
       ],
       "markers": []
     }

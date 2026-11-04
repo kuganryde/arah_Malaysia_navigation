@@ -11,6 +11,7 @@ export const TAGS = [
   '<link rel="icon" type="image/png" sizes="48x48" href="assets/icons/favicon-48.png">',
   ...SPLASH.map(([w, h, r]) => `<link rel="apple-touch-startup-image" href="assets/splash/launch-${w}x${h}.png" media="(device-width: ${w / r}px) and (device-height: ${h / r}px) and (-webkit-device-pixel-ratio: ${r}) and (orientation: portrait)">`),
 ].join('\n');
+import { LOADER_HTML, LOADER_CSS, LOADER_JS } from '../loader/loader-markup.mjs';
 const MARK = 'rel="manifest"';
 const PWA_SCRIPT = '<script src="assets/arah-pwa.js" defer></script>';
 const PLACES_SCRIPT = '<script src="assets/places/arah-places.js" defer></script>';
@@ -43,6 +44,20 @@ export function patchHead(html) { // for plain HTML heads
 // The bundle writes every "</" inside the JSON as "<\u002F" so the string can sit inside a <script> element.
 const encode = (v) => JSON.stringify(v).replace(/<\//g, '<\\u002F');
 
+// Loading screen in the page shell (see scripts/loader/loader-markup.mjs). Regenerated on every run so edits to the source land in index.html.
+export function patchShell(s) {
+  const css = `<style id="arah-loader-css">${LOADER_CSS}</style>`, js = `<script id="arah-loader-js">${LOADER_JS}</script>`;
+  const had = s.includes('id="arah-loader-css"');
+  if (had) s = s.replace(/<style id="arah-loader-css">[\s\S]*?<\/style>/, () => css).replace(/<script id="arah-loader-js">[\s\S]*?<\/script>/, () => js).replace(/<div id="arah-loader"[\s\S]*?<!--\/arah-loader-->/, () => LOADER_HTML);
+  else {
+    s = s.replace('</head>', () => css + '\n' + js + '\n</head>');
+    s = s.replace(/<div id="__bundler_thumbnail">[\s\S]*?<\/div>\s*<div id="__bundler_loading">Unpacking\.\.\.<\/div>/, () => LOADER_HTML);
+    s = s.replace('document.documentElement.replaceWith(doc.documentElement);', () => 'window.__arahLoader && window.__arahLoader.hold();\n    document.documentElement.replaceWith(doc.documentElement);\n    window.__arahLoader && window.__arahLoader.show();');
+    s = s.replace("setStatus('Unpacking ' + uuids.length + ' assets...');", () => "setStatus('Menyediakan peta · Preparing the map');").replace("setStatus('Rendering...');", () => "setStatus('Memaparkan · Rendering');");
+  }
+  return s;
+}
+
 function patchBundle(file) {
   let s = readFileSync(file, 'utf8');
   const re = /(<script type="__bundler\/template">)([\s\S]*?)(<\/script>)/;
@@ -69,6 +84,7 @@ function patchBundle(file) {
   s = s.replace(re, (_, a, _b, c) => a + enc + c);
   // outer shell: manifest tags in the static head; dark loading screen instead of a white flash
   s = patchHead(s.slice(0, s.indexOf('</head>') + 7)) + s.slice(s.indexOf('</head>') + 7);
+  s = patchShell(s);
   s = s.replace('body { background: #faf9f5;', 'body { background: #0a0c1a;')
        .replace('background: #faf9f5; z-index: 9999', 'background: #0a0c1a; z-index: 9999')
        .replace(/(#__bundler_loading \{[^}]*?)color: #666; background: #fff;/, '$1color: #9aa0c4; background: #141729;');

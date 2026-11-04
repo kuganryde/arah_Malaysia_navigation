@@ -4,6 +4,14 @@ Every module has its own version (see `versions.json` and `VERSIONING.md`). Each
 
 ## [Unreleased]
 
+## [0.18.0] - 2026-11-04
+
+- **twa 0.1.1**: version sync to release 0.18.0
+- **pwa 0.1.17**: release stamp 0.18.0
+- **docs 0.11.1**: README: loading screen
+- **ci 0.16.0**: loader unit + E2E tests, shell guard
+- **app 0.4.0**: branded 3D loading screen in the page shell, carried over into the app until the map draws
+- **loader 0.1.0**: branded 3D loading screen (neon road, KL skyline, turning 3D ARAH arrow, gradient wordmark); inline in the shell, carried over into the app, fades when the map draws; reduced-motion safe
 ## [0.17.0] - 2026-11-04
 
 - **pwa 0.1.16**: release stamp 0.17.0
