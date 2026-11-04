@@ -6,6 +6,7 @@ Every module has its own version (see `versions.json` and `VERSIONING.md`). Each
 
 ## [0.14.0] - 2026-11-04
 
+- **ci 0.12.1**: tests for the keep-awake button (unit + E2E)
 - **pwa 0.1.13**: precache stamp refreshed (keep-awake button)
 - **keepawake 0.2.0**: Keep-awake notice is now a small sun/moon toggle button in the right-hand map button column (no toast over the map buttons)
 ## [0.13.0] - 2026-11-04
