@@ -6,6 +6,7 @@ Every module has its own version (see `versions.json` and `VERSIONING.md`). Each
 
 ## [0.10.0] - 2026-11-04
 
+- **pwa 0.1.8**: no page reload on first install (only when an update takes over): fixes a flaky offline test and an interruption for new users
 - **resilience 0.1.0** (new): timeouts and failover for the public map services. Overpass tries up to three servers, search falls back from Photon to OpenStreetMap Nominatim, routing gets a hard timeout (walking is retried once), a host that fails twice is skipped for a minute, and a short note says when a backup is used (never during a trip). `?nonet=1` switches it off
 - **docs 0.8.0**: README: resilient when public services stumble; SECURITY: resilience layer
 - **ci 0.9.0**: resilience tests (vm fake network: failover, timeout, breaker, abort, offline) and an E2E for Overpass/Photon failover
