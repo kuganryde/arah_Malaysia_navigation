@@ -110,6 +110,9 @@ if (/AIza[0-9A-Za-z_-]{35}/.test(indexBuf.toString('utf8'))) fail('possible Goog
   const veh = readFileSync('assets/vehicles/vendor/vehicles3d.min.js');
   const vsri = 'sha384-' + createHash('sha384').update(veh).digest('base64');
   if (!readFileSync('assets/vehicles/arah-vehicles.js', 'utf8').includes(`var VEH_SRI = '${vsri}';`)) fail('arah-vehicles.js SRI does not match vendor/vehicles3d.min.js: run npm run vehicles:build');
+  const lmb = readFileSync('assets/landmarks/vendor/landmarks3d.min.js');
+  const lsri = 'sha384-' + createHash('sha384').update(lmb).digest('base64');
+  if (!readFileSync('assets/landmarks/arah-landmarks.js', 'utf8').includes(`var LM_SRI = '${lsri}';`)) fail('arah-landmarks.js SRI does not match vendor/landmarks3d.min.js: run npm run landmarks:build');
   console.log('crash reporting ok (' + (dsn ? 'DSN set' : 'inactive: no DSN') + ', bundle ' + (bundle.length / 1024).toFixed(0) + ' KB)');
 }
 
@@ -140,12 +143,12 @@ if (/AIza[0-9A-Za-z_-]{35}/.test(indexBuf.toString('utf8'))) fail('possible Goog
 }
 
 // 7. Performance and accessibility budgets for the layers that load on every visit.
-//    Eager layer scripts (gzip) stay under 40 KB together; the page declares its language for screen readers.
+//    Eager layer scripts (gzip) stay under 42 KB together (40 until the landmarks loader, ~2.3 KB, joined; every engine itself is lazy); the page declares its language for screen readers.
 {
   const { gzipSync } = await import('node:zlib');
-  const EAGER = ['assets/arah-enhancements.js', 'assets/arah-pwa.js', 'assets/places/arah-places.js', 'assets/festive/arah-festive.js', 'assets/keepawake/arah-keepawake.js', 'assets/resilience/arah-resilience.js', 'assets/observability/arah-observe.js', 'assets/vehicles/arah-vehicles.js', 'assets/a11y/arah-a11y.js'];
+  const EAGER = ['assets/arah-enhancements.js', 'assets/arah-pwa.js', 'assets/places/arah-places.js', 'assets/festive/arah-festive.js', 'assets/keepawake/arah-keepawake.js', 'assets/resilience/arah-resilience.js', 'assets/observability/arah-observe.js', 'assets/vehicles/arah-vehicles.js', 'assets/landmarks/arah-landmarks.js', 'assets/a11y/arah-a11y.js'];
   const gz = EAGER.reduce((n, f) => n + gzipSync(readFileSync(f)).length, 0);
-  const BUDGET_KB = 40;
+  const BUDGET_KB = 42;
   if (gz > BUDGET_KB * 1024) fail(`eager layer scripts are ${(gz / 1024).toFixed(1)} KB gzip, over the ${BUDGET_KB} KB budget: lazy-load something`);
   const html = indexBuf.toString('utf8');
   if (!/<html lang=(\\?")ms\1>/.test(html)) fail('index.html <html> needs lang="ms" (run node scripts/pwa/inject-head.mjs)');
