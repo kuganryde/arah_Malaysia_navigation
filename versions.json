@@ -2,7 +2,7 @@
   "release": "0.15.0",
   "modules": {
     "app": {
-      "version": "0.3.0",
+      "version": "0.3.1",
       "description": "The map app: bundled index.html and its editable source",
       "paths": [
         "index.html",

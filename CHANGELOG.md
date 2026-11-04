@@ -6,6 +6,7 @@ Every module has its own version (see `versions.json` and `VERSIONING.md`). Each
 
 ## [0.15.0] - 2026-11-04
 
+- **app 0.3.1**: script tag for the vehicles layer injected into the bundle head
 - **vehicles 0.1.0**: 3D vehicle (car, motorbike, lorry, bus) replaces the route arrow while navigating; tap to hop and change colour; wheels follow speed; lazy-loaded, integrity-pinned three.js; free models (Kenney CC0 car, built-in shapes)
 - **pwa 0.1.14**: precache: vehicles layer (core) and 3D bundle + models (lazy)
 - **docs 0.10.0**: README: 3D vehicles section, slimmer festive description
