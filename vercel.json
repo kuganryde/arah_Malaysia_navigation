@@ -30,7 +30,7 @@
         },
         {
           "key": "Content-Security-Policy-Report-Only",
-          "value": "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' blob:; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; font-src 'self' data:; connect-src 'self' data: blob: https://tiles.openfreemap.org https://*.openfreemap.org https://router.project-osrm.org https://routing.openstreetmap.de https://photon.komoot.io https://overpass-api.de https://api.open-meteo.com https://server.arcgisonline.com https://s3.amazonaws.com https://*.s3.amazonaws.com https://commons.wikimedia.org; media-src 'self' blob: data:; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; manifest-src 'self'"
+          "value": "default-src 'self'; script-src 'self' 'unsafe-inline' 'unsafe-eval' blob:; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https:; font-src 'self' data:; connect-src 'self' data: blob: https://tiles.openfreemap.org https://*.openfreemap.org https://router.project-osrm.org https://routing.openstreetmap.de https://photon.komoot.io https://overpass-api.de https://overpass.kumi.systems https://overpass.private.coffee https://nominatim.openstreetmap.org https://api.open-meteo.com https://server.arcgisonline.com https://s3.amazonaws.com https://*.s3.amazonaws.com https://commons.wikimedia.org; media-src 'self' blob: data:; worker-src 'self' blob:; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; manifest-src 'self'"
         }
       ]
     },

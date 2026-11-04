@@ -69,7 +69,7 @@ if (/AIza[0-9A-Za-z_-]{35}/.test(indexBuf.toString('utf8'))) fail('possible Goog
     if (readFileSync('sw-precache.js', 'utf8') !== render(build())) fail('sw-precache.js is stale: run npm run pwa:stamp');
   } catch (e) { fail('sw-precache.js unreadable: ' + e.message); }
   const html = indexBuf.toString('utf8');
-  for (const needle of ['rel="manifest"', 'rel=\\"manifest\\"', 'assets/arah-pwa.js']) if (!html.includes(needle)) fail(`index.html is missing ${needle} (run node scripts/pwa/inject-head.mjs)`);
+  for (const needle of ['rel="manifest"', 'rel=\\"manifest\\"', 'assets/arah-pwa.js', 'assets/resilience/arah-resilience.js']) if (!html.includes(needle)) fail(`index.html is missing ${needle} (run node scripts/pwa/inject-head.mjs)`);
   console.log('pwa ok (' + mf.icons.length + ' icons)');
 }
 

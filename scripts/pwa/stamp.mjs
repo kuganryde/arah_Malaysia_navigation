@@ -25,6 +25,7 @@ export const CORE = {
   '/assets/keepawake/arah-keepawake.js': 'assets/keepawake/arah-keepawake.js',
   '/assets/keepawake/awake.mp4': 'assets/keepawake/awake.mp4',
   '/assets/keepawake/awake.webm': 'assets/keepawake/awake.webm',
+  '/assets/resilience/arah-resilience.js': 'assets/resilience/arah-resilience.js',
   '/assets/ar/arah-ar.js': 'assets/ar/arah-ar.js',
   '/assets/ar/ar-core.mjs': 'assets/ar/ar-core.mjs',
   '/assets/ar/ar-engine.mjs': 'assets/ar/ar-engine.mjs',

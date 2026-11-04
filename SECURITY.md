@@ -33,3 +33,7 @@ Email **rydetechwizsolutions@proton.me** with steps to reproduce. Please do not 
 
 - Origin checks stop casual cross-site use but are not authentication; the rate limit and cache are the cost controls.
 - Public routing, search and place services (OSRM demo, Photon, Overpass) have no SLA.
+
+## Network resilience layer (assets/resilience)
+
+Wraps `window.fetch` only for a fixed allowlist of https hosts (Overpass and two mirrors, Photon, OSRM); everything else passes through. Fallback requests carry no cookies, only the fixed hosts above are contacted, the search text is URL-encoded into the Nominatim query, and every fallback body is parsed as JSON and rebuilt before the app reads it. CSP `connect-src` lists the added hosts.

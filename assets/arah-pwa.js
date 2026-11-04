@@ -1,4 +1,4 @@
-/*! ARAH PWA v0.1.6
+/*! ARAH PWA v0.1.8
  * Installability and offline support, as a separate layer like arah-enhancements.js: it never calls the app's code.
  *  1. Registers the service worker (sw.js) so the app shell opens offline.
  *  2. Install button: the native prompt on Android/desktop Chrome and Edge, a short how-to on iPhone/iPad.
@@ -9,7 +9,7 @@
 (function () {
   'use strict';
   if (window.__arahPWA) return;
-  window.__arahPWA = '0.1.6';
+  window.__arahPWA = '0.1.8';
 
   var DISMISS_KEY = 'arah.pwa.dismissed';
   var DISMISS_DAYS = 7;
@@ -143,7 +143,10 @@
     if (!('serviceWorker' in navigator)) return;
     var secure = location.protocol === 'https:' || location.hostname === 'localhost' || location.hostname === '127.0.0.1';
     if (!secure) return;
-    navigator.serviceWorker.addEventListener('controllerchange', function () { // the new worker took over: load its files once
+    var hadController = !!navigator.serviceWorker.controller; // false on the very first visit
+    navigator.serviceWorker.addEventListener('controllerchange', function () { // an UPDATE took over: load its files once
+      // First install also fires this (the worker claims the page); reloading then would only interrupt a new user.
+      if (!hadController) { hadController = true; return; }
       if (reloading) return; reloading = true; location.reload();
     });
     navigator.serviceWorker.register('/sw.js', { scope: '/', updateViaCache: 'none' }).then(watch).catch(function (e) { console.warn('[ARAH PWA] service worker failed', e && e.message); });
