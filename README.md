@@ -184,6 +184,10 @@ ARAH can send anonymous crash reports to Sentry so bugs get fixed. It is **off u
 
 Maintainers: put the project DSN in `assets/observability/config.json` (a public ingest URL, `{ "dsn": "https://<key>@o<org>.ingest.us.sentry.io/<project>" }`) and turn on **Prevent Storing of IP Addresses** in the Sentry project settings. The SDK is vendored and pinned (`npm run observe:build`, SRI checked by `npm run check`), never loaded from a CDN.
 
+### Performance notes
+
+The festive themes used to keep the 3D map redrawing about 30 times a second even when nothing moved. They now only touch the map while a route is lit, glow animations run on the GPU (opacity), and the canvas frame rate backs off by itself on slow phones; the main thread is busy about 130 ms per second with a theme on, against about 1000 ms before. CI guards this (idle-map test) and keeps the always-loaded layer scripts under 40 KB gzip.
+
 ## 🔒 Privacy and transparency
 
 - **100% non-profit.** Free, no ads, sells nothing.

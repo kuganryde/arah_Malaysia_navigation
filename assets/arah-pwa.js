@@ -1,4 +1,4 @@
-/*! ARAH PWA v0.1.10
+/*! ARAH PWA v0.1.11
  * Installability and offline support, as a separate layer like arah-enhancements.js: it never calls the app's code.
  *  1. Registers the service worker (sw.js) so the app shell opens offline.
  *  2. Install button: the native prompt on Android/desktop Chrome and Edge, a short how-to on iPhone/iPad.
@@ -9,7 +9,7 @@
 (function () {
   'use strict';
   if (window.__arahPWA) return;
-  window.__arahPWA = '0.1.10';
+  window.__arahPWA = '0.1.11';
 
   var DISMISS_KEY = 'arah.pwa.dismissed';
   var DISMISS_DAYS = 7;
@@ -67,7 +67,7 @@
   function build() {
     if (pill) return;
     var st = el('style'); st.textContent = css; document.head.appendChild(st);
-    pill = el('button', { class: 'arah-pwa-pill', type: 'button', 'aria-label': 'Pasang aplikasi ARAH · Install the ARAH app' }, [el('b', { text: '+' }), el('span', { text: 'Pasang · Install' })]);
+    pill = el('button', { class: 'arah-pwa-pill', type: 'button', 'aria-label': 'Pasang · Install the ARAH app' }, [el('b', { text: '+', 'aria-hidden': 'true' }), el('span', { text: 'Pasang · Install' })]);
     pill.addEventListener('click', onInstallTap);
     toast = el('div', { class: 'arah-pwa-toast', role: 'status', 'aria-live': 'polite' });
     document.body.appendChild(pill); document.body.appendChild(toast);
