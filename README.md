@@ -169,6 +169,15 @@ The app shell, icons and AR code are cached by a service worker, so the app open
 
 <div align="center"><img src="assets/arah-divider.svg" alt="" width="100%"></div>
 
+### Resilient when public services stumble
+
+ARAH leans on free public map services. A small separate layer (`assets/resilience/arah-resilience.js`) keeps the app usable when one is slow or down:
+
+- Every call has a hard timeout, so a stalled server cannot freeze routing or search.
+- Nearby places try up to three Overpass servers; search falls back from Photon to OpenStreetMap Nominatim.
+- A server that fails twice is skipped for a minute, then tried again. A short Bahasa/English note tells you when a backup is used (never during a trip).
+- Add `?nonet=1` to the address to switch the layer off. `window.__arahNet.status()` shows what it has seen.
+
 ## 🔒 Privacy and transparency
 
 - **100% non-profit.** Free, no ads, sells nothing.

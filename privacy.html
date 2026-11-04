@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#0a0c1a">
-<meta name="module-version" content="privacy 0.5.0">
+<meta name="module-version" content="privacy 0.6.0">
 <title>Privacy · ARAH Navigasi Malaysia</title>
 <meta name="description" content="What ARAH stores on your device, which services it talks to, and what it does not collect.">
 <style>
@@ -61,8 +61,8 @@ th{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--mute
 <tbody>
 <tr><td>OpenFreeMap, Esri, AWS terrain tiles</td><td>Map, satellite and 3D terrain</td><td>Tile requests for the area you view</td></tr>
 <tr><td>OSRM (public routing servers)</td><td>Routes and turn instructions</td><td>Start, destination and route options</td></tr>
-<tr><td>Photon (Komoot)</td><td>Place search</td><td>Your search text and your map position for ranking</td></tr>
-<tr><td>Overpass API</td><td>Nearby surau, fuel, EV, food and more</td><td>The map area being searched</td></tr>
+<tr><td>Photon (Komoot); OpenStreetMap Nominatim as backup</td><td>Place search</td><td>Your search text and your map position for ranking. Nominatim is asked only when Photon does not answer, and receives the search text.</td></tr>
+<tr><td>Overpass API (mirrors: overpass.kumi.systems, overpass.private.coffee)</td><td>Nearby surau, fuel, EV, food and more</td><td>The map area being searched. A mirror is asked only when the main server is slow or down.</td></tr>
 <tr><td>Open-Meteo</td><td>Rain forecast for arrival times</td><td>Approximate coordinates</td></tr>
 <tr><td>Wikimedia Commons</td><td>State flags</td><td>Image requests</td></tr>
 <tr><td>ARAH voice service (<code>/api/tts</code>) and Google Gemini</td><td>Spoken guidance in Bahasa Malaysia and English</td><td>The sentence to be spoken (up to 600 characters). We log only that a request happened and its length, never the text. Chinese and Tamil use your device's own voice.</td></tr>

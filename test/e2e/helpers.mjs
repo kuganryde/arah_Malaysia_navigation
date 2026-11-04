@@ -40,6 +40,7 @@ export async function launch(opts = {}) {
     if (/^https?:\/\/(localhost|127\.0\.0\.1)/.test(u)) return r.continue();
     if (/maplibre-gl.*\.js$/.test(u)) return r.fulfill({ path: ML('maplibre-gl.js'), contentType: 'application/javascript' });
     if (/maplibre-gl.*\.css$/.test(u)) return r.fulfill({ path: ML('maplibre-gl.css'), contentType: 'text/css' });
+    if (opts.route && (await opts.route(u, r, seen))) return;
     if (u.includes('overpass-api.de')) { seen.overpass.push(decodeURIComponent(r.request().postData() || '')); return r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(opts.overpass || OVERPASS) }); }
     seen.external.push(u); return r.abort();
   });

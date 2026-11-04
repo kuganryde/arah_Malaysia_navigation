@@ -1,8 +1,8 @@
 {
-  "release": "0.9.0",
+  "release": "0.10.0",
   "modules": {
     "app": {
-      "version": "0.2.4",
+      "version": "0.2.5",
       "description": "The map app: bundled index.html and its editable source",
       "paths": [
         "index.html",
@@ -75,7 +75,7 @@
       ]
     },
     "security-headers": {
-      "version": "0.5.0",
+      "version": "0.5.1",
       "description": "HTTP security headers and the security policy document",
       "paths": [
         "vercel.json",
@@ -84,7 +84,7 @@
       "markers": []
     },
     "privacy": {
-      "version": "0.5.0",
+      "version": "0.6.0",
       "description": "Privacy notice page (/privacy)",
       "paths": [
         "privacy.html"
@@ -97,7 +97,7 @@
       ]
     },
     "ci": {
-      "version": "0.8.0",
+      "version": "0.9.0",
       "description": "Tests, guard rails and GitHub Actions",
       "paths": [
         ".github/**",
@@ -107,7 +107,7 @@
       "markers": []
     },
     "docs": {
-      "version": "0.7.0",
+      "version": "0.8.0",
       "description": "README and its animated art",
       "paths": [
         "README.md",
@@ -121,7 +121,7 @@
       "markers": []
     },
     "pwa": {
-      "version": "0.1.6",
+      "version": "0.1.7",
       "description": "Installable app: manifest, service worker, offline page, icons, install and update UI",
       "paths": [
         "sw.js",
@@ -215,6 +215,23 @@
         {
           "file": "assets/keepawake/arah-keepawake.js",
           "text": "window.__arahKeepAwake = '{v}';"
+        }
+      ]
+    },
+    "resilience": {
+      "version": "0.1.0",
+      "description": "Timeouts and failover for Overpass, Photon and OSRM (assets/resilience/)",
+      "paths": [
+        "assets/resilience/**"
+      ],
+      "markers": [
+        {
+          "file": "assets/resilience/arah-resilience.js",
+          "text": "/*! ARAH Network Resilience v{v}"
+        },
+        {
+          "file": "assets/resilience/arah-resilience.js",
+          "text": "var VERSION = '{v}';"
         }
       ]
     }

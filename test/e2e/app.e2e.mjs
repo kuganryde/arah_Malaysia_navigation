@@ -117,3 +117,29 @@ test('Supply chain: nothing is fetched from a script/style CDN at runtime; the m
     assert.match(v, /^5\.\d+\.\d+$/, 'bundled MapLibre line; update this and the sanitizer note in SECURITY.md when upgrading');
   } finally { await b.close(); }
 });
+
+test('Resilience: Overpass down -> mirror answers; Photon down -> Nominatim answers; the app keeps working', async () => {
+  const hits = [];
+  const b = await launch({ route: async (u, r) => {
+    const host = new URL(u).hostname; if (!/overpass|photon|nominatim/.test(host)) return false; hits.push(host);
+    if (host === 'overpass-api.de' || host === 'photon.komoot.io') { await r.fulfill({ status: host.startsWith('photon') ? 500 : 503, contentType: 'text/html', body: 'down' }); return true; }
+    if (host === 'overpass.kumi.systems') { await r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify(OVERPASS) }); return true; }
+    if (host === 'nominatim.openstreetmap.org') { await r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify([{ lat: '3.1579', lon: '101.7116', name: 'Zzyzx Fallback Tower', type: 'building', display_name: 'Zzyzx Fallback Tower, KL', address: { road: 'Jalan Test', city: 'Kuala Lumpur' } }]) }); return true; }
+    return false;
+  } });
+  const p = await b.page();
+  try {
+    await openApp(p, srv.url);
+    assert.match(await p.evaluate(() => window.__arahNet.version), /^\d+\.\d+\.\d+$/);
+    await p.click('.ap-btn'); await p.waitForSelector('.ap-sheet');
+    await p.locator('.ap-chip', { hasText: 'KFC' }).first().click(); await p.waitForSelector('.ap-row', { timeout: 20000 });
+    assert.equal(await p.locator('.ap-row').count(), OVERPASS.elements.length);
+    assert.ok(hits.includes('overpass.kumi.systems'));
+    await p.keyboard.press('Escape'); if (await p.locator('.ap-sheet').count()) await p.locator('.ap-scrim').click({ force: true }).catch(() => {});
+    const box = p.getByPlaceholder(/Cari tempat/); await box.fill('zzyzx tower');
+    await p.getByText('Zzyzx Fallback Tower').first().waitFor({ timeout: 15000 });
+    assert.ok(hits.includes('nominatim.openstreetmap.org'));
+    const st = await p.evaluate(() => window.__arahNet.status()); assert.ok(st.fallbacks >= 2);
+    assert.deepEqual(p.errors, []);
+  } finally { await b.close(); }
+});
