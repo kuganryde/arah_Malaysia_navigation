@@ -107,7 +107,7 @@
       "markers": []
     },
     "docs": {
-      "version": "0.12.0",
+      "version": "0.11.0",
       "description": "README and its animated art",
       "paths": [
         "README.md",
@@ -121,7 +121,7 @@
       "markers": []
     },
     "pwa": {
-      "version": "0.1.15",
+      "version": "0.1.16",
       "description": "Installable app: manifest, service worker, offline page, icons, install and update UI",
       "paths": [
         "sw.js",

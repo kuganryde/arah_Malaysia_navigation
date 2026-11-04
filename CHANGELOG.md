@@ -6,7 +6,7 @@ Every module has its own version (see `versions.json` and `VERSIONING.md`). Each
 
 ## [0.17.0] - 2026-11-04
 
-- **docs 0.12.0**: twa/README: domain, signing, Play Console, asset links checklist; store listing and data-safety drafts
+- **pwa 0.1.16**: release stamp 0.17.0
 - **ci 0.15.0**: android guard (twa manifest vs web manifest and release, asset links format, no tracked keystores), twa unit tests, manual Android bundle workflow
 - **security-headers 0.7.0**: serve /.well-known/assetlinks.json as JSON (Android app link verification)
 - **twa 0.1.0**: Android (Trusted Web Activity) package for Google Play: Bubblewrap manifest for arah.rydetechglobal.com (com.rydetech.arah), asset-links generator, version sync, manual signed-bundle workflow, store listing (ms/en) and Data safety drafts
