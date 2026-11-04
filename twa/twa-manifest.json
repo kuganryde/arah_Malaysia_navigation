@@ -1,0 +1,45 @@
+{
+  "packageId": "com.rydetech.arah",
+  "host": "arah.rydetechglobal.com",
+  "name": "ARAH · Navigasi Malaysia",
+  "launcherName": "ARAH",
+  "display": "standalone",
+  "orientation": "default",
+  "themeColor": "#0a0c1a",
+  "themeColorDark": "#0a0c1a",
+  "navigationColor": "#0a0c1a",
+  "navigationColorDark": "#0a0c1a",
+  "navigationDividerColor": "#0a0c1a",
+  "navigationDividerColorDark": "#0a0c1a",
+  "backgroundColor": "#0a0c1a",
+  "enableNotifications": false,
+  "startUrl": "/?source=twa",
+  "iconUrl": "https://arah.rydetechglobal.com/assets/icons/icon-512.png",
+  "maskableIconUrl": "https://arah.rydetechglobal.com/assets/icons/icon-maskable-512.png",
+  "splashScreenFadeOutDuration": 300,
+  "signingKey": {
+    "path": "./android.keystore",
+    "alias": "arah"
+  },
+  "appVersionName": "0.17.0",
+  "appVersionCode": 1700,
+  "shortcuts": [],
+  "generatorApp": "bubblewrap-cli",
+  "webManifestUrl": "https://arah.rydetechglobal.com/manifest.webmanifest",
+  "fallbackType": "customtabs",
+  "features": {
+    "locationDelegation": {
+      "enabled": true
+    }
+  },
+  "alphaDependencies": {
+    "enabled": false
+  },
+  "enableSiteSettingsShortcut": true,
+  "isChromeOSOnly": false,
+  "isMetaQuest": false,
+  "fullScopeUrl": "https://arah.rydetechglobal.com/",
+  "minSdkVersion": 23,
+  "additionalTrustedOrigins": [],
+  "retainedBundles": []
+}

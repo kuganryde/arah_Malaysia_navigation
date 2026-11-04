@@ -1,0 +1,57 @@
+name: Android (Play bundle)
+# Manual only: builds the signed .aab for Google Play from twa/twa-manifest.json. Needs repository secrets
+#   ANDROID_KEYSTORE_B64      base64 of the upload keystore   (base64 -w0 android.keystore)
+#   ANDROID_KEYSTORE_PASSWORD keystore password
+#   ANDROID_KEY_PASSWORD      key password (often the same)
+# The keystore never touches the repo; it is written to the runner for this job and deleted at the end.
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: android
+  cancel-in-progress: false
+jobs:
+  bundle:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: 22
+      - name: Guard rails (twa manifest, version sync, asset links)
+        run: npm run check
+      - uses: actions/setup-java@c5195efecf7bdfc987ee8bae7a71cb8b11521c00 # v4.7.1
+        with:
+          distribution: temurin
+          java-version: 17
+      - uses: android-actions/setup-android@9fc6c4e9069bf8d3d10b2204b1fb8f6ef7065407 # v3.2.2
+      - name: Install Bubblewrap (pinned)
+        run: |
+          npm install -g @bubblewrap/cli@1.27.0
+          mkdir -p ~/.bubblewrap
+          printf '{"jdkPath":"%s","androidSdkPath":"%s"}' "$JAVA_HOME" "$ANDROID_HOME" > ~/.bubblewrap/config.json
+      - name: Build the signed bundle
+        working-directory: twa
+        env:
+          KEYSTORE_B64: ${{ secrets.ANDROID_KEYSTORE_B64 }}
+          BUBBLEWRAP_KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          BUBBLEWRAP_KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          test -n "$KEYSTORE_B64" || { echo "secret ANDROID_KEYSTORE_B64 is not set"; exit 1; }
+          echo "$KEYSTORE_B64" | base64 -d > android.keystore
+          bubblewrap build --skipPwaValidation --manifest=twa-manifest.json
+          # Print the fingerprint to put in .well-known/assetlinks.json (upload key)
+          keytool -list -v -keystore android.keystore -alias arah -storepass "$BUBBLEWRAP_KEYSTORE_PASSWORD" | grep "SHA256:" || true
+      - name: Remove the keystore
+        if: always()
+        run: rm -f twa/android.keystore
+      - uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: arah-android-bundle
+          path: twa/app-release-bundle.aab
+          if-no-files-found: error
+          retention-days: 14

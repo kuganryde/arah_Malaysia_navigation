@@ -3,6 +3,7 @@
 import { readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { createHash } from 'node:crypto';
+import { execSync } from 'node:child_process';
 
 const errors = [];
 const fail = (m) => errors.push(m);
@@ -110,6 +111,25 @@ if (/AIza[0-9A-Za-z_-]{35}/.test(indexBuf.toString('utf8'))) fail('possible Goog
   const vsri = 'sha384-' + createHash('sha384').update(veh).digest('base64');
   if (!readFileSync('assets/vehicles/arah-vehicles.js', 'utf8').includes(`var VEH_SRI = '${vsri}';`)) fail('arah-vehicles.js SRI does not match vendor/vehicles3d.min.js: run npm run vehicles:build');
   console.log('crash reporting ok (' + (dsn ? 'DSN set' : 'inactive: no DSN') + ', bundle ' + (bundle.length / 1024).toFixed(0) + ' KB)');
+}
+
+// 8b. Android (TWA): the package metadata agrees with the web manifest and the product release, asset links are well-formed,
+//     and no signing material is tracked.
+{
+  const { codeFor } = await import('./twa/sync-version.mjs');
+  const t = JSON.parse(readFileSync('twa/twa-manifest.json', 'utf8')), w = JSON.parse(readFileSync('manifest.webmanifest', 'utf8')), rel = JSON.parse(readFileSync('versions.json', 'utf8')).release;
+  if (t.appVersionName !== rel || t.appVersionCode !== codeFor(rel)) fail(`twa-manifest version (${t.appVersionName}/${t.appVersionCode}) differs from release ${rel}/${codeFor(rel)}: run node scripts/twa/sync-version.mjs`);
+  if (!/^[a-z][a-z0-9_]*(\.[a-z][a-z0-9_]*)+$/.test(t.packageId)) fail('twa packageId is not a valid Android package name');
+  if (!/^[a-z0-9.-]+\.[a-z]{2,}$/.test(t.host) || /^https?:/.test(t.host)) fail('twa host must be a bare domain');
+  for (const k of ['iconUrl', 'maskableIconUrl', 'webManifestUrl', 'fullScopeUrl']) if (!t[k].startsWith('https://' + t.host + '/')) fail(`twa ${k} must be on https://${t.host}/`);
+  if (t.themeColor.toLowerCase() !== w.theme_color.toLowerCase() || t.backgroundColor.toLowerCase() !== w.background_color.toLowerCase()) fail('twa colours differ from manifest.webmanifest');
+  if (!w.icons.some((i) => i.purpose === 'maskable' && /512/.test(i.sizes))) fail('manifest needs a 512 px maskable icon for Android');
+  const al = JSON.parse(readFileSync('.well-known/assetlinks.json', 'utf8'));
+  if (!Array.isArray(al)) fail('assetlinks.json must be an array');
+  for (const e of al) { const fp = e.target && e.target.sha256_cert_fingerprints; if (e.target?.package_name !== t.packageId || !Array.isArray(fp) || !fp.length || fp.some((f) => !/^([0-9A-F]{2}:){31}[0-9A-F]{2}$/.test(f))) fail('assetlinks.json entry does not match the package id / SHA-256 fingerprint format'); }
+  const tracked = execSync('git ls-files', { encoding: 'utf8' }).split('\n').filter((f) => /\.(keystore|jks|aab|apk)$/.test(f));
+  if (tracked.length) fail('signing material or build output is tracked by git: ' + tracked.join(', '));
+  console.log(`android ok (${t.packageId} on ${t.host}, v${t.appVersionName}/${t.appVersionCode}, ${al.length ? 'asset links set' : 'asset links pending signing key'})`);
 }
 
 // 7. Performance and accessibility budgets for the layers that load on every visit.
