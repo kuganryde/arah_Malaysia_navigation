@@ -1,4 +1,4 @@
-/*! ARAH Crash Reports v0.1.0
+/*! ARAH Crash Reports v0.1.1
  * Optional, opt-in crash reporting to Sentry. A separate layer: it never calls app code.
  *  - Does nothing until a Sentry DSN is set in config.json AND the person says yes (one small card, once).
  *  - Before consent no Sentry code is downloaded and nothing is sent. After "No thanks" the card never returns.
@@ -10,7 +10,7 @@
 (function () {
   'use strict';
   if (window.__arahObserve) return;
-  var VERSION = '0.1.0';
+  var VERSION = '0.1.1';
   var SENTRY_SRI = 'sha384-PvHHB5zoMzazwRBH4991IED+fpWUQDHFh6RUSKQLkYJdYbfoTRZim7l5tzqTkrnq';
   var KEY = 'arah.observe.v1';
   var BASE = new URL('.', document.currentScript ? document.currentScript.src : location.href).href;

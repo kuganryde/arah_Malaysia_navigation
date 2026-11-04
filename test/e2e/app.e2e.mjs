@@ -155,7 +155,7 @@ const sentryRoutes = (sent) => async (u, r) => {
 };
 
 test('Crash reports: inactive without a DSN (no card, no Sentry code)', async () => {
-  const b = await launch(); const p = await b.page();
+  const b = await launch({ route: async (u, r) => { if (!u.endsWith('/assets/observability/config.json')) return false; await r.fulfill({ status: 200, contentType: 'application/json', body: '{"dsn":""}' }); return true; } }); const p = await b.page();
   try {
     await openApp(p, srv.url);
     const st = await p.evaluate(() => window.__arahObserve.status());

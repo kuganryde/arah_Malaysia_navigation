@@ -4,6 +4,11 @@ Every module has its own version (see `versions.json` and `VERSIONING.md`). Each
 
 ## [Unreleased]
 
+## [0.11.1] - 2026-11-04
+
+- **ci 0.10.1**: E2E: the no-DSN case forces an empty DSN now that the real one ships
+- **pwa 0.1.10**: precache stamp refreshed (config.json changed)
+- **observability 0.1.1**: DSN set for the arah-navigation Sentry project (public ingest key); reporting is live once a visitor opts in
 ## [0.11.0] - 2026-11-04
 
 - **observability 0.1.0** (new): opt-in crash reports to Sentry. One-time consent card (never during a trip or AR); nothing is downloaded or sent before yes. Vendored, SRI-pinned SDK (global handlers only, no breadcrumbs/tracing/replay); events scrubbed on the device (no coordinates, searches, URLs' queries, cookies, IP), 10 per visit; failover events counted. Inactive until a DSN is set in assets/observability/config.json
