@@ -4,6 +4,18 @@ Every module has its own version (see `versions.json` and `VERSIONING.md`). Each
 
 ## [Unreleased]
 
+## [0.16.0] - 2026-11-04
+
+- **pwa 0.1.15**: contrast fixes, a11y layer precached
+- **docs 0.11.0**: README: accessibility section
+- **app 0.3.2**: script tag for the a11y layer injected into the bundle head
+- **ci 0.14.0**: axe WCAG 2.2 A/AA/AAA guard on the main screens, e2e timeout 5 min, overlap test, readable() unit test
+- **a11y 0.1.0**: landmarks, 7:1 muted text, 44 px targets, right-hand column wraps instead of covering the bottom panel; exposes __arahLayout
+- **keepawake 0.3.0**: button moves to a new column beside the stack when there is no room above the bottom panel
+- **ar-vision 0.3.1**: muted text and pressed-button contrast to 7:1 (AAA)
+- **observability 0.1.2**: consent button contrast to 7:1 (AAA)
+- **festive 0.2.1**: muted text lifted to 7:1 (AAA)
+- **places 0.2.0**: brand badges reach WCAG AAA text contrast (readable()), muted text lifted to 7:1, selected tab lighter violet
 ## [0.15.0] - 2026-11-04
 
 - **app 0.3.1**: script tag for the vehicles layer injected into the bundle head

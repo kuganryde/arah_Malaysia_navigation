@@ -29,6 +29,7 @@ export const CORE = {
   '/assets/observability/arah-observe.js': 'assets/observability/arah-observe.js',
   '/assets/observability/config.json': 'assets/observability/config.json',
   '/assets/observability/release.json': 'assets/observability/release.json',
+  '/assets/a11y/arah-a11y.js': 'assets/a11y/arah-a11y.js',
   '/assets/vehicles/arah-vehicles.js': 'assets/vehicles/arah-vehicles.js',
   '/assets/ar/arah-ar.js': 'assets/ar/arah-ar.js',
   '/assets/ar/ar-core.mjs': 'assets/ar/ar-core.mjs',

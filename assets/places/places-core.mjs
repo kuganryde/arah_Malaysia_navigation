@@ -1,4 +1,4 @@
-// places v0.1.2
+// places v0.2.0
 // Pure logic for the Makan & Mall directory: validation, OpenStreetMap query building, result parsing.
 // No DOM and no network here, so it is unit-tested in Node.
 export const KINDS = ['food', 'mall'];
@@ -26,6 +26,19 @@ export const initials = (name) => {
 export const inkFor = (hex) => {
   const n = parseInt(hex.slice(1), 16), r = n >> 16, g = (n >> 8) & 255, b = n & 255;
   return (r * 299 + g * 587 + b * 114) / 1000 > 150 ? '#111' : '#fff';
+};
+
+const lum = (hex) => { const n = parseInt(hex.slice(1), 16), f = (c) => { c /= 255; return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4; }; return 0.2126 * f(n >> 16) + 0.7152 * f((n >> 8) & 255) + 0.0722 * f(n & 255); };
+export const contrast = (a, b) => { const x = lum(a), y = lum(b); return (Math.max(x, y) + 0.05) / (Math.min(x, y) + 0.05); };
+const mix = (hex, to, t) => { const a = parseInt(hex.slice(1), 16), b = parseInt(to.slice(1), 16), c = (s) => Math.round(((a >> s) & 255) * (1 - t) + ((b >> s) & 255) * t); return '#' + ((1 << 24) | (c(16) << 16) | (c(8) << 8) | c(0)).toString(16).slice(1); };
+/** Brand colour + readable ink at WCAG AAA (7:1): nudge the brand colour toward black (white ink) or white (dark ink), whichever moves it least, keeping the hue. */
+export const readable = (hex, min = 7) => {
+  let best = null;
+  for (const [ink, to] of [['#ffffff', '#000000'], ['#111111', '#ffffff']]) {
+    let t = 0, bg = hex; while (contrast(bg, ink) < min && t < 1) { t += 0.02; bg = mix(hex, to, t); }
+    if (contrast(bg, ink) >= min && (!best || t < best.t)) best = { bg, ink, t };
+  }
+  return best || { bg: '#000000', ink: '#ffffff', t: 1 };
 };
 
 /** Logo candidates, tried in order, all served by the brand's own website. */

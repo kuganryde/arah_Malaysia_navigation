@@ -1,4 +1,4 @@
-/*! ARAH PWA v0.1.14
+/*! ARAH PWA v0.1.15
  * Installability and offline support, as a separate layer like arah-enhancements.js: it never calls the app's code.
  *  1. Registers the service worker (sw.js) so the app shell opens offline.
  *  2. Install button: the native prompt on Android/desktop Chrome and Edge, a short how-to on iPhone/iPad.
@@ -9,7 +9,7 @@
 (function () {
   'use strict';
   if (window.__arahPWA) return;
-  window.__arahPWA = '0.1.14';
+  window.__arahPWA = '0.1.15';
 
   var DISMISS_KEY = 'arah.pwa.dismissed';
   var DISMISS_DAYS = 7;
@@ -55,14 +55,14 @@
     '.arah-pwa-pill:focus-visible,.arah-pwa-toast button:focus-visible,.arah-pwa-dlg button:focus-visible{outline:2px solid #2fd0ec;outline-offset:2px}' +
     '.arah-pwa-toast{position:fixed;z-index:50;left:50%;transform:translateX(-50%);bottom:calc(env(safe-area-inset-bottom) + 100px);width:min(92vw,380px);display:none;align-items:center;gap:10px;padding:10px 12px;border-radius:12px;border:1px solid #a865f5;background:#141729;color:#eef0fa;font:500 13px/1.3 "Ubuntu","Segoe UI",system-ui,sans-serif;box-shadow:0 8px 28px rgba(0,0,0,.5)}' +
     '.arah-pwa-toast span{flex:1}' +
-    '.arah-pwa-toast button{min-height:40px;padding:0 14px;border-radius:8px;border:1px solid #a865f5;background:#a865f5;color:#0a0c1a;font:700 13px "Ubuntu",sans-serif;cursor:pointer}' +
+    '.arah-pwa-toast button{min-height:40px;padding:0 14px;border-radius:8px;border:1px solid #a865f5;background:#bf91ff;color:#0a0c1a;font:700 13px "Ubuntu",sans-serif;cursor:pointer}' +
     '.arah-pwa-toast button.q{background:transparent;color:#eef0fa;min-width:40px;padding:0}' +
     '.arah-pwa-scrim{position:fixed;inset:0;z-index:60;background:rgba(5,6,16,.78);display:grid;place-items:end center;padding:16px}' +
     '.arah-pwa-dlg{width:100%;max-width:420px;background:#141729;border:1px solid #a865f5;border-radius:14px;padding:18px;color:#eef0fa;font:400 14px/1.45 "Ubuntu",sans-serif;margin-bottom:env(safe-area-inset-bottom)}' +
     '.arah-pwa-dlg h2{margin:0 0 10px;font:800 24px/1 "Barlow Condensed","Ubuntu",sans-serif;font-style:italic;text-transform:uppercase;color:#2fd0ec}' +
-    '.arah-pwa-dlg ol{margin:0 0 14px;padding-left:20px}.arah-pwa-dlg li{margin:0 0 10px}.arah-pwa-dlg li small{display:block;color:#9aa0c4}' +
+    '.arah-pwa-dlg ol{margin:0 0 14px;padding-left:20px}.arah-pwa-dlg li{margin:0 0 10px}.arah-pwa-dlg li small{display:block;color:#a6acd0}' +
     '.arah-pwa-dlg svg{vertical-align:-5px;margin:0 2px}' +
-    '.arah-pwa-dlg button{width:100%;min-height:44px;border-radius:8px;border:1px solid #a865f5;background:#a865f5;color:#0a0c1a;font:700 14px "Ubuntu",sans-serif;cursor:pointer}';
+    '.arah-pwa-dlg button{width:100%;min-height:44px;border-radius:8px;border:1px solid #a865f5;background:#bf91ff;color:#0a0c1a;font:700 14px "Ubuntu",sans-serif;cursor:pointer}';
 
   function build() {
     if (pill) return;

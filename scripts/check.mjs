@@ -116,7 +116,7 @@ if (/AIza[0-9A-Za-z_-]{35}/.test(indexBuf.toString('utf8'))) fail('possible Goog
 //    Eager layer scripts (gzip) stay under 40 KB together; the page declares its language for screen readers.
 {
   const { gzipSync } = await import('node:zlib');
-  const EAGER = ['assets/arah-enhancements.js', 'assets/arah-pwa.js', 'assets/places/arah-places.js', 'assets/festive/arah-festive.js', 'assets/keepawake/arah-keepawake.js', 'assets/resilience/arah-resilience.js', 'assets/observability/arah-observe.js', 'assets/vehicles/arah-vehicles.js'];
+  const EAGER = ['assets/arah-enhancements.js', 'assets/arah-pwa.js', 'assets/places/arah-places.js', 'assets/festive/arah-festive.js', 'assets/keepawake/arah-keepawake.js', 'assets/resilience/arah-resilience.js', 'assets/observability/arah-observe.js', 'assets/vehicles/arah-vehicles.js', 'assets/a11y/arah-a11y.js'];
   const gz = EAGER.reduce((n, f) => n + gzipSync(readFileSync(f)).length, 0);
   const BUDGET_KB = 40;
   if (gz > BUDGET_KB * 1024) fail(`eager layer scripts are ${(gz / 1024).toFixed(1)} KB gzip, over the ${BUDGET_KB} KB budget: lazy-load something`);

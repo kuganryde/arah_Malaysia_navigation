@@ -1,4 +1,4 @@
-/*! ARAH festive theme v0.2.0
+/*! ARAH festive theme v0.2.1
  * Festival themes for Malaysia's celebrations: colours, glowing icons, a lit route with travelling lights, pulsing
  * sights, string-light bunting, floating lanterns and tap fireworks on the map.
  * Separate layer, like arah-ar.js: it reads the map through window.__arahMap and the DOM, and never calls the app's
@@ -9,7 +9,7 @@
 (function () {
   'use strict';
   if (window.__arahFestive) return;
-  window.__arahFestive = '0.2.0';
+  window.__arahFestive = '0.2.1';
   var BASE = new URL('.', document.currentScript ? document.currentScript.src : location.href).href;
   var PREF = 'arah.festive.v1', SEEN = 'arah.festive.hi';
   var F, FX, cur = null, canvas, ctx, scene, btn, scrim, raf = 0, last = 0, mapFx = null, forcedBy = 'auto';
@@ -53,11 +53,11 @@
     '.af-sheet{width:100%;max-width:480px;height:min(80vh,700px);background:#141729;border:1px solid var(--af-c2,#2fd0ec);border-radius:16px 16px 0 0;color:#eef0fa;font:400 14px/1.4 "Ubuntu",system-ui,sans-serif;display:flex;flex-direction:column;padding-bottom:env(safe-area-inset-bottom)}' +
     '.af-head{display:flex;align-items:center;gap:8px;padding:14px 14px 8px}.af-head h2{flex:1;margin:0;font:800 24px/1 "Barlow Condensed","Ubuntu",sans-serif;font-style:italic;text-transform:uppercase;color:var(--af-c2,#2fd0ec)}' +
     '.af-x{min-width:40px;min-height:40px;border-radius:8px;border:1px solid #3a3f66;background:transparent;color:#eef0fa;font-size:16px;cursor:pointer}' +
-    '.af-body{flex:1;overflow:auto;padding:0 14px 12px}.af-note{color:#9aa0c4;font-size:12px;margin:0 0 10px}' +
+    '.af-body{flex:1;overflow:auto;padding:0 14px 12px}.af-note{color:#a6acd0;font-size:12px;margin:0 0 10px}' +
     '.af-row{display:flex;align-items:center;gap:10px;width:100%;padding:10px;margin:0 0 6px;border-radius:10px;border:1px solid #2a2f55;background:#0f1226;color:#eef0fa;text-align:left;font:inherit;cursor:pointer;min-height:52px}' +
     '.af-row[aria-pressed=true]{border-color:var(--af-c2,#2fd0ec);box-shadow:0 0 12px var(--af-glow,rgba(47,208,236,.35))}' +
-    '.af-sw{flex:none;width:30px;height:30px;border-radius:50%}.af-t{flex:1;min-width:0}.af-t b{display:block;font-size:14px}.af-t small{color:#9aa0c4;font-size:12px}' +
-    '.af-foot{display:flex;align-items:center;gap:8px;padding:8px 14px;border-top:1px solid #2a2f55;color:#9aa0c4;font-size:12px}.af-foot label{display:flex;gap:6px;align-items:center;flex:1;cursor:pointer}' +
+    '.af-sw{flex:none;width:30px;height:30px;border-radius:50%}.af-t{flex:1;min-width:0}.af-t b{display:block;font-size:14px}.af-t small{color:#a6acd0;font-size:12px}' +
+    '.af-foot{display:flex;align-items:center;gap:8px;padding:8px 14px;border-top:1px solid #2a2f55;color:#a6acd0;font-size:12px}.af-foot label{display:flex;gap:6px;align-items:center;flex:1;cursor:pointer}' +
     '.af-toast{position:fixed;z-index:55;left:50%;transform:translateX(-50%);top:calc(env(safe-area-inset-top,0px) + 132px);width:min(92vw,400px);padding:12px 16px;border-radius:14px;border:1px solid var(--af-c2,#2fd0ec);background:rgba(20,23,41,.94);color:#eef0fa;text-align:center;font:500 13px/1.4 "Ubuntu",system-ui,sans-serif;box-shadow:0 0 28px var(--af-glow,rgba(47,208,236,.45));animation:af-in .6s ease-out both}' +
     '.af-toast b{display:block;font:800 22px/1.1 "Barlow Condensed","Ubuntu",sans-serif;font-style:italic;text-transform:uppercase;color:var(--af-c2,#2fd0ec);margin-bottom:2px}' +
     '@keyframes af-in{from{opacity:0;transform:translate(-50%,-10px) scale(.96)}to{opacity:1;transform:translate(-50%,0) scale(1)}}' +
@@ -210,7 +210,7 @@
     if (lsGet(SEEN) === tag) return; lsSet(SEEN, tag);
     var lines = [c.f.hi.ms]; if (c.f.hi.en !== c.f.hi.ms) lines.push(c.f.hi.en); if (LANG[c.f.id]) lines.push(c.f.hi[LANG[c.f.id]]);
     var sub = c.daysTo > 0 ? ' · ' + c.daysTo + ' hari lagi · ' + c.daysTo + ' day' + (c.daysTo > 1 ? 's' : '') + ' to go' : '';
-    var t = el('div', { class: 'af-toast', role: 'status', 'aria-live': 'polite' }, [el('b', { text: c.f.name.ms }), el('div', { text: lines.join(' · ') }), el('div', { style: 'color:#9aa0c4;font-size:12px;margin-top:2px', text: (c.f.name.en + sub) })]);
+    var t = el('div', { class: 'af-toast', role: 'status', 'aria-live': 'polite' }, [el('b', { text: c.f.name.ms }), el('div', { text: lines.join(' · ') }), el('div', { style: 'color:#a6acd0;font-size:12px;margin-top:2px', text: (c.f.name.en + sub) })]);
     document.body.appendChild(t); setTimeout(function () { t.remove(); }, 7000); t.addEventListener('click', function () { t.remove(); });
   }
 

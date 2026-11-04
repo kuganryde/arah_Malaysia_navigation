@@ -1,4 +1,4 @@
-/*! ARAH keep-awake v0.2.0
+/*! ARAH keep-awake v0.3.0
  * Keeps the screen on while ARAH is open and visible, on every device:
  *   1. Screen Wake Lock API: Chrome/Edge/Samsung Internet on Android and desktop, Safari 16.4+ (browser and installed app).
  *   2. Fallback where that API does not exist (older iPhone/iPad, some browsers): a tiny silent looping video, the
@@ -11,7 +11,7 @@
 (function () {
   'use strict';
   if (window.__arahKeepAwake) return;
-  window.__arahKeepAwake = '0.2.0';
+  window.__arahKeepAwake = '0.3.0';
 
   var KEY = 'arah.awake.v1';
   var BASE = new URL('.', document.currentScript ? document.currentScript.src : location.href).href;
@@ -102,12 +102,19 @@
     }
     return null;
   }
-  function place() { // sit directly under the last button of that column, same right edge
+  function place() { // directly under the last column button, same x; if that would run into the bottom panel, start the next column to its left
     if (!btn) return;
     btn.hidden = tripActive(); // navigating: the lock is forced on, nothing to toggle
-    var col = column(), top = null;
-    if (col && col.lastElementChild) { var r = col.lastElementChild.getBoundingClientRect(); if (r.height) top = r.bottom + 8; }
+    var col = column(), top = null, right = 12, L = window.__arahLayout, pt = L && L.panelTop ? L.panelTop() : null;
+    if (col && col.lastElementChild) {
+      var last = col.lastElementChild.getBoundingClientRect(), c = col.getBoundingClientRect();
+      if (last.height) {
+        top = last.bottom + 8; right = Math.round(window.innerWidth - last.right);
+        if (pt !== null && top + 44 > pt - 8) { top = c.top; right = Math.round(window.innerWidth - c.left + 8); } // no room below: new column left of the stack
+      }
+    }
     btn.style.top = top === null ? 'calc(env(safe-area-inset-top,0px) + 74px + 6 * 52px)' : Math.round(top) + 'px';
+    btn.style.right = right + 'px';
     if (tip) tip.style.top = btn.style.top;
   }
   function paint() {

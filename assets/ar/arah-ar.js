@@ -1,4 +1,4 @@
-/*! ARAH AR driver assist v0.3.0
+/*! ARAH AR driver assist v0.3.1
  * Camera + on-device YOLOX (WebGL, onnxruntime-web) shown in two small windows while a trip runs:
  * hazards (vehicles, pedestrians, riders, animals, traffic lights, stop signs), lead-vehicle distance,
  * headway and time-to-collision, GPS speed, lane position and lane-change events.
@@ -11,7 +11,7 @@
 (function () {
   'use strict';
   if (window.__arahAR) return;
-  window.__arahAR = '0.3.0';
+  window.__arahAR = '0.3.1';
 
   /* ---------------------------------------------------------------- config */
   var SCRIPT = document.currentScript && document.currentScript.src;
@@ -60,7 +60,7 @@
     '.arah-ar{position:fixed;z-index:35;font-family:"Ubuntu","Segoe UI",system-ui,sans-serif;color:var(--text,#eef0fa);-webkit-user-select:none;user-select:none}' +
     '.arah-ar *{box-sizing:border-box}' +
     '.arah-ar-fab{left:max(12px,env(safe-area-inset-left));top:76px;width:44px;height:44px;border-radius:14px;border:1px solid rgba(168,101,245,.55);background:var(--surface,#141729);color:#2fd0ec;display:grid;place-items:center;cursor:pointer;font:800 13px "Barlow Condensed","Ubuntu",sans-serif;letter-spacing:.06em;padding:0}' +
-    '.arah-ar-fab[aria-pressed=true]{background:#a865f5;color:#0a0c1a;border-color:#a865f5}' +
+    '.arah-ar-fab[aria-pressed=true]{background:#bf91ff;color:#0a0c1a;border-color:#a865f5}' +
     '.arah-ar-fab:focus-visible,.arah-ar button:focus-visible{outline:2px solid #2fd0ec;outline-offset:2px}' +
     '.arah-ar-win{background:var(--surface,#141729);border:1px solid rgba(168,101,245,.45);border-radius:14px;overflow:hidden;box-shadow:0 6px 24px rgba(0,0,0,.45)}' +
     '.arah-ar-bar{display:flex;align-items:center;gap:4px;height:26px;padding:0 4px 0 8px;background:rgba(10,12,26,.85);font:700 11px "Barlow Condensed","Ubuntu",sans-serif;letter-spacing:.08em;text-transform:uppercase;cursor:grab;touch-action:none}' +
@@ -88,10 +88,10 @@
     '.arah-ar-scrim{position:fixed;inset:0;z-index:60;background:rgba(5,6,16,.78);display:grid;place-items:center;padding:16px}' +
     '.arah-ar-dlg{max-width:380px;width:100%;background:#141729;border:1px solid #a865f5;border-radius:14px;padding:18px;color:#eef0fa;font:400 14px/1.45 "Ubuntu",sans-serif}' +
     '.arah-ar-dlg h2{margin:0 0 8px;font:800 24px/1 "Barlow Condensed","Ubuntu",sans-serif;font-style:italic;text-transform:uppercase;color:#2fd0ec}' +
-    '.arah-ar-dlg ul{margin:0 0 14px;padding-left:18px}.arah-ar-dlg li{margin:0 0 8px}.arah-ar-dlg li small{display:block;color:#9aa0c4}' +
+    '.arah-ar-dlg ul{margin:0 0 14px;padding-left:18px}.arah-ar-dlg li{margin:0 0 8px}.arah-ar-dlg li small{display:block;color:#a6acd0}' +
     '.arah-ar-dlg .btns{display:flex;gap:8px}' +
     '.arah-ar-dlg button{flex:1;min-height:44px;border-radius:8px;border:1px solid #a865f5;background:transparent;color:#eef0fa;font:700 14px "Ubuntu",sans-serif;cursor:pointer}' +
-    '.arah-ar-dlg button.go{background:#a865f5;color:#0a0c1a}' +
+    '.arah-ar-dlg button.go{background:#bf91ff;color:#0a0c1a}' +
     '@media (prefers-reduced-motion:reduce){.arah-ar-alert[data-l=danger]{animation:none}.arah-ar-lane i{transition:none}}';
 
   /* ---------------------------------------------------------------- UI */

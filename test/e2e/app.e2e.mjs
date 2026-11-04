@@ -245,18 +245,22 @@ test('Fonts: every bundled icon has a real glyph, and the Latin UI fonts load', 
   } finally { await b.close(); }
 });
 
-test('Keep-awake is a small button under the map button column, not a toast, and it toggles', async () => {
+test('Keep-awake is a small button in the map button column area, overlaps nothing, and it toggles', async () => {
   const b = await launch(); const p = await b.page();
   try {
     await openApp(p, srv.url);
     await p.waitForSelector('.ak-btn:not([hidden])', { timeout: 15000 });
+    await p.waitForTimeout(1500); // layout layer settles
     const g = await p.evaluate(() => {
-      const r = (e) => e.getBoundingClientRect(), k = document.querySelector('.ak-btn'), col = [...document.querySelectorAll('button.btn')].filter((x) => x !== k && Math.abs(r(x).left - r(k).left) < 1 && r(x).top < r(k).top);
-      const last = col.sort((a, c) => r(c).top - r(a).top)[0];
-      return { w: r(k).width, h: r(k).height, right: innerWidth - r(k).right, lastRight: innerWidth - r(last).right, gap: r(k).top - r(last).bottom, toast: !!document.querySelector('.ak-toast') };
+      const r = (e) => e.getBoundingClientRect(), k = document.querySelector('.ak-btn'), kr = r(k), col = window.__arahLayout.column();
+      const hit = (a, c) => a.left < c.right && c.left < a.right && a.top < c.bottom && c.top < a.bottom;
+      const toggle = document.querySelector('button[aria-label^="Togol"]');
+      return { w: kr.width, h: kr.height, toast: !!document.querySelector('.ak-toast'), overlapsColumn: [...col.children].some((x) => hit(kr, r(x))), overlapsToggle: hit(kr, r(toggle)),
+        colVsToggle: [...col.children].some((x) => hit(r(x), r(toggle))), pt: window.__arahLayout.panelTop(), kb: kr.bottom, right: innerWidth - kr.right };
     });
     assert.equal(g.toast, false); assert.ok(g.w >= 44 && g.h >= 44);
-    assert.ok(Math.abs(g.right - g.lastRight) <= 1, 'same right edge as the column'); assert.ok(g.gap >= 0 && g.gap <= 16, 'directly under it: ' + g.gap);
+    assert.equal(g.overlapsColumn, false, 'not on top of a map button'); assert.equal(g.overlapsToggle, false, 'not on top of the panel toggle'); assert.equal(g.colVsToggle, false, 'column clears the panel toggle');
+    assert.ok(g.right >= 12 && g.right < 140, 'on the right side: ' + g.right);
     await p.click('.ak-btn');
     assert.equal(await p.evaluate(() => localStorage.getItem('arah.awake.v1')), '0');
     assert.equal(await p.getAttribute('.ak-btn', 'aria-pressed'), 'false');
@@ -288,5 +292,22 @@ test('Vehicles: a 3D vehicle replaces the route arrow while navigating, follows 
     await p.evaluate(() => { localStorage.setItem('arah.prefs.v1', JSON.stringify({ mode: 'walk' })); const m = window.__arahMap; const el = document.createElement('div'); el.style.cssText = 'width:30px;height:36px'; el.innerHTML = '<div style="width:100%;height:100%;clip-path:polygon(50% 0,100% 100%,50% 76%,0 100%)"></div>'; window.__pk = new window.maplibregl.Marker({ element: el }).setLngLat(m.getCenter()).addTo(m); });
     await p.waitForTimeout(2000);
     assert.equal(await p.evaluate(() => window.__arahVehicle.status().running), false);
+  } finally { await b.close(); }
+});
+
+test('Accessibility: axe finds no WCAG 2.2 A/AA or AAA violations on the main screens (landmarks, contrast, target size)', async () => {
+  const { default: AxeBuilder } = await import('@axe-core/playwright');
+  const b = await launch(); const p = await b.page();
+  try {
+    await openApp(p, srv.url); await p.waitForTimeout(9000); // let the greeting banner go
+    const bad = [];
+    const scan = async (label) => { for (const tags of [['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa', 'wcag22aa', 'best-practice'], ['wcag2aaa']]) {
+      const r = await new AxeBuilder({ page: p }).withTags(tags).exclude('.maplibregl-canvas').analyze();
+      for (const v of r.violations) bad.push(label + ': ' + v.id + ' (' + v.nodes.length + ') ' + v.nodes[0].target.join(' ').slice(0, 70)); } };
+    await scan('home');
+    for (const t of [/route/i, /nearby/i]) { await p.getByRole('button', { name: t }).first().click(); await p.waitForTimeout(600); await scan(String(t)); }
+    await p.locator('.ap-btn').first().click(); await p.waitForTimeout(600); await scan('places'); await p.keyboard.press('Escape');
+    await p.locator('.af-btn').first().click(); await p.waitForTimeout(600); await scan('festive');
+    assert.deepEqual(bad, []);
   } finally { await b.close(); }
 });

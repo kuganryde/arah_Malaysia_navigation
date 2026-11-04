@@ -1,8 +1,8 @@
 {
-  "release": "0.15.0",
+  "release": "0.16.0",
   "modules": {
     "app": {
-      "version": "0.3.1",
+      "version": "0.3.2",
       "description": "The map app: bundled index.html and its editable source",
       "paths": [
         "index.html",
@@ -46,7 +46,7 @@
       ]
     },
     "ar-vision": {
-      "version": "0.3.0",
+      "version": "0.3.1",
       "description": "AR driver assist: camera + WebGL YOLOX hazards, distance, speed and lane (assets/ar/)",
       "paths": [
         "assets/ar/**"
@@ -97,7 +97,7 @@
       ]
     },
     "ci": {
-      "version": "0.13.0",
+      "version": "0.14.0",
       "description": "Tests, guard rails and GitHub Actions",
       "paths": [
         ".github/**",
@@ -107,7 +107,7 @@
       "markers": []
     },
     "docs": {
-      "version": "0.10.0",
+      "version": "0.11.0",
       "description": "README and its animated art",
       "paths": [
         "README.md",
@@ -121,7 +121,7 @@
       "markers": []
     },
     "pwa": {
-      "version": "0.1.14",
+      "version": "0.1.15",
       "description": "Installable app: manifest, service worker, offline page, icons, install and update UI",
       "paths": [
         "sw.js",
@@ -152,7 +152,7 @@
       ]
     },
     "places": {
-      "version": "0.1.2",
+      "version": "0.2.0",
       "description": "Makan & Mall: Malaysian fast-food and mall directory with logos, live OpenStreetMap outlets (assets/places/)",
       "paths": [
         "assets/places/**"
@@ -177,7 +177,7 @@
       ]
     },
     "festive": {
-      "version": "0.2.0",
+      "version": "0.2.1",
       "description": "Festival themes for Malaysia: glowing UI, lit route, lanterns, bunting, tap fireworks (assets/festive/)",
       "paths": [
         "assets/festive/**"
@@ -202,7 +202,7 @@
       ]
     },
     "keepawake": {
-      "version": "0.2.0",
+      "version": "0.3.0",
       "description": "Keep the screen awake while ARAH is open (assets/keepawake/)",
       "paths": [
         "assets/keepawake/**"
@@ -236,7 +236,7 @@
       ]
     },
     "observability": {
-      "version": "0.1.1",
+      "version": "0.1.2",
       "description": "Opt-in Sentry crash reports with on-device scrubbing (assets/observability/)",
       "paths": [
         "assets/observability/arah-observe.js",
@@ -275,6 +275,23 @@
         {
           "file": "assets/vehicles/vehicles-3d.mjs",
           "text": "// ARAH vehicles v{v}"
+        }
+      ]
+    },
+    "a11y": {
+      "version": "0.1.0",
+      "description": "Landmarks, AAA contrast, 44 px targets, no overlap with the bottom panel (assets/a11y/)",
+      "paths": [
+        "assets/a11y/**"
+      ],
+      "markers": [
+        {
+          "file": "assets/a11y/arah-a11y.js",
+          "text": "/*! ARAH a11y v{v}"
+        },
+        {
+          "file": "assets/a11y/arah-a11y.js",
+          "text": "window.__arahA11y = '{v}';"
         }
       ]
     }

@@ -76,3 +76,9 @@ test('escapeRegex never emits a backslash or a quote, and still matches the lite
   assert.ok(new RegExp(P.escapeRegex('J.CO (x)'), 'i').test('j.co (x) donuts'));
   assert.ok(!new RegExp(P.escapeRegex('J.CO'), 'i').test('JxCO'));
 });
+
+test('readable(): every brand badge reaches WCAG AAA (7:1) and keeps close to its hue', async () => {
+  const B = await import('../assets/places/brands.mjs');
+  for (const b of (B.BRANDS || B.default || [])) { const r = P.readable(b.color); assert.ok(P.contrast(r.bg, r.ink) >= 7, b.name + ' ' + r.bg); assert.ok(r.t < 0.7, b.name + ' moved too far'); }
+  assert.equal(P.readable('#ffffff').ink, '#111111');
+});
