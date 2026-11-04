@@ -106,6 +106,9 @@ if (/AIza[0-9A-Za-z_-]{35}/.test(indexBuf.toString('utf8'))) fail('possible Goog
   if (readFileSync('assets/observability/release.json', 'utf8') !== renderRelease(build())) fail('assets/observability/release.json is stale: run npm run pwa:stamp');
   const dsn = JSON.parse(readFileSync('assets/observability/config.json', 'utf8')).dsn;
   if (dsn && !/^https:\/\/[0-9a-f]{32}@o\d+\.ingest(\.[a-z]{2})?\.sentry\.io\/\d+$/.test(dsn)) fail('assets/observability/config.json dsn is not a sentry.io ingest DSN');
+  const veh = readFileSync('assets/vehicles/vendor/vehicles3d.min.js');
+  const vsri = 'sha384-' + createHash('sha384').update(veh).digest('base64');
+  if (!readFileSync('assets/vehicles/arah-vehicles.js', 'utf8').includes(`var VEH_SRI = '${vsri}';`)) fail('arah-vehicles.js SRI does not match vendor/vehicles3d.min.js: run npm run vehicles:build');
   console.log('crash reporting ok (' + (dsn ? 'DSN set' : 'inactive: no DSN') + ', bundle ' + (bundle.length / 1024).toFixed(0) + ' KB)');
 }
 
@@ -113,7 +116,7 @@ if (/AIza[0-9A-Za-z_-]{35}/.test(indexBuf.toString('utf8'))) fail('possible Goog
 //    Eager layer scripts (gzip) stay under 40 KB together; the page declares its language for screen readers.
 {
   const { gzipSync } = await import('node:zlib');
-  const EAGER = ['assets/arah-enhancements.js', 'assets/arah-pwa.js', 'assets/places/arah-places.js', 'assets/festive/arah-festive.js', 'assets/keepawake/arah-keepawake.js', 'assets/resilience/arah-resilience.js', 'assets/observability/arah-observe.js'];
+  const EAGER = ['assets/arah-enhancements.js', 'assets/arah-pwa.js', 'assets/places/arah-places.js', 'assets/festive/arah-festive.js', 'assets/keepawake/arah-keepawake.js', 'assets/resilience/arah-resilience.js', 'assets/observability/arah-observe.js', 'assets/vehicles/arah-vehicles.js'];
   const gz = EAGER.reduce((n, f) => n + gzipSync(readFileSync(f)).length, 0);
   const BUDGET_KB = 40;
   if (gz > BUDGET_KB * 1024) fail(`eager layer scripts are ${(gz / 1024).toFixed(1)} KB gzip, over the ${BUDGET_KB} KB budget: lazy-load something`);

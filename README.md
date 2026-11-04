@@ -130,13 +130,17 @@ A directory of **39 Malaysian fast-food and cafe chains and 48 shopping malls**,
 
 Logos load from each brand's own website, only for the tiles you scroll to, with no referrer sent. If a logo cannot be loaded, or you are offline, a coloured initials badge is shown. Untick *Logos from brand sites* in the sheet to make no requests to brand sites. Logos are trademarks of their owners and are not stored or redistributed by this repository.
 
+### 🚗 3D vehicles while you navigate
+
+During a trip the plain arrow becomes a small 3D vehicle that matches your travel mode: a car, motorbike, lorry or bus (walking keeps the arrow). **Tap it**: it hops and changes colour, and your pick is remembered. Wheels turn with your speed and the vehicle tilts with the map. The car is Kenney's CC0 low-poly model; the others are built in code (`assets/vehicles/`, credits in `assets/vehicles/models/README.md`). The 3D engine (three.js, vendored, integrity-pinned: `npm run vehicles:build`) is fetched only when a trip starts and is skipped on Data Saver or without WebGL, so the first screen is unaffected. Switch off with `__arahVehicle.set(false)`.
+
 ### 🏮 Festive themes for Malaysia
 
 ARAH dresses up for the festivals Malaysians celebrate: **Chinese New Year, Ramadan, Hari Raya Aidilfitri and Aidiladha, Awal Muharram, Maulidur Rasul, Deepavali, Thaipusam, Wesak, Pesta Kaamatan, Hari Gawai, Hari Merdeka and Malaysia Day, Mid-Autumn and Christmas**. The theme switches on by date (*Auto*) a couple of weeks before each festival and ends just after, or you can pick any festival, or turn it off, with the ✦ button.
 
 - The interface recolours in the festival's palette and the icons glow
 - The route lights up and **lights travel along it**, sights pulse softly, and a string of lights with lanterns, ketupat, diyas, lotus, hibiscus or paddy hangs across the top
-- Tap the map for a small fireworks burst; lanterns and petals drift across the screen
+- Tap the map for a small sparkle; a few small lanterns or petals drift in the strip at the top only, so the rest of the screen stays clear
 - Greetings in Bahasa Malaysia, English, and Chinese or Tamil where it fits, once a day per festival
 
 All graphics are drawn in code (no image files, no network). While you are **driving a trip, or AR is on, the animation stops** and nothing flashes. It also respects your device's *reduce motion* setting. Dates for moon-based festivals can be a day off because Malaysia announces them after moon sighting, which is why the window starts early and you can always pick by hand.

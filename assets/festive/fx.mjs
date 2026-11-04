@@ -1,4 +1,4 @@
-// festive v0.1.1
+// festive v0.2.0
 // Festival graphics, drawn in code (original vector shapes, no image files) plus a small particle engine.
 // Everything draws into a 2D canvas context; no DOM and no network, so the shapes can be tested with a fake context.
 const TAU = Math.PI * 2;
@@ -125,18 +125,19 @@ export class Scene {
     this.calm = !!festival.calm; this.max = opts.max || 26; this.seed = opts.seed || 7; this.r = rng(this.seed);
     this.items = []; this.stars = [];
     const motifs = festival.motifs.filter((m) => !['sparkle'].includes(m));
+    this.small = !!opts.small; // slim-band mode: a handful of tiny items instead of a screen-filling shower
     const n = Math.round((this.calm ? 0.5 : 1) * this.max * Math.min(1.4, (w * h) / 330000));
-    for (let i = 0; i < Math.max(8, n); i++) this.items.push(this.spawn(motifs[i % motifs.length], true));
-    for (let i = 0; i < Math.max(10, Math.round(n * 1.2)); i++) this.stars.push({ x: this.r() * w, y: this.r() * h * 0.7, s: 6 + this.r() * 10, p: this.r() * 6 });
+    for (let i = 0; i < (this.small ? this.max : Math.max(8, n)); i++) this.items.push(this.spawn(motifs[i % motifs.length], true));
+    for (let i = 0; i < (this.small ? 5 : Math.max(10, Math.round(n * 1.2))); i++) this.stars.push({ x: this.r() * w, y: this.r() * h * 0.7, s: (this.small ? 4 : 6) + this.r() * (this.small ? 4 : 10), p: this.r() * 6 });
   }
   spawn(kind, initial) {
     const r = this.r, up = FLOATERS.has(kind);
-    return { kind, x: r() * this.w, y: initial ? r() * this.h : (up ? this.h + 40 : -30), s: up ? 22 + r() * 22 : 12 + r() * 14, vy: (up ? -1 : 1) * (10 + r() * 16), sway: 8 + r() * 18, ph: r() * 6, a: 0.55 + r() * 0.4, up };
+    return { kind, x: r() * this.w, y: initial ? r() * this.h : (up ? this.h + 40 : -30), s: this.small ? 10 + r() * 8 : up ? 22 + r() * 22 : 12 + r() * 14, vy: (up ? -1 : 1) * (10 + r() * 16), sway: 8 + r() * 18, ph: r() * 6, a: 0.55 + r() * 0.4, up };
   }
   burst(x, y) { // tap: a ring of glowing sparks plus two festival shapes
-    const n = 14, pal = [this.f.c1, this.f.c2, this.f.c3], sparks = [];
-    for (let i = 0; i < n; i++) { const a = (i / n) * TAU + this.r() * 0.3, v = 60 + this.r() * 90; sparks.push({ vx: Math.cos(a) * v, vy: Math.sin(a) * v, c: pal[i % 3] }); }
-    this.bursts.push({ x, y, age: 0, life: 1.1, sparks, shape: this.f.motifs[(this.bursts.length) % this.f.motifs.length] });
+    const n = 8, pal = [this.f.c1, this.f.c2, this.f.c3], sparks = []; // small, quick tap sparkle
+    for (let i = 0; i < n; i++) { const a = (i / n) * TAU + this.r() * 0.3, v = 28 + this.r() * 36; sparks.push({ vx: Math.cos(a) * v, vy: Math.sin(a) * v, c: pal[i % 3] }); }
+    this.bursts.push({ x, y, age: 0, life: 0.8, sparks, shape: this.f.motifs[(this.bursts.length) % this.f.motifs.length] });
     if (this.bursts.length > 6) this.bursts.shift();
   }
   update(dt) {
@@ -150,14 +151,14 @@ export class Scene {
     for (const p of this.items) { ctx.globalAlpha = p.a; if (p.up) glow(ctx, p.x, p.y, p.s * 1.1, f.c2, 0.22); SHAPES[p.kind](ctx, p.x, p.y, p.s, f.c1, f.c2, t); ctx.globalAlpha = 1; }
     for (const b of this.bursts) {
       const u = b.age / b.life, e = 1 - (1 - u) * (1 - u); ctx.globalAlpha = Math.max(0, 1 - u);
-      for (const s of b.sparks) glow(ctx, b.x + s.vx * e, b.y + s.vy * e + 40 * u * u, 7 * (1 - u) + 2, s.c, 1);
-      SHAPES[b.shape](ctx, b.x, b.y - 28 * e, 26 + 10 * u, f.c1, f.c2, this.t); ctx.globalAlpha = 1;
+      for (const s of b.sparks) glow(ctx, b.x + s.vx * e, b.y + s.vy * e + 14 * u * u, 4 * (1 - u) + 1.5, s.c, 1);
+      SHAPES[b.shape](ctx, b.x, b.y - 12 * e, 14 + 4 * u, f.c1, f.c2, this.t); ctx.globalAlpha = 1;
     }
   }
 }
 
 /** Bunting along the top edge: a sagging string with the festival's shapes hanging and bulbs that twinkle. */
-export function garland(ctx, f, w, t, h = 44) {
+export function garland(ctx, f, w, t, h = 36) {
   const step = 58, n = Math.ceil(w / step) + 1;
   ctx.save(); ctx.lineWidth = 1.5; ctx.strokeStyle = f.c2; ctx.globalAlpha = 0.7; ctx.beginPath();
   for (let i = 0; i <= n; i++) { const x = i * step, y = 4 + Math.sin(i * 0.9) * 0; if (i === 0) ctx.moveTo(x, 2); ctx.quadraticCurveTo(x + step / 2, 2 + 9, x + step, 2); } ctx.stroke(); ctx.globalAlpha = 1;

@@ -1,4 +1,4 @@
-// festive v0.1.1
+// festive v0.2.0
 // Malaysia's festival calendar and colour themes. Pure logic (no DOM) so it is unit-tested in Node.
 // Dates: fixed ones are exact. Moon-based ones are computed (Intl Chinese / Umm al-Qura calendars, a lunar-phase
 // formula) or taken from a table, and can be off by a day because Malaysia announces them after moon sighting.

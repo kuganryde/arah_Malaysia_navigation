@@ -4,6 +4,13 @@ Every module has its own version (see `versions.json` and `VERSIONING.md`). Each
 
 ## [Unreleased]
 
+## [0.15.0] - 2026-11-04
+
+- **vehicles 0.1.0**: 3D vehicle (car, motorbike, lorry, bus) replaces the route arrow while navigating; tap to hop and change colour; wheels follow speed; lazy-loaded, integrity-pinned three.js; free models (Kenney CC0 car, built-in shapes)
+- **pwa 0.1.14**: precache: vehicles layer (core) and 3D bundle + models (lazy)
+- **docs 0.10.0**: README: 3D vehicles section, slimmer festive description
+- **ci 0.13.0**: SRI guard for the vendored 3D bundle, vehicles layer in the eager budget, E2E for vehicles, festive slim-band unit test
+- **festive 0.2.0**: decoration confined to a slim strip at the top (6 small items, 5 sparkles), smaller tap sparkle, no screen-wide icon/marker pulsing
 ## [0.14.0] - 2026-11-04
 
 - **ci 0.12.1**: tests for the keep-awake button (unit + E2E)

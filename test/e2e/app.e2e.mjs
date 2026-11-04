@@ -262,3 +262,31 @@ test('Keep-awake is a small button under the map button column, not a toast, and
     assert.equal(await p.getAttribute('.ak-btn', 'aria-pressed'), 'false');
   } finally { await b.close(); }
 });
+
+test('Vehicles: a 3D vehicle replaces the route arrow while navigating, follows the travel mode, reacts to taps, and gives the arrow back', async () => {
+  const b = await launch(); const p = await b.page();
+  try {
+    await openApp(p, srv.url);
+    await p.evaluate(() => { // same arrow marker the app puts on the route during a trip
+      localStorage.setItem('arah.prefs.v1', JSON.stringify({ mode: 'bus' }));
+      const el = document.createElement('div'); el.style.cssText = 'width:30px;height:36px';
+      el.innerHTML = '<div style="width:100%;height:100%;clip-path:polygon(50% 0,100% 100%,50% 76%,0 100%);background:#2fd0ec"></div>';
+      window.__pk = new window.maplibregl.Marker({ element: el, rotationAlignment: 'map', pitchAlignment: 'map' }).setLngLat(window.__arahMap.unproject([195, 285])).setRotation(35).addTo(window.__arahMap);
+    });
+    await p.waitForFunction(() => window.__arahVehicle.status().running, null, { timeout: 30000 });
+    let st = await p.evaluate(() => window.__arahVehicle.status());
+    assert.equal(st.mode, 'bus'); assert.equal(st.failed, false);
+    assert.equal(await p.evaluate(() => window.__pk.getElement().firstElementChild.style.visibility), 'hidden', 'arrow is hidden while the vehicle shows');
+    const c = await p.evaluate(() => { const cv = [...document.body.children].find((e) => e.tagName === 'CANVAS' && e.style.width === '120px'); const r = cv.getBoundingClientRect(); return { x: r.left + 60, y: r.top + 60, w: r.width }; });
+    assert.equal(c.w, 120);
+    await p.mouse.click(c.x, c.y); // tap the vehicle: next colour, remembered
+    st = await p.evaluate(() => window.__arahVehicle.status()); assert.equal(st.colour, 1);
+    await p.evaluate(() => window.__pk.remove()); // trip ends
+    await p.waitForFunction(() => !window.__arahVehicle.status().running, null, { timeout: 10000 });
+    assert.equal(await p.evaluate(() => [...document.body.children].some((e) => e.tagName === 'CANVAS' && e.style.width === '120px')), false, 'overlay removed');
+    // walking keeps the plain arrow
+    await p.evaluate(() => { localStorage.setItem('arah.prefs.v1', JSON.stringify({ mode: 'walk' })); const m = window.__arahMap; const el = document.createElement('div'); el.style.cssText = 'width:30px;height:36px'; el.innerHTML = '<div style="width:100%;height:100%;clip-path:polygon(50% 0,100% 100%,50% 76%,0 100%)"></div>'; window.__pk = new window.maplibregl.Marker({ element: el }).setLngLat(m.getCenter()).addTo(m); });
+    await p.waitForTimeout(2000);
+    assert.equal(await p.evaluate(() => window.__arahVehicle.status().running), false);
+  } finally { await b.close(); }
+});
