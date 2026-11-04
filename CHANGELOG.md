@@ -4,6 +4,10 @@ Every module has its own version (see `versions.json` and `VERSIONING.md`). Each
 
 ## [Unreleased]
 
+## [0.14.0] - 2026-11-04
+
+- **pwa 0.1.13**: precache stamp refreshed (keep-awake button)
+- **keepawake 0.2.0**: Keep-awake notice is now a small sun/moon toggle button in the right-hand map button column (no toast over the map buttons)
 ## [0.13.0] - 2026-11-04
 
 - **docs 0.9.2**: README: font diet; VERSIONING: re-run order after regenerating the bundle

@@ -10,11 +10,11 @@ function boot({ wakeLock = true, pref = null, hidden = false, trip = false, reje
   const mkEl = (tag) => ({ tag, style: {}, children: [], attrs: {}, setAttribute(k, v) { this.attrs[k] = v; }, appendChild(c) { this.children.push(c); return c; }, replaceChildren(...c) { this.children = c; },
     addEventListener(t, f) { (this.l ||= {})[t] = f; }, pause() { this.paused = true; }, play() { calls.play++; this.paused = false; return Promise.resolve(); }, remove() {}, paused: true });
   const document = { visibilityState: hidden ? 'hidden' : 'visible', hidden, readyState: 'complete', currentScript: { src: 'https://x.test/assets/keepawake/arah-keepawake.js' },
-    body: mkEl('body'), head: mkEl('head'), createElement: mkEl, querySelectorAll: () => (trip ? [{ textContent: ' Tamat ' }] : []),
+    body: mkEl('body'), head: mkEl('head'), createElement: mkEl, createElementNS: (ns, t) => mkEl(t), querySelectorAll: () => (trip ? [{ textContent: ' Tamat ' }] : []),
     addEventListener(t, f) { (docL[t] ||= []).push(f); } };
   const navigator = wakeLock ? { wakeLock: { request: async () => { calls.request++; if (reject) throw new Error('NotAllowedError'); const s = { released: false, l: {}, addEventListener(t, f) { this.l[t] = f; }, release() { calls.release++; this.released = true; this.l.release && this.l.release(); } }; sentinels.push(s); return s; } } } : {};
   const win = { addEventListener(t, f) { (listeners[t] ||= []).push(f); } };
-  const ctx = vm.createContext({ window: win, document, navigator, URL, location: { href: 'https://x.test/' }, setTimeout, clearTimeout, setInterval: () => 0,
+  const ctx = vm.createContext({ window: win, getComputedStyle: () => ({}), MutationObserver: class { observe() {} }, document, navigator, URL, location: { href: 'https://x.test/' }, setTimeout, clearTimeout, setInterval: () => 0,
     localStorage: { getItem: (k) => (store.has(k) ? store.get(k) : null), setItem: (k, v) => store.set(k, v) } });
   win.window = win; Object.assign(ctx, { window: win });
   vm.runInContext(readFileSync('assets/keepawake/arah-keepawake.js', 'utf8'), ctx);
@@ -65,4 +65,19 @@ test('switching off while a request is in flight does not leave a lock behind', 
   const s = boot(); s.win.__arahAwake.set(false); await tick(); await tick();
   assert.equal(s.win.__arahAwake.status().locked, false);
   assert.equal(s.calls.release, s.sentinels.length);
+});
+
+test('shows a small toggle button that flips the saved preference', async () => {
+  const s = boot(); await tick();
+  const btn = s.document.body.children.find((c) => c.className === 'ak-btn');
+  assert.ok(btn, 'button is in the page');
+  assert.equal(btn.attrs['aria-pressed'], 'true');
+  btn.l.click();
+  assert.equal(s.store.get('arah.awake.v1'), '0'); assert.equal(btn.attrs['aria-pressed'], 'false');
+  btn.l.click();
+  assert.equal(s.store.get('arah.awake.v1'), '1'); assert.equal(btn.attrs['aria-pressed'], 'true');
+});
+test('button is hidden during a trip', async () => {
+  const s = boot({ trip: true }); await tick();
+  assert.equal(s.document.body.children.find((c) => c.className === 'ak-btn').hidden, true);
 });
