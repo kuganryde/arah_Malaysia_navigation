@@ -106,3 +106,14 @@ test('AR: refuses a software GPU with a clear message (no silent CPU inference)'
     assert.equal(await p.evaluate(() => window.__arahARApi.state.on), false);
   } finally { await b.close(); }
 });
+
+test('Supply chain: nothing is fetched from a script/style CDN at runtime; the map library is the bundled one', async () => {
+  const b = await launch(); const p = await b.page();
+  try {
+    await openApp(p, srv.url); await p.waitForTimeout(2000);
+    const cdn = b.seen.external.filter((u) => /unpkg\.com|jsdelivr|cdnjs/.test(u));
+    assert.deepEqual(cdn, [], 'the CSP no longer allows CDNs, so nothing may ask for one');
+    const v = await p.evaluate(() => window.maplibregl.getVersion());
+    assert.match(v, /^5\.\d+\.\d+$/, 'bundled MapLibre line; update this and the sanitizer note in SECURITY.md when upgrading');
+  } finally { await b.close(); }
+});

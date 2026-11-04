@@ -20,7 +20,7 @@ Email **rydetechwizsolutions@proton.me** with steps to reproduce. Please do not 
 1. **Enforce the CSP.** Watch the browser console on a preview deploy for `Content-Security-Policy-Report-Only` violations while using every feature (map views, search, nearby, voice, offline). When it is quiet, rename the header to `Content-Security-Policy`. Then work toward removing `'unsafe-inline'` and `'unsafe-eval'` from `script-src`, which needs the single-file bundle replaced by a normal build.
 2. **Shared rate limit.** Set `UPSTASH_REDIS_REST_URL` and `UPSTASH_REDIS_REST_TOKEN` so the limit holds across serverless instances. Without them the limit is per instance (best effort).
 3. **Extra origins.** Set `ALLOWED_ORIGINS` (comma separated) if the app is served from a custom domain.
-4. **Self-host or pin third-party assets.** MapLibre loads from unpkg; pin an exact version and add Subresource Integrity, or serve it from the same origin.
+4. **Third-party assets are bundled, not fetched.** MapLibre 5.24.0, React 18.3.1 and the icon fonts are inlined in `index.html`, so the CSP allows no CDN host (`npm run check` and the E2E suite fail if one comes back). Known advisory: GHSA-jrc7-96c5-q579 (MapLibre `Popup.setHTML` sanitizer bypass, fixed only in 6.x, which is ESM-only and needs a re-bundle). The app never calls `setHTML` (a check fails if it does) and uses `setDOMContent` with DOM nodes, so the path is unreachable; upgrade to 6.x when the bundle is next regenerated.
 
 ## Installed app (PWA)
 
