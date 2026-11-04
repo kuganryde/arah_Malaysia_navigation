@@ -31,6 +31,6 @@ self.__ARAH_PRECACHE = {
     "/assets/ar/vendor/ort.webgl.min.js",
     "/assets/ar/models/yolox_nano.onnx"
   ],
-  "coreHash": "5cf35c68c3c8",
+  "coreHash": "da194a291273",
   "lazyHash": "77d835056fd3"
 };
