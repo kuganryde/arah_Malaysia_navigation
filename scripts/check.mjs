@@ -132,6 +132,13 @@ if (/AIza[0-9A-Za-z_-]{35}/.test(indexBuf.toString('utf8'))) fail('possible Goog
   console.log(`android ok (${t.packageId} on ${t.host}, v${t.appVersionName}/${t.appVersionCode}, ${al.length ? 'asset links set' : 'asset links pending signing key'})`);
 }
 
+// 7b. The loading screen is part of the shipped shell and wired into the bundler's document swap.
+{
+  const h = indexBuf.toString('utf8');
+  if (!h.includes('id="arah-loader"') || !h.includes('__arahLoader.hold()') || !h.includes('__arahLoader.show()')) fail('index.html is missing the loading screen: run npm run pwa:inject');
+  console.log('loader ok');
+}
+
 // 7. Performance and accessibility budgets for the layers that load on every visit.
 //    Eager layer scripts (gzip) stay under 40 KB together; the page declares its language for screen readers.
 {

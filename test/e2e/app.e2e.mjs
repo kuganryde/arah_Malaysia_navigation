@@ -311,3 +311,26 @@ test('Accessibility: axe finds no WCAG 2.2 A/AA or AAA violations on the main sc
     assert.deepEqual(bad, []);
   } finally { await b.close(); }
 });
+
+test('Loader: the branded 3D loader paints from the page shell, carries over into the app, and leaves once the map has drawn', async () => {
+  const b = await launch(); const p = await b.page();
+  try {
+    await p.goto(srv.url + '/index.html', { waitUntil: 'commit' });
+    await p.waitForSelector('#arah-loader', { timeout: 10000 }); // in the shell, before the bundle unpacks
+    assert.equal(await p.evaluate(() => document.getElementById('arah-loader').getAttribute('role')), 'status');
+    await p.waitForFunction(() => !!window.__arahMap, null, { timeout: 30000 });
+    assert.equal(await p.evaluate(() => !!document.getElementById('arah-loader')), true, 'still covering the app while the map starts');
+    await p.waitForFunction(() => !document.getElementById('arah-loader'), null, { timeout: 30000 });
+    assert.equal(await p.evaluate(() => !!document.getElementById('arah-loader-css')), false, 'style removed with it');
+  } finally { await b.close(); }
+});
+
+test('Loader: with reduced motion nothing animates', async () => {
+  const b = await launch(); const p = await b.page();
+  try {
+    await p.emulateMedia({ reducedMotion: 'reduce' });
+    await p.goto(srv.url + '/index.html', { waitUntil: 'commit' });
+    await p.waitForSelector('#arah-loader .al-arrow i', { timeout: 10000 });
+    assert.equal(await p.evaluate(() => getComputedStyle(document.querySelector('#arah-loader .al-arrow')).animationName), 'none');
+  } finally { await b.close(); }
+});

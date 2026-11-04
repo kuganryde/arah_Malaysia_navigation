@@ -130,6 +130,10 @@ A directory of **39 Malaysian fast-food and cafe chains and 48 shopping malls**,
 
 Logos load from each brand's own website, only for the tiles you scroll to, with no referrer sent. If a logo cannot be loaded, or you are offline, a coloured initials badge is shown. Untick *Logos from brand sites* in the sheet to make no requests to brand sites. Logos are trademarks of their owners and are not stored or redistributed by this repository.
 
+### ⏳ Loading screen
+
+A branded 3D loader paints on the very first frame (inline in the page shell, no files to fetch): a neon road rushing under the Kuala Lumpur skyline with the ARAH arrow turning as a real 3D object and the gradient wordmark above. It carries over into the app and fades once the map has drawn (never longer than 20 s). Animations use transform and opacity only and stop for reduced-motion. Source: `scripts/loader/loader-markup.mjs`; `npm run pwa:inject` writes it into `index.html`.
+
 ### ♿ Accessibility
 
 Targets WCAG 2.2 **AAA** where a map app can reach it: landmarks, text contrast of at least 7:1 (brand badges nudged only as far as needed), 44 px touch targets, no controls on top of each other, keyboard focus rings, reduced-motion support, labelled buttons in Bahasa Malaysia and English. CI runs axe-core (A, AA and AAA rules) on the main screens and fails on any violation; Lighthouse accessibility, best practices and SEO measure 100/96/100 locally (the best-practices point is console noise from blocked network in the test sandbox). The map canvas itself (tiles, labels drawn by the map style) cannot be audited by axe and is not claimed.
