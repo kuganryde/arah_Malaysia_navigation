@@ -4,10 +4,16 @@ Every module has its own version (see `versions.json` and `VERSIONING.md`). Each
 
 ## [Unreleased]
 
-- **pwa 0.1.5**: precache stamp refreshed for release 0.8.0
+## [0.9.0] - 2026-11-04
+
+- **pwa 0.1.6**: precache stamp refreshed (privacy page changed)
+- **privacy 0.5.0**: unpkg removed from the third-party list: nothing is fetched from it
+- **ci 0.8.0**: supply-chain guard: no CDN in CSP, no Popup.setHTML callers (MapLibre advisory); E2E asserts no CDN requests and the bundled MapLibre line
+- **security-headers 0.5.0**: CSP no longer allows unpkg (map library, React and icon fonts are bundled); duplicate worker-src removed
 ## [0.8.0] - 2026-11-03
 
 - **ci 0.7.0**: browser E2E tests (Playwright, mocked network) as a parallel CI job; maplibre-gl pinned as a dev dependency for hermetic runs
+- **pwa 0.1.5**: precache stamp refreshed for release 0.8.0
 ## [0.7.1] - 2026-11-03
 
 - **ci 0.6.1**: keepawake test: remove a no-op string replacement (CodeQL)

@@ -73,5 +73,28 @@ if (/AIza[0-9A-Za-z_-]{35}/.test(indexBuf.toString('utf8'))) fail('possible Goog
   console.log('pwa ok (' + mf.icons.length + ' icons)');
 }
 
+// 5. Supply chain: MapLibre, React and the icon fonts are bundled inside index.html, so no CDN host belongs in the CSP,
+//    and the app must never call Popup.setHTML (the MapLibre sanitizer advisory GHSA-jrc7-96c5-q579 only affects setHTML;
+//    the app uses setDOMContent with DOM nodes, so the vulnerable path stays unreachable until the bundled library is upgraded).
+{
+  const csp = hdrs['content-security-policy'] || hdrs['content-security-policy-report-only'] || '';
+  if (/unpkg\.com|cdn\.jsdelivr|cdnjs/.test(csp)) fail('CSP must not allow a CDN host: the app is fully bundled');
+  const { gunzipSync } = await import('node:zlib');
+  const html = indexBuf.toString('utf8');
+  const man = JSON.parse(html.match(/<script type="__bundler\/manifest">([\s\S]*?)<\/script>/)[1]);
+  let calls = 0;
+  for (const e of Object.values(man)) {
+    if (!/javascript/.test(e.mime)) continue;
+    let b = Buffer.from(e.data, 'base64'); if (e.compressed) b = gunzipSync(b);
+    const t = b.toString('utf8');
+    if (/maplibre/i.test(t) && t.length > 500000) continue; // the library itself defines setHTML; we only police callers
+    calls += (t.match(/\.setHTML\s*\(/g) || []).length;
+  }
+  calls += (html.match(/\.setHTML\s*\(/g) || []).length;
+  for (const f of readdirSync('assets', { recursive: true })) if (/\.(m?js)$/.test(f)) calls += (readFileSync('assets/' + f, 'utf8').match(/\.setHTML\s*\(/g) || []).length;
+  if (calls) fail(`Popup.setHTML is called ${calls}x: use setDOMContent with DOM nodes (MapLibre sanitizer advisory)`);
+  console.log('supply chain ok (no CDN in CSP, no setHTML callers)');
+}
+
 if (errors.length) { console.error(errors.map((e) => 'FAIL ' + e).join('\n')); process.exit(1); }
 console.log('check ok');

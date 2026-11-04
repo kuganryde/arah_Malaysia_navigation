@@ -1,4 +1,4 @@
-// ARAH service worker  pwa v0.1.5
+// ARAH service worker  pwa v0.1.6
 // Offline-first app shell. The app is one self-contained HTML file (React, MapLibre and icons are bundled in
 // it), so the whole shell is a handful of same-origin files that are cached together and swapped atomically.
 //
