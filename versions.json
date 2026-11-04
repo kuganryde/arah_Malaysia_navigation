@@ -1,5 +1,5 @@
 {
-  "release": "0.11.0",
+  "release": "0.11.1",
   "modules": {
     "app": {
       "version": "0.2.6",
@@ -97,7 +97,7 @@
       ]
     },
     "ci": {
-      "version": "0.10.0",
+      "version": "0.10.1",
       "description": "Tests, guard rails and GitHub Actions",
       "paths": [
         ".github/**",
@@ -121,7 +121,7 @@
       "markers": []
     },
     "pwa": {
-      "version": "0.1.9",
+      "version": "0.1.10",
       "description": "Installable app: manifest, service worker, offline page, icons, install and update UI",
       "paths": [
         "sw.js",
@@ -236,7 +236,7 @@
       ]
     },
     "observability": {
-      "version": "0.1.0",
+      "version": "0.1.1",
       "description": "Opt-in Sentry crash reports with on-device scrubbing (assets/observability/)",
       "paths": [
         "assets/observability/arah-observe.js",
