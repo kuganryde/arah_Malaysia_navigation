@@ -1,8 +1,8 @@
 {
-  "release": "0.14.0",
+  "release": "0.15.0",
   "modules": {
     "app": {
-      "version": "0.3.0",
+      "version": "0.3.1",
       "description": "The map app: bundled index.html and its editable source",
       "paths": [
         "index.html",
@@ -97,7 +97,7 @@
       ]
     },
     "ci": {
-      "version": "0.12.1",
+      "version": "0.13.0",
       "description": "Tests, guard rails and GitHub Actions",
       "paths": [
         ".github/**",
@@ -107,7 +107,7 @@
       "markers": []
     },
     "docs": {
-      "version": "0.9.2",
+      "version": "0.10.0",
       "description": "README and its animated art",
       "paths": [
         "README.md",
@@ -121,7 +121,7 @@
       "markers": []
     },
     "pwa": {
-      "version": "0.1.13",
+      "version": "0.1.14",
       "description": "Installable app: manifest, service worker, offline page, icons, install and update UI",
       "paths": [
         "sw.js",
@@ -177,7 +177,7 @@
       ]
     },
     "festive": {
-      "version": "0.1.1",
+      "version": "0.2.0",
       "description": "Festival themes for Malaysia: glowing UI, lit route, lanterns, bunting, tap fireworks (assets/festive/)",
       "paths": [
         "assets/festive/**"
@@ -254,6 +254,27 @@
         {
           "file": "assets/observability/arah-observe.js",
           "text": "var VERSION = '{v}';"
+        }
+      ]
+    },
+    "vehicles": {
+      "version": "0.1.0",
+      "description": "3D vehicle marker while navigating, interactive (assets/vehicles/)",
+      "paths": [
+        "assets/vehicles/**"
+      ],
+      "markers": [
+        {
+          "file": "assets/vehicles/arah-vehicles.js",
+          "text": "/*! ARAH vehicles v{v}"
+        },
+        {
+          "file": "assets/vehicles/arah-vehicles.js",
+          "text": "window.__arahVehicles = '{v}';"
+        },
+        {
+          "file": "assets/vehicles/vehicles-3d.mjs",
+          "text": "// ARAH vehicles v{v}"
         }
       ]
     }

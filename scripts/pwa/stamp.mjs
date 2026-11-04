@@ -29,6 +29,7 @@ export const CORE = {
   '/assets/observability/arah-observe.js': 'assets/observability/arah-observe.js',
   '/assets/observability/config.json': 'assets/observability/config.json',
   '/assets/observability/release.json': 'assets/observability/release.json',
+  '/assets/vehicles/arah-vehicles.js': 'assets/vehicles/arah-vehicles.js',
   '/assets/ar/arah-ar.js': 'assets/ar/arah-ar.js',
   '/assets/ar/ar-core.mjs': 'assets/ar/ar-core.mjs',
   '/assets/ar/ar-engine.mjs': 'assets/ar/ar-engine.mjs',
@@ -43,6 +44,12 @@ export const CORE = {
 export const LAZY = {
   '/assets/ar/vendor/ort.webgl.min.js': 'assets/ar/vendor/ort.webgl.min.js',
   '/assets/observability/vendor/sentry.min.js': 'assets/observability/vendor/sentry.min.js',
+  '/assets/vehicles/vendor/vehicles3d.min.js': 'assets/vehicles/vendor/vehicles3d.min.js',
+  '/assets/vehicles/models/vehicle-truck-yellow.glb': 'assets/vehicles/models/vehicle-truck-yellow.glb',
+  '/assets/vehicles/models/vehicle-truck-red.glb': 'assets/vehicles/models/vehicle-truck-red.glb',
+  '/assets/vehicles/models/vehicle-truck-green.glb': 'assets/vehicles/models/vehicle-truck-green.glb',
+  '/assets/vehicles/models/vehicle-truck-purple.glb': 'assets/vehicles/models/vehicle-truck-purple.glb',
+  '/assets/vehicles/models/Textures/colormap.png': 'assets/vehicles/models/Textures/colormap.png',
   '/assets/ar/models/yolox_nano.onnx': 'assets/ar/models/yolox_nano.onnx',
 };
 

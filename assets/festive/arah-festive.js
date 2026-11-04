@@ -1,4 +1,4 @@
-/*! ARAH festive theme v0.1.1
+/*! ARAH festive theme v0.2.0
  * Festival themes for Malaysia's celebrations: colours, glowing icons, a lit route with travelling lights, pulsing
  * sights, string-light bunting, floating lanterns and tap fireworks on the map.
  * Separate layer, like arah-ar.js: it reads the map through window.__arahMap and the DOM, and never calls the app's
@@ -9,7 +9,7 @@
 (function () {
   'use strict';
   if (window.__arahFestive) return;
-  window.__arahFestive = '0.1.1';
+  window.__arahFestive = '0.2.0';
   var BASE = new URL('.', document.currentScript ? document.currentScript.src : location.href).href;
   var PREF = 'arah.festive.v1', SEEN = 'arah.festive.hi';
   var F, FX, cur = null, canvas, ctx, scene, btn, scrim, raf = 0, last = 0, mapFx = null, forcedBy = 'auto';
@@ -64,11 +64,9 @@
     '/* twinkle = opacity only: it runs on the GPU compositor. Animating text-shadow/filter repaints on the main thread every frame (measured ~300 ms of CPU per second) */' +
     '@keyframes af-tw{0%,100%{opacity:1}50%{opacity:.78}}' +
     '@keyframes af-pu{0%,100%{opacity:1}50%{opacity:.82}}' +
-    'html[data-festive] .ph{text-shadow:0 0 7px var(--af-glow),0 0 14px var(--af-glow)}' +
-    'html[data-festive]:not([data-festive-calm]) .ph:nth-of-type(3n){animation:af-tw 3.4s ease-in-out infinite}' +
-    'html[data-festive]:not([data-festive-calm]) .ph:nth-of-type(3n+1){animation:af-tw 4.6s ease-in-out -1.4s infinite}' +
+    'html[data-festive] .ph{text-shadow:0 0 5px var(--af-glow)}' +
     'html[data-festive] .btn-primary{box-shadow:0 0 16px var(--af-glow)}' +
-    'html[data-festive] .maplibregl-marker{filter:drop-shadow(0 0 7px var(--af-glow));animation:af-pu 2.6s ease-in-out infinite}' +
+    'html[data-festive] .maplibregl-marker{filter:drop-shadow(0 0 5px var(--af-glow))}' +
     'html[data-festive-still] *,html[data-festive-still] .maplibregl-marker{animation:none!important}' +
     '@media (prefers-reduced-motion:reduce){html[data-festive] .ph,html[data-festive] .maplibregl-marker,.af-toast{animation:none!important}}' +
     '.af-btn:focus-visible,.af-x:focus-visible,.af-row:focus-visible{outline:2px solid #fff;outline-offset:2px}';
@@ -93,11 +91,12 @@
   }
 
   /* ---------- canvas: bunting, lanterns, sparkles, tap fireworks */
+  var BAND = 96; // px: height of the strip at the top that carries the festive decoration
   function sizeCanvas() {
     if (!canvas) return;
     var dpr = Math.min(window.devicePixelRatio || 1, 2), w = window.innerWidth, h = window.innerHeight;
     canvas.width = Math.round(w * dpr); canvas.height = Math.round(h * dpr); ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-    if (cur) scene = new FX.Scene(cur.f, w, h, { max: 22, seed: 7 });
+    if (cur) scene = new FX.Scene(cur.f, w, BAND, { max: 6, seed: 7, small: true }); // a slim band only; the rest of the screen stays clear
   }
   function frame(ts) {
     raf = 0;
@@ -108,7 +107,7 @@
     var dt = Math.min(0.1, (ts - (last || ts)) / 1000); last = ts;
     var t0 = performance.now();
     scene.update(dt);
-    ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
+    ctx.clearRect(0, 0, window.innerWidth, window.innerHeight); // bursts from taps can be anywhere, so clear it all
     FX.garland(ctx, cur.f, window.innerWidth, scene.t);
     scene.draw(ctx);
     // Self-tuning frame rate: ~30 fps normally; a slow phone (frames costing >4 ms / >8 ms) backs off to ~20 / ~10 fps

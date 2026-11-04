@@ -93,3 +93,11 @@ test('alongLine interpolates and wraps', () => {
   assert.deepEqual(cum, [0, 10, 20]);
   assert.deepEqual(FX.alongLine(c, [5, 15, 25], 20, cum), [[5, 0], [10, 5], [5, 0]]);
 });
+
+test('slim-band scene keeps the decoration small: few items, all inside the strip', () => {
+  const f = F.FESTIVALS ? F.FESTIVALS[0] : Object.values(F).find((v) => v && v.motifs);
+  const s = new FX.Scene(f, 390, 96, { max: 6, seed: 7, small: true });
+  assert.equal(s.items.length, 6); assert.ok(s.stars.length <= 5);
+  assert.ok(s.items.every((i) => i.s <= 20), 'items are small');
+  s.burst(100, 100); assert.ok(s.bursts[0].sparks.length <= 8, 'tap burst is small');
+});
