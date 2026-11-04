@@ -130,6 +130,10 @@ A directory of **39 Malaysian fast-food and cafe chains and 48 shopping malls**,
 
 Logos load from each brand's own website, only for the tiles you scroll to, with no referrer sent. If a logo cannot be loaded, or you are offline, a coloured initials badge is shown. Untick *Logos from brand sites* in the sheet to make no requests to brand sites. Logos are trademarks of their owners and are not stored or redistributed by this repository.
 
+### ♿ Accessibility
+
+Targets WCAG 2.2 **AAA** where a map app can reach it: landmarks, text contrast of at least 7:1 (brand badges nudged only as far as needed), 44 px touch targets, no controls on top of each other, keyboard focus rings, reduced-motion support, labelled buttons in Bahasa Malaysia and English. CI runs axe-core (A, AA and AAA rules) on the main screens and fails on any violation; Lighthouse accessibility, best practices and SEO measure 100/96/100 locally (the best-practices point is console noise from blocked network in the test sandbox). The map canvas itself (tiles, labels drawn by the map style) cannot be audited by axe and is not claimed.
+
 ### 🚗 3D vehicles while you navigate
 
 During a trip the plain arrow becomes a small 3D vehicle that matches your travel mode: a car, motorbike, lorry or bus (walking keeps the arrow). **Tap it**: it hops and changes colour, and your pick is remembered. Wheels turn with your speed and the vehicle tilts with the map. The car is Kenney's CC0 low-poly model; the others are built in code (`assets/vehicles/`, credits in `assets/vehicles/models/README.md`). The 3D engine (three.js, vendored, integrity-pinned: `npm run vehicles:build`) is fetched only when a trip starts and is skipped on Data Saver or without WebGL, so the first screen is unaffected. Switch off with `__arahVehicle.set(false)`.

@@ -1,4 +1,4 @@
-/*! ARAH Crash Reports v0.1.1
+/*! ARAH Crash Reports v0.1.2
  * Optional, opt-in crash reporting to Sentry. A separate layer: it never calls app code.
  *  - Does nothing until a Sentry DSN is set in config.json AND the person says yes (one small card, once).
  *  - Before consent no Sentry code is downloaded and nothing is sent. After "No thanks" the card never returns.
@@ -10,7 +10,7 @@
 (function () {
   'use strict';
   if (window.__arahObserve) return;
-  var VERSION = '0.1.1';
+  var VERSION = '0.1.2';
   var SENTRY_SRI = 'sha384-PvHHB5zoMzazwRBH4991IED+fpWUQDHFh6RUSKQLkYJdYbfoTRZim7l5tzqTkrnq';
   var KEY = 'arah.observe.v1';
   var BASE = new URL('.', document.currentScript ? document.currentScript.src : location.href).href;
@@ -54,7 +54,7 @@
   var CSS = '.ao-card{position:fixed;left:50%;bottom:calc(16px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);width:min(92vw,420px);z-index:2147482000;box-sizing:border-box;padding:14px 16px;border-radius:16px;background:var(--color-surface,#141729);color:var(--color-text,#e8ebff);border:1px solid var(--color-border,#2a2f52);box-shadow:0 12px 32px rgba(0,0,0,.5);font:14px/1.45 var(--font-body,system-ui,sans-serif)}' +
     '.ao-card h2{margin:0 0 4px;font:600 15px/1.3 var(--font-display,system-ui,sans-serif)}.ao-card p{margin:0 0 12px;color:var(--color-text-muted,#aab0d6)}' +
     '.ao-row{display:flex;gap:8px}.ao-card button{flex:1;min-height:44px;border-radius:12px;border:1px solid var(--color-border,#2a2f52);background:transparent;color:inherit;font:inherit;cursor:pointer}' +
-    '.ao-card button.ao-yes{background:var(--color-primary,#5b8cff);border-color:transparent;color:#0a0c1a;font-weight:600}.ao-card button:focus-visible{outline:2px solid var(--color-primary,#5b8cff);outline-offset:2px}' +
+    '.ao-card button.ao-yes{background:#7ea2ff;border-color:transparent;color:#0a0c1a;font-weight:600}.ao-card button:focus-visible{outline:2px solid var(--color-primary,#5b8cff);outline-offset:2px}' +
     '@media (prefers-reduced-motion:no-preference){.ao-card{animation:ao-in .25s ease-out}@keyframes ao-in{from{opacity:0;transform:translate(-50%,8px)}}}';
   function el(tag, props, kids) {
     var n = document.createElement(tag);

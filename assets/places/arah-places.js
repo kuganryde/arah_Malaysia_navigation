@@ -1,4 +1,4 @@
-/*! ARAH Makan & Mall v0.1.2
+/*! ARAH Makan & Mall v0.2.0
  * A directory of Malaysian fast-food chains and shopping malls with logos. Separate layer, like arah-ar.js:
  * it reads the app's map through window.__arahMap and never calls the app's other code.
  *  - Outlets come live from OpenStreetMap (Overpass), searched around the centre of the map view.
@@ -9,7 +9,7 @@
 (function () {
   'use strict';
   if (window.__arahPlaces) return;
-  window.__arahPlaces = '0.1.2';
+  window.__arahPlaces = '0.2.0';
   var BASE = new URL('.', document.currentScript ? document.currentScript.src : location.href).href;
   var OVERPASS = 'https://overpass-api.de/api/interpreter';
   var LOGO_KEY = 'arah.places.logos';
@@ -36,7 +36,8 @@
   /* ---------- logo: brand website first, badge as the fallback (and the only thing shown offline / when off) */
   function badge(b, size) {
     var s = el('span', { class: 'ap-badge', 'aria-hidden': 'true', text: core.initials(b.name) });
-    s.style.cssText = 'background:' + b.color + ';color:' + core.inkFor(b.color) + ';width:' + size + 'px;height:' + size + 'px;font-size:' + Math.round(size * 0.38) + 'px';
+    var rd = core.readable(b.color); // brand hue, nudged just enough for 7:1 text contrast (WCAG AAA)
+    s.style.cssText = 'background:' + rd.bg + ';color:' + rd.ink + ';width:' + size + 'px;height:' + size + 'px;font-size:' + Math.round(size * 0.38) + 'px';
     return s;
   }
   var io = null;
@@ -77,7 +78,7 @@
     '.ap-x,.ap-tab,.ap-chip,.ap-go,.ap-row{font-family:inherit;cursor:pointer}' +
     '.ap-x{min-width:40px;min-height:40px;border-radius:8px;border:1px solid #3a3f66;background:transparent;color:#eef0fa;font-size:16px}' +
     '.ap-tabs{display:flex;gap:6px;padding:0 14px 8px}.ap-tab{flex:1;min-height:40px;border-radius:8px;border:1px solid #3a3f66;background:transparent;color:#eef0fa;font-weight:700;font-size:13px}' +
-    '.ap-tab[aria-selected=true]{background:#a865f5;border-color:#a865f5;color:#0a0c1a}' +
+    '.ap-tab[aria-selected=true]{background:#bf91ff;border-color:#a865f5;color:#0a0c1a}' +
     '.ap-q{margin:0 14px 8px;min-height:42px;border-radius:8px;border:1px solid #3a3f66;background:#0a0c1a;color:#eef0fa;padding:0 12px;font:inherit;font-size:15px}' +
     '.ap-body{flex:1;overflow:auto;padding:0 14px 14px;-webkit-overflow-scrolling:touch}' +
     '.ap-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}' +
@@ -86,11 +87,11 @@
     '.ap-logo,.ap-badge{display:inline-flex;align-items:center;justify-content:center;border-radius:10px;flex:none;overflow:hidden}' +
     '.ap-logo.ok{background:#fff}.ap-logo img{width:100%;height:100%;object-fit:contain;padding:3px;box-sizing:border-box}.ap-badge{font-weight:800;font-family:"Barlow Condensed","Ubuntu",sans-serif;letter-spacing:.02em}' +
     '.ap-row{display:flex;align-items:center;gap:10px;width:100%;padding:8px;margin:0 0 6px;border-radius:10px;border:1px solid #2a2f55;background:#0f1226;color:#eef0fa;text-align:left}' +
-    '.ap-row .t{flex:1;min-width:0}.ap-row .t b{display:block;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.ap-row .t small{color:#9aa0c4;font-size:12px;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}' +
+    '.ap-row .t{flex:1;min-width:0}.ap-row .t b{display:block;font-size:14px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.ap-row .t small{color:#a6acd0;font-size:12px;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}' +
     '.ap-row .d{color:#2fd0ec;font:800 15px "Barlow Condensed","Ubuntu",sans-serif;flex:none}' +
-    '.ap-bar{display:flex;gap:8px;align-items:center;margin:0 0 10px}.ap-bar .s{flex:1;color:#9aa0c4;font-size:12px}' +
-    '.ap-go{min-height:40px;padding:0 12px;border-radius:8px;border:1px solid #a865f5;background:#a865f5;color:#0a0c1a;font-weight:700;font-size:13px}.ap-go.q{background:transparent;color:#eef0fa;border-color:#3a3f66}' +
-    '.ap-msg{padding:24px 8px;text-align:center;color:#9aa0c4}.ap-foot{display:flex;align-items:center;gap:8px;padding:8px 14px;border-top:1px solid #2a2f55;color:#9aa0c4;font-size:12px}.ap-foot label{display:flex;gap:6px;align-items:center;flex:1;cursor:pointer}' +
+    '.ap-bar{display:flex;gap:8px;align-items:center;margin:0 0 10px}.ap-bar .s{flex:1;color:#a6acd0;font-size:12px}' +
+    '.ap-go{min-height:40px;padding:0 12px;border-radius:8px;border:1px solid #a865f5;background:#bf91ff;color:#0a0c1a;font-weight:700;font-size:13px}.ap-go.q{background:transparent;color:#eef0fa;border-color:#3a3f66}' +
+    '.ap-msg{padding:24px 8px;text-align:center;color:#a6acd0}.ap-foot{display:flex;align-items:center;gap:8px;padding:8px 14px;border-top:1px solid #2a2f55;color:#a6acd0;font-size:12px}.ap-foot label{display:flex;gap:6px;align-items:center;flex:1;cursor:pointer}' +
     '.ap-mk{width:36px;height:36px;border-radius:50%;border:3px solid #2fd0ec;background:#fff;box-shadow:0 2px 8px rgba(0,0,0,.5);overflow:hidden;display:flex;align-items:center;justify-content:center;cursor:pointer}' +
     '.ap-x:focus-visible,.ap-tab:focus-visible,.ap-chip:focus-visible,.ap-go:focus-visible,.ap-row:focus-visible,.ap-btn:focus-visible,.ap-q:focus-visible{outline:2px solid #2fd0ec;outline-offset:2px}';
 
