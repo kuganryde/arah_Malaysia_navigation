@@ -4,6 +4,12 @@ Every module has its own version (see `versions.json` and `VERSIONING.md`). Each
 
 ## [Unreleased]
 
+## [0.13.0] - 2026-11-04
+
+- **docs 0.9.2**: README: font diet; VERSIONING: re-run order after regenerating the bundle
+- **ci 0.12.0**: font guards (Latin-only, 600 KB budget, every used icon present), tighter page budget 1.3 MB, E2E glyph check; perf:fonts build step
+- **pwa 0.1.12**: precache stamp refreshed (smaller index.html)
+- **app 0.3.0**: font diet: non-Latin UI font subsets dropped and Phosphor icon fonts subset to the 65 icons in use (index.html 2.3 MB -> 1.1 MB, bundled fonts 1087 KB -> 272 KB); no visual change (pixel-compared)
 ## [0.12.0] - 2026-11-04
 
 - **docs 0.9.1**: README: performance notes

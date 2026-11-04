@@ -220,3 +220,27 @@ test('Accessibility: page language is set and our buttons name their visible tex
     assert.deepEqual(mismatch, [], 'WCAG 2.5.3 label in name');
   } finally { await b.close(); }
 });
+
+test('Fonts: every bundled icon has a real glyph, and the Latin UI fonts load', async () => {
+  const b = await launch(); const p = await b.page();
+  try {
+    await openApp(p, srv.url); await p.waitForTimeout(1500);
+    const r = await p.evaluate(async () => {
+      await document.fonts.ready;
+      const cv = document.createElement('canvas'); cv.width = 40; cv.height = 40; const g = cv.getContext('2d');
+      // A glyph the font does not have draws as the font's "missing" box (or nothing): compare pixels against that.
+      const draw = (fam, ch) => { g.clearRect(0, 0, 40, 40); g.font = '28px "' + fam + '"'; g.textBaseline = 'middle'; g.fillText(ch, 4, 20); return cv.toDataURL(); };
+      const out = { blank: [], total: 0, families: [...new Set([...document.fonts].filter((f) => f.status === 'loaded').map((f) => f.family))] };
+      await document.fonts.load('28px "Phosphor"', '\ue4f6'); await document.fonts.load('28px "Phosphor-Fill"', '\ue4f6');
+      const missing = { Phosphor: draw('Phosphor', '\uf8fe'), 'Phosphor-Fill': draw('Phosphor-Fill', '\uf8fe') };
+      for (const sh of document.styleSheets) { let rules; try { rules = sh.cssRules; } catch (e) { continue; }
+        for (const rule of rules) { const m = rule.selectorText && rule.selectorText.match(/^\.(ph|ph-fill)\.ph-([a-z0-9-]+)::?before$/); if (!m) continue;
+          const ch = JSON.parse(rule.style.getPropertyValue('content')); const fam = m[1] === 'ph' ? 'Phosphor' : 'Phosphor-Fill';
+          out.total++; if (draw(fam, ch) === missing[fam]) out.blank.push(m[2]); } }
+      return out;
+    });
+    assert.ok(r.total >= 100, 'icon rules present: ' + r.total);
+    assert.deepEqual(r.blank, [], 'icons whose glyph is missing from the trimmed font');
+    for (const f of ['Phosphor', 'Phosphor-Fill', 'Ubuntu', 'Barlow Condensed']) assert.ok(r.families.includes(f), f + ' loaded');
+  } finally { await b.close(); }
+});
