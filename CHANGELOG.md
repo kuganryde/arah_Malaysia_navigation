@@ -4,6 +4,15 @@ Every module has its own version (see `versions.json` and `VERSIONING.md`). Each
 
 ## [Unreleased]
 
+## [0.19.0] - 2026-11-04
+
+- **twa 0.1.2**: version sync to release 0.19.0
+- **pwa 0.1.19**: release stamp 0.19.0
+- **docs 0.11.2**: README: textured 3D landmarks
+- **ci 0.17.0**: Landmarks tests (sizes, winding, SRI, loader in step with models) and SRI guard
+- **pwa 0.1.18**: Landmarks loader precached; its 3D bundle cached on first use
+- **app 0.4.1**: Landmarks layer script injected into the page head
+- **landmarks 0.1.0**: Textured low-poly 3D models of 12 iconic landmarks (original, built in code), night windows, lazy SRI-pinned three.js bundle; switches the landmark layers on, since the app shipped with `showLandmarks` false
 ## [0.18.0] - 2026-11-04
 
 - **twa 0.1.1**: version sync to release 0.18.0

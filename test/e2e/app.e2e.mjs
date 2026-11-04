@@ -100,6 +100,26 @@ test('Keep-awake: holds the screen (lock or silent video) and the off switch rel
   } finally { await b.close(); }
 });
 
+test('Landmarks: textured 3D models draw over the old shapes, in day and night, and the off switch restores them', async () => {
+  const b = await launch(); const p = await b.page();
+  try {
+    await openApp(p, srv.url);
+    await p.evaluate(() => window.__arahMap.jumpTo({ center: [101.7116, 3.15787], zoom: 15.8, pitch: 60, bearing: -35 }));
+    await p.waitForFunction(() => { const s = window.__arahLandmark3d.status().state; return s && s.drawn; }, null, { timeout: 45000 });
+    const on = await p.evaluate(() => { const m = window.__arahMap, s = window.__arahLandmark3d.status(); return { built: s.state.built, vis: m.getLayoutProperty('landmark-3d', 'visibility'), op: m.getPaintProperty('landmark-3d', 'fill-extrusion-opacity'), models: m.getLayer('landmark-models').type, order: m.style._order.slice() }; }); // getStyle() omits custom layers; the internal draw order is what matters here
+    assert.ok(on.built.includes('petronas'), 'Petronas model built');
+    assert.equal(on.vis, 'visible', 'the landmark layers are switched on (the app default hid them)');
+    assert.equal(on.op, 0.01, 'old shapes stay as an invisible tap target');
+    assert.ok(on.order.indexOf('landmark-models') === on.order.indexOf('landmark-3d') - 1, 'models are drawn directly below the old shapes so depth does not hide them');
+    await p.evaluate(() => window.__arahMap.setPaintProperty('bg', 'background-color', '#0a0c1a'));
+    await p.waitForFunction(() => window.__arahLandmark3d.status().state.night === true, null, { timeout: 8000 });
+    await p.evaluate(() => window.__arahLandmark3d.set(false));
+    const off = await p.evaluate(() => ({ op: window.__arahMap.getPaintProperty('landmark-3d', 'fill-extrusion-opacity'), vis: window.__arahMap.getLayoutProperty('landmark-3d', 'visibility'), st: window.__arahLandmark3d.status().active }));
+    assert.deepEqual(off, { op: 1, vis: 'none', st: false });
+    assert.deepEqual(p.errors.filter((e) => !/tile|AJAX|Failed to load|glyph|offline|ERR_/i.test(e)), []);
+  } finally { await b.close(); }
+});
+
 test('AR: refuses a software GPU with a clear message (no silent CPU inference)', async () => {
   const b = await launch(); const p = await b.page();
   try {

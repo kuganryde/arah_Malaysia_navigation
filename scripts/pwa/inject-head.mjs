@@ -20,6 +20,7 @@ const KEEP_SCRIPT = '<script src="assets/keepawake/arah-keepawake.js" defer></sc
 const OBS_SCRIPT = '<script src="assets/observability/arah-observe.js" defer></script>';
 const A11Y_SCRIPT = '<script src="assets/a11y/arah-a11y.js" defer></script>';
 const VEH_SCRIPT = '<script src="assets/vehicles/arah-vehicles.js" defer></script>';
+const LM_SCRIPT = '<script src="assets/landmarks/arah-landmarks.js" defer></script>';
 const NET_SCRIPT = '<script src="assets/resilience/arah-resilience.js" defer></script>';
 // Read-only handle so the Makan & Mall layer can place markers; the app's own code is otherwise untouched.
 const MAP_FROM = 'this.map=new gl.Map(', MAP_TO = 'this.map=window.__arahMap=new gl.Map(';
@@ -36,7 +37,8 @@ export function patchHead(html) { // for plain HTML heads
   if (!out.includes('arah-resilience.js')) out = out.replace(KEEP_SCRIPT, KEEP_SCRIPT + '\n' + NET_SCRIPT);
   if (!out.includes('arah-observe.js')) out = out.replace(NET_SCRIPT, NET_SCRIPT + '\n' + OBS_SCRIPT);
   if (!out.includes('arah-vehicles.js')) out = out.replace(OBS_SCRIPT, OBS_SCRIPT + '\n' + VEH_SCRIPT);
-  if (!out.includes('arah-a11y.js')) out = out.replace(VEH_SCRIPT, VEH_SCRIPT + '\n' + A11Y_SCRIPT);
+  if (!out.includes('arah-landmarks.js')) out = out.replace(VEH_SCRIPT, VEH_SCRIPT + '\n' + LM_SCRIPT);
+  if (!out.includes('arah-a11y.js')) out = out.replace(LM_SCRIPT, LM_SCRIPT + '\n' + A11Y_SCRIPT);
   if (out.includes(MAP_FROM)) out = out.replace(MAP_FROM, MAP_TO);
   return out;
 }
@@ -78,7 +80,8 @@ function patchBundle(file) {
   if (!t.includes('arah-resilience.js')) t = t.replace(KEEP_SCRIPT, KEEP_SCRIPT + '\n' + NET_SCRIPT);
   if (!t.includes('arah-observe.js')) t = t.replace(NET_SCRIPT, NET_SCRIPT + '\n' + OBS_SCRIPT);
   if (!t.includes('arah-vehicles.js')) t = t.replace(OBS_SCRIPT, OBS_SCRIPT + '\n' + VEH_SCRIPT);
-  if (!t.includes('arah-a11y.js')) t = t.replace(VEH_SCRIPT, VEH_SCRIPT + '\n' + A11Y_SCRIPT);
+  if (!t.includes('arah-landmarks.js')) t = t.replace(VEH_SCRIPT, VEH_SCRIPT + '\n' + LM_SCRIPT);
+  if (!t.includes('arah-a11y.js')) t = t.replace(LM_SCRIPT, LM_SCRIPT + '\n' + A11Y_SCRIPT);
   if (t.includes(MAP_FROM)) t = t.replace(MAP_FROM, MAP_TO);
   const enc = encode(t);
   s = s.replace(re, (_, a, _b, c) => a + enc + c);
