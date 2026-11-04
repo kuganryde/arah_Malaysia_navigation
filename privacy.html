@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <meta name="theme-color" content="#0a0c1a">
-<meta name="module-version" content="privacy 0.6.0">
+<meta name="module-version" content="privacy 0.7.0">
 <title>Privacy · ARAH Navigasi Malaysia</title>
 <meta name="description" content="What ARAH stores on your device, which services it talks to, and what it does not collect.">
 <style>
@@ -65,9 +65,25 @@ th{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--mute
 <tr><td>Overpass API (mirrors: overpass.kumi.systems, overpass.private.coffee)</td><td>Nearby surau, fuel, EV, food and more</td><td>The map area being searched. A mirror is asked only when the main server is slow or down.</td></tr>
 <tr><td>Open-Meteo</td><td>Rain forecast for arrival times</td><td>Approximate coordinates</td></tr>
 <tr><td>Wikimedia Commons</td><td>State flags</td><td>Image requests</td></tr>
+<tr><td>Sentry (only if you opt in to crash reports)</td><td>Crash reports</td><td>Error text and stack, browser name. No location, searches or IP address</td></tr>
 <tr><td>ARAH voice service (<code>/api/tts</code>) and Google Gemini</td><td>Spoken guidance in Bahasa Malaysia and English</td><td>The sentence to be spoken (up to 600 characters). We log only that a request happened and its length, never the text. Chinese and Tamil use your device's own voice.</td></tr>
 </tbody>
 </table>
+
+<h2>Crash reports (optional)</h2>
+<p>If crash reporting is switched on for this site, ARAH asks once whether you want to send anonymous crash reports to Sentry (sentry.io, United States). Nothing is sent, and no Sentry code is even downloaded, unless you say yes. A report contains the error message, the technical stack of where it happened, and the browser and system name. Before it leaves your device it is stripped of coordinates, search text, addresses, web-address query strings, cookies and breadcrumbs, and we ask Sentry not to store IP addresses. At most 10 reports are sent per visit. You can change your mind here at any time.</p>
+<p id="crash-box" hidden><button id="crash-btn" type="button" style="min-height:44px;padding:0 16px;border-radius:12px;border:1px solid #2a2f52;background:transparent;color:inherit;font:inherit;cursor:pointer"></button> <span id="crash-state" role="status"></span></p>
+<script>
+(function () { // shows the switch only when the site has a Sentry project configured
+  var K = 'arah.observe.v1', box = document.getElementById('crash-box'), btn = document.getElementById('crash-btn'), st = document.getElementById('crash-state');
+  function get() { try { return localStorage.getItem(K); } catch (e) { return null; } }
+  function paint() { var on = get() === 'on'; btn.textContent = on ? 'Stop sending crash reports' : 'Send crash reports'; st.textContent = on ? 'Currently on' : 'Currently off'; }
+  fetch('assets/observability/config.json', { credentials: 'omit' }).then(function (r) { return r.json(); }).then(function (c) {
+    if (!c || !c.dsn) return; box.hidden = false; paint();
+    btn.addEventListener('click', function () { try { localStorage.setItem(K, get() === 'on' ? 'off' : 'on'); } catch (e) { /* private mode */ } paint(); });
+  }).catch(function () { /* offline or not configured: leave hidden */ });
+})();
+</script>
 
 <h2>What we do not do</h2>
 <ul>

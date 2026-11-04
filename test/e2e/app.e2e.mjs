@@ -146,3 +146,51 @@ test('Resilience: Overpass down -> mirror answers; Photon down -> Nominatim answ
     assert.deepEqual(p.errors, []);
   } finally { await b.close(); }
 });
+
+const DSN = 'https://0123456789abcdef0123456789abcdef@o123.ingest.us.sentry.io/456';
+const sentryRoutes = (sent) => async (u, r) => {
+  if (u.endsWith('/assets/observability/config.json')) { await r.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ dsn: DSN }) }); return true; }
+  if (new URL(u).hostname.endsWith('.ingest.us.sentry.io')) { sent.push({ url: u, body: r.request().postData() || '' }); await r.fulfill({ status: 200, contentType: 'application/json', body: '{}' }); return true; }
+  return false;
+};
+
+test('Crash reports: inactive without a DSN (no card, no Sentry code)', async () => {
+  const b = await launch(); const p = await b.page();
+  try {
+    await openApp(p, srv.url);
+    const st = await p.evaluate(() => window.__arahObserve.status());
+    assert.equal(st.configured, false); assert.equal(await p.locator('.ao-card').count(), 0);
+    assert.equal(await p.evaluate(() => typeof window.__arahSentryLib), 'undefined');
+  } finally { await b.close(); }
+});
+
+test('Crash reports: opt-in loads the pinned SDK (SRI checked by the browser) and sends a scrubbed event', async () => {
+  const sent = []; const b = await launch({ route: sentryRoutes(sent) }); const p = await b.page();
+  try {
+    await openApp(p, srv.url);
+    await p.waitForSelector('.ao-card', { timeout: 20000 });
+    assert.equal(sent.length, 0, 'nothing is sent before consent');
+    assert.equal(await p.evaluate(() => typeof window.__arahSentryLib), 'undefined', 'no Sentry code before consent');
+    await p.locator('.ao-card .ao-yes').click();
+    await p.waitForFunction(() => window.__arahObserve.status().active, null, { timeout: 15000 });
+    await p.evaluate(() => { setTimeout(() => { throw new Error('boom at 3.157912,101.711633 for query klcc'); }, 0); });
+    await p.waitForFunction(() => true); await p.waitForTimeout(500);
+    await p.evaluate(() => window.__arahSentryLib.flush(2000)); await p.waitForTimeout(1500);
+    const env = sent.map((x) => x.body).join('\n');
+    assert.ok(sent.length >= 1 && sent[0].url.includes('/api/456/envelope/'), 'an envelope reached the ingest host');
+    assert.ok(env.includes('boom at [coords]'), 'message is scrubbed');
+    assert.ok(!env.includes('3.157912') && !env.includes('101.711633'), 'coordinates never leave the device');
+    assert.match(env, /arah@\d+\.\d+\.\d+/);
+  } finally { await b.close(); }
+});
+
+test('Crash reports: "No thanks" means Sentry is never downloaded and nothing is sent', async () => {
+  const sent = []; const b = await launch({ route: sentryRoutes(sent) }); const p = await b.page();
+  try {
+    await openApp(p, srv.url);
+    await p.waitForSelector('.ao-card', { timeout: 20000 }); await p.locator('.ao-card button').first().click();
+    await p.evaluate(() => { setTimeout(() => { throw new Error('ignored'); }, 0); }); await p.waitForTimeout(1000);
+    assert.equal(sent.length, 0); assert.equal(await p.evaluate(() => typeof window.__arahSentryLib), 'undefined');
+    assert.equal(await p.evaluate(() => localStorage.getItem('arah.observe.v1')), 'off');
+  } finally { await b.close(); }
+});

@@ -69,7 +69,7 @@ if (/AIza[0-9A-Za-z_-]{35}/.test(indexBuf.toString('utf8'))) fail('possible Goog
     if (readFileSync('sw-precache.js', 'utf8') !== render(build())) fail('sw-precache.js is stale: run npm run pwa:stamp');
   } catch (e) { fail('sw-precache.js unreadable: ' + e.message); }
   const html = indexBuf.toString('utf8');
-  for (const needle of ['rel="manifest"', 'rel=\\"manifest\\"', 'assets/arah-pwa.js', 'assets/resilience/arah-resilience.js']) if (!html.includes(needle)) fail(`index.html is missing ${needle} (run node scripts/pwa/inject-head.mjs)`);
+  for (const needle of ['rel="manifest"', 'rel=\\"manifest\\"', 'assets/arah-pwa.js', 'assets/resilience/arah-resilience.js', 'assets/observability/arah-observe.js']) if (!html.includes(needle)) fail(`index.html is missing ${needle} (run node scripts/pwa/inject-head.mjs)`);
   console.log('pwa ok (' + mf.icons.length + ' icons)');
 }
 
@@ -94,6 +94,19 @@ if (/AIza[0-9A-Za-z_-]{35}/.test(indexBuf.toString('utf8'))) fail('possible Goog
   for (const f of readdirSync('assets', { recursive: true })) if (/\.(m?js)$/.test(f)) calls += (readFileSync('assets/' + f, 'utf8').match(/\.setHTML\s*\(/g) || []).length;
   if (calls) fail(`Popup.setHTML is called ${calls}x: use setDOMContent with DOM nodes (MapLibre sanitizer advisory)`);
   console.log('supply chain ok (no CDN in CSP, no setHTML callers)');
+}
+
+// 6. Crash reporting: the vendored Sentry bundle matches the SRI pinned in the loader, release.json is fresh,
+//    and the DSN (public by design) is either empty or a sentry.io ingest URL.
+{
+  const { build, renderRelease } = await import('./pwa/stamp.mjs');
+  const bundle = readFileSync('assets/observability/vendor/sentry.min.js');
+  const sri = 'sha384-' + createHash('sha384').update(bundle).digest('base64');
+  if (!readFileSync('assets/observability/arah-observe.js', 'utf8').includes(`var SENTRY_SRI = '${sri}';`)) fail('arah-observe.js SRI does not match vendor/sentry.min.js: run npm run observe:build');
+  if (readFileSync('assets/observability/release.json', 'utf8') !== renderRelease(build())) fail('assets/observability/release.json is stale: run npm run pwa:stamp');
+  const dsn = JSON.parse(readFileSync('assets/observability/config.json', 'utf8')).dsn;
+  if (dsn && !/^https:\/\/[0-9a-f]{32}@o\d+\.ingest(\.[a-z]{2})?\.sentry\.io\/\d+$/.test(dsn)) fail('assets/observability/config.json dsn is not a sentry.io ingest DSN');
+  console.log('crash reporting ok (' + (dsn ? 'DSN set' : 'inactive: no DSN') + ', bundle ' + (bundle.length / 1024).toFixed(0) + ' KB)');
 }
 
 if (errors.length) { console.error(errors.map((e) => 'FAIL ' + e).join('\n')); process.exit(1); }
