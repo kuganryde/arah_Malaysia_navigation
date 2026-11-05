@@ -1,5 +1,5 @@
 {
-  "release": "0.20.0",
+  "release": "0.20.1",
   "modules": {
     "app": {
       "version": "0.4.2",
@@ -97,7 +97,7 @@
       ]
     },
     "ci": {
-      "version": "0.18.0",
+      "version": "0.18.1",
       "description": "Tests, guard rails and GitHub Actions",
       "paths": [
         ".github/**",
@@ -107,7 +107,7 @@
       "markers": []
     },
     "docs": {
-      "version": "0.11.3",
+      "version": "0.11.4",
       "description": "README and its animated art",
       "paths": [
         "README.md",
@@ -121,7 +121,7 @@
       "markers": []
     },
     "pwa": {
-      "version": "0.1.21",
+      "version": "0.1.22",
       "description": "Installable app: manifest, service worker, offline page, icons, install and update UI",
       "paths": [
         "sw.js",
@@ -177,7 +177,7 @@
       ]
     },
     "festive": {
-      "version": "0.2.1",
+      "version": "0.2.2",
       "description": "Festival themes for Malaysia: glowing UI, lit route, lanterns, bunting, tap fireworks (assets/festive/)",
       "paths": [
         "assets/festive/**"
@@ -202,7 +202,7 @@
       ]
     },
     "keepawake": {
-      "version": "0.3.0",
+      "version": "0.3.1",
       "description": "Keep the screen awake while ARAH is open (assets/keepawake/)",
       "paths": [
         "assets/keepawake/**"
@@ -296,7 +296,7 @@
       ]
     },
     "twa": {
-      "version": "0.1.3",
+      "version": "0.1.4",
       "description": "Android (Trusted Web Activity) packaging, Play listing drafts, asset links (twa/, .well-known/)",
       "paths": [
         "twa/**",
@@ -336,7 +336,7 @@
       ]
     },
     "drive": {
-      "version": "0.1.2",
+      "version": "0.1.3",
       "description": "Drive view: AR road view, mini guided map, racing speedometer, Normal/Sports/Luxury modes (assets/drive/)",
       "paths": [
         "assets/drive/**"

@@ -1,4 +1,4 @@
-// festive v0.2.1
+// festive v0.2.2
 // Festival graphics, drawn in code (original vector shapes, no image files) plus a small particle engine.
 // Everything draws into a 2D canvas context; no DOM and no network, so the shapes can be tested with a fake context.
 const TAU = Math.PI * 2;

@@ -385,3 +385,30 @@ test('Drive view: starts with a trip, shows speedo + mini map + AR road, themes 
     assert.deepEqual(p.errors, []);
   } finally { await b.close(); }
 });
+
+test('Layout: no two floating controls overlap on phones and tablets (festive toast, keep-awake hint, buttons), trip HUD stays clear of the turn card', async () => {
+  const b = await launch();
+  try {
+    for (const [w, h] of [[390, 844], [360, 640], [430, 932], [820, 1180], [1180, 820]]) {
+      const p = await b.page(); await p.setViewportSize({ width: w, height: h });
+      try {
+        await openApp(p, srv.url); await p.waitForTimeout(2500); // the festive toast and the keep-awake hint show at load: the worst case
+        const ov = await p.evaluate(() => {
+          const out = [];
+          document.querySelectorAll('body *').forEach((e) => {
+            const cs = getComputedStyle(e); if (cs.position !== 'fixed' || cs.display === 'none' || cs.visibility === 'hidden' || +cs.opacity === 0) return;
+            const r = e.getBoundingClientRect(); if (r.width < 20 || r.height < 20 || (r.width > innerWidth * 0.95 && r.height > innerHeight * 0.9) || e.closest('.maplibregl-canvas-container')) return;
+            out.push({ n: String(e.id || e.className || e.tagName).slice(0, 28), x: r.left, y: r.top, w: r.width, h: r.height });
+          });
+          const inside = (a, c) => a.x <= c.x && a.y <= c.y && a.x + a.w >= c.x + c.w && a.y + a.h >= c.y + c.h, res = [];
+          for (let i = 0; i < out.length; i++) for (let j = i + 1; j < out.length; j++) {
+            const a = out[i], c = out[j], ix = Math.min(a.x + a.w, c.x + c.w) - Math.max(a.x, c.x), iy = Math.min(a.y + a.h, c.y + c.h) - Math.max(a.y, c.y);
+            if (ix > 4 && iy > 4 && !inside(a, c) && !inside(c, a)) res.push(a.n + ' x ' + c.n);
+          }
+          return res;
+        });
+        assert.deepEqual(ov, [], `overlaps at ${w}x${h}`);
+      } finally { await p.close(); }
+    }
+  } finally { await b.close(); }
+});
