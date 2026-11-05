@@ -277,11 +277,11 @@ test('Keep-awake is a small button in the map button column area, overlaps nothi
       const hit = (a, c) => a.left < c.right && c.left < a.right && a.top < c.bottom && c.top < a.bottom;
       const toggle = document.querySelector('button[aria-label^="Togol"]');
       return { w: kr.width, h: kr.height, toast: !!document.querySelector('.ak-toast'), overlapsColumn: [...col.children].some((x) => hit(kr, r(x))), overlapsToggle: hit(kr, r(toggle)),
-        colVsToggle: [...col.children].some((x) => hit(r(x), r(toggle))), pt: window.__arahLayout.panelTop(), kb: kr.bottom, right: innerWidth - kr.right };
+        colVsToggle: [...col.children].some((x) => hit(r(x), r(toggle))), pt: window.__arahLayout.panelTop(), kb: kr.bottom, right: innerWidth - kr.right, inRow: !!document.querySelector('.sk-rail .ak-btn') };
     });
     assert.equal(g.toast, false); assert.ok(g.w >= 44 && g.h >= 44);
     assert.equal(g.overlapsColumn, false, 'not on top of a map button'); assert.equal(g.overlapsToggle, false, 'not on top of the panel toggle'); assert.equal(g.colVsToggle, false, 'column clears the panel toggle');
-    assert.ok(g.right >= 12 && g.right < 140, 'on the right side: ' + g.right);
+    assert.ok((g.right >= 12 && g.right < 140) || g.inRow, 'on the right side or in the skin chip row: ' + g.right);
     await p.click('.ak-btn');
     assert.equal(await p.evaluate(() => localStorage.getItem('arah.awake.v1')), '0');
     assert.equal(await p.getAttribute('.ak-btn', 'aria-pressed'), 'false');
@@ -478,5 +478,25 @@ test('Makan & Mall: a hung server does not slow the search (two servers raced), 
     const n = calls.length; await p.locator('.ap-x').first().click(); await p.waitForSelector('.ap-sheet', { state: 'detached' });
     await p.click('.ap-btn'); await p.waitForSelector('.ap-sheet'); await p.getByText('← Kembali').click(); await p.locator('.ap-chip', { hasText: 'KFC' }).first().click(); await p.waitForSelector('.ap-row', { timeout: 3000 });
     assert.equal(calls.length, n, 'cached');
+  } finally { await b.close(); }
+});
+
+test('Skin v2: one chip row holds the add-on buttons, search is a pill, map buttons are circles; ?skin=classic restores the old look', async () => {
+  const b = await launch(); const p = await b.page();
+  try {
+    await openApp(p, srv.url); await p.waitForFunction(() => document.documentElement.getAttribute('data-skin') === 'v2', null, { timeout: 15000 });
+    await p.waitForTimeout(1800);
+    const s = await p.evaluate(() => {
+      const rail = document.querySelector('.sk-rail'), inRail = (sel) => !!rail && !!rail.querySelector(sel);
+      const loc = document.querySelector('button[title="My location"]');
+      return { ar: inRail('.arah-ar-fab'), makan: inRail('.ap-btn'), n: rail ? rail.children.length : 0, radius: loc ? getComputedStyle(loc).borderRadius : '', handle: getComputedStyle(document.querySelector('.maplibregl-map ~ div[style*="58dvh"]'), '::before').content };
+    });
+    assert.ok(s.ar && s.makan && s.n >= 3, 'AR and Makan & Mall chips live in the row'); assert.match(s.radius, /50%|px/); assert.equal(s.handle, '""', 'grab handle on the sheet');
+    // chips still work after being moved
+    await p.click('.sk-rail .ap-btn'); await p.waitForSelector('.ap-sheet');
+    await p.goto(srv.url + '/index.html?skin=classic', { waitUntil: 'load' }); await p.waitForFunction(() => !!window.__arahMap); await p.waitForTimeout(2500);
+    assert.equal(await p.evaluate(() => document.documentElement.hasAttribute('data-skin') || !!document.querySelector('.sk-rail')), false, 'classic = no skin');
+    await p.goto(srv.url + '/index.html?skin=v2', { waitUntil: 'load' }); await p.waitForFunction(() => document.documentElement.getAttribute('data-skin') === 'v2', null, { timeout: 15000 });
+    assert.deepEqual(p.errors, []);
   } finally { await b.close(); }
 });

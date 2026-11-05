@@ -21,8 +21,8 @@
     "path": "./android.keystore",
     "alias": "arah"
   },
-  "appVersionName": "0.21.1",
-  "appVersionCode": 2101,
+  "appVersionName": "0.22.0",
+  "appVersionCode": 2200,
   "shortcuts": [],
   "generatorApp": "bubblewrap-cli",
   "webManifestUrl": "https://arah.rydetechglobal.com/manifest.webmanifest",

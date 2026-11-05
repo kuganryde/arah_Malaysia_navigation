@@ -23,6 +23,7 @@ const VEH_SCRIPT = '<script src="assets/vehicles/arah-vehicles.js" defer></scrip
 const LM_SCRIPT = '<script src="assets/landmarks/arah-landmarks.js" defer></script>';
 const DRIVE_SCRIPT = '<script src="assets/drive/arah-drive.js" defer></script>';
 const EASY_SCRIPT = '<script src="assets/easy/arah-easy.js" defer></script>';
+const SKIN_SCRIPT = '<script src="assets/skin/arah-skin.js" defer></script>';
 const NET_SCRIPT = '<script src="assets/resilience/arah-resilience.js" defer></script>';
 // Read-only handle so the Makan & Mall layer can place markers; the app's own code is otherwise untouched.
 const MAP_FROM = 'this.map=new gl.Map(', MAP_TO = 'this.map=window.__arahMap=new gl.Map(';
@@ -42,7 +43,8 @@ export function patchHead(html) { // for plain HTML heads
   if (!out.includes('arah-landmarks.js')) out = out.replace(VEH_SCRIPT, VEH_SCRIPT + '\n' + LM_SCRIPT);
   if (!out.includes('arah-drive.js')) out = out.replace(LM_SCRIPT, LM_SCRIPT + '\n' + DRIVE_SCRIPT);
   if (!out.includes('arah-easy.js')) out = out.replace(DRIVE_SCRIPT, DRIVE_SCRIPT + '\n' + EASY_SCRIPT);
-  if (!out.includes('arah-a11y.js')) out = out.replace(EASY_SCRIPT, EASY_SCRIPT + '\n' + A11Y_SCRIPT);
+  if (!out.includes('arah-skin.js')) out = out.replace(EASY_SCRIPT, EASY_SCRIPT + '\n' + SKIN_SCRIPT);
+  if (!out.includes('arah-a11y.js')) out = out.replace(SKIN_SCRIPT, SKIN_SCRIPT + '\n' + A11Y_SCRIPT);
   if (out.includes(MAP_FROM)) out = out.replace(MAP_FROM, MAP_TO);
   return out;
 }
@@ -87,7 +89,8 @@ function patchBundle(file) {
   if (!t.includes('arah-landmarks.js')) t = t.replace(VEH_SCRIPT, VEH_SCRIPT + '\n' + LM_SCRIPT);
   if (!t.includes('arah-drive.js')) t = t.replace(LM_SCRIPT, LM_SCRIPT + '\n' + DRIVE_SCRIPT);
   if (!t.includes('arah-easy.js')) t = t.replace(DRIVE_SCRIPT, DRIVE_SCRIPT + '\n' + EASY_SCRIPT);
-  if (!t.includes('arah-a11y.js')) t = t.replace(EASY_SCRIPT, EASY_SCRIPT + '\n' + A11Y_SCRIPT);
+  if (!t.includes('arah-skin.js')) t = t.replace(EASY_SCRIPT, EASY_SCRIPT + '\n' + SKIN_SCRIPT);
+  if (!t.includes('arah-a11y.js')) t = t.replace(SKIN_SCRIPT, SKIN_SCRIPT + '\n' + A11Y_SCRIPT);
   if (t.includes(MAP_FROM)) t = t.replace(MAP_FROM, MAP_TO);
   const enc = encode(t);
   s = s.replace(re, (_, a, _b, c) => a + enc + c);

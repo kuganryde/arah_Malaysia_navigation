@@ -4,6 +4,18 @@ Every module has its own version (see `versions.json` and `VERSIONING.md`). Each
 
 ## [Unreleased]
 
+- **pwa 0.1.27**: release stamp 0.22.0
+- **twa 0.1.7**: version sync to release 0.22.0
+## [0.22.0] - 2026-11-05
+
+- **pwa 0.1.26**: Skin v2 scripts precached
+- **docs 0.13.0**: README: skin v2
+- **ci 0.20.0**: Skin v2 E2E (chip row, circles, handle, classic switch)
+- **app 0.4.4**: Skin v2 loader injected into the page head
+- **keepawake 0.3.2**: hint positioned from the button's real position (the skin moves it into a row)
+- **skin 0.1.0**: Skin v2: rounder look (pill search, circular map buttons, floating sheet with grab handle) and one chip row for the add-on buttons; `?skin=classic` to opt out
+- **keepawake**: hint positioned from the button's real position
+
 - **pwa 0.1.25**: release stamp 0.21.1
 - **twa 0.1.6**: version sync to release 0.21.1
 ## [0.21.1] - 2026-11-05
