@@ -1,4 +1,4 @@
-/*! ARAH drive core v0.1.4 - pure maths for the drive view (no DOM): route ahead of the car, next turn, camera projection of a road
+/*! ARAH drive core v0.2.0 - pure maths for the drive view (no DOM): route ahead of the car, next turn, camera projection of a road
  * ribbon, gauge geometry and the three drive-mode themes. Works in the browser (window.__arahDriveCore) and under node --test.
  * Local frame: x = east, y = north, metres, origin at the car. Camera frame: forward / right / up, camera 1.3 m above the road. */
 (function (root) {
@@ -114,6 +114,27 @@
   // Distance for a label: 450 m / 1.2 km.
   function fmtDist(m) { return m >= 1000 ? (m / 1000).toFixed(m >= 9500 ? 0 : 1) + ' km' : Math.max(10, Math.round(m / 10) * 10) + ' m'; }
 
-  var api = { toXY: toXY, dist: dist, norm360: norm360, angDiff: angDiff, lerpAngle: lerpAngle, bearingOf: bearingOf, snap: snap, ahead: ahead, nextTurn: nextTurn, camera: camera, project: project, ribbon: ribbon, gaugeAngle: gaugeAngle, arcPoint: arcPoint, arcPath: arcPath, SWEEP: SWEEP, THEMES: THEMES, theme: theme, fmtDist: fmtDist, version: '0.1.4' };
+  // Trip statistics from GPS fixes, all on the device: distance driven, moving time and average speed while moving (stops at lights do not drag it
+  // down), total elapsed time. Jumps (a fix more than 400 m from the last, or a gap over 30 s) are ignored so one bad GPS reading cannot add a kilometre.
+  function tripStats() {
+    var last = null, t0 = null, tNow = null, metres = 0, moving = 0;
+    function hav(a, b) { var R = 6371000, r = Math.PI / 180, dLa = (b[1] - a[1]) * r, dLo = (b[0] - a[0]) * r, h = Math.sin(dLa / 2) * Math.sin(dLa / 2) + Math.cos(a[1] * r) * Math.cos(b[1] * r) * Math.sin(dLo / 2) * Math.sin(dLo / 2); return 2 * R * Math.asin(Math.min(1, Math.sqrt(h))); }
+    return {
+      add: function (lng, lat, kmh, tMs) {
+        if (t0 == null) t0 = tMs; tNow = tMs;
+        if (last) {
+          var dt = (tMs - last.t) / 1000, d = hav(last.p, [lng, lat]);
+          if (dt > 0 && dt <= 30 && d <= 400 && d >= 1) { metres += d; if (kmh >= 2) moving += dt; }
+        }
+        last = { p: [lng, lat], t: tMs };
+      },
+      get: function () { return { metres: metres, movingSec: moving, elapsedSec: t0 == null ? 0 : Math.max(0, (tNow - t0) / 1000), avgKmh: moving > 5 ? (metres / 1000) / (moving / 3600) : 0 }; },
+      reset: function () { last = null; t0 = tNow = null; metres = moving = 0; },
+    };
+  }
+  // 24:48 / 1:05:09
+  function fmtTime(sec) { sec = Math.max(0, Math.round(sec)); var h = Math.floor(sec / 3600), m = Math.floor(sec % 3600 / 60), s = sec % 60, p = function (n) { return n < 10 ? '0' + n : '' + n; }; return h ? h + ':' + p(m) + ':' + p(s) : p(m) + ':' + p(s); }
+
+  var api = { tripStats: tripStats, fmtTime: fmtTime, toXY: toXY, dist: dist, norm360: norm360, angDiff: angDiff, lerpAngle: lerpAngle, bearingOf: bearingOf, snap: snap, ahead: ahead, nextTurn: nextTurn, camera: camera, project: project, ribbon: ribbon, gaugeAngle: gaugeAngle, arcPoint: arcPoint, arcPath: arcPath, SWEEP: SWEEP, THEMES: THEMES, theme: theme, fmtDist: fmtDist, version: '0.2.0' };
   if (typeof module === 'object' && module.exports) module.exports = api; else root.__arahDriveCore = api;
 })(typeof window !== 'undefined' ? window : globalThis);

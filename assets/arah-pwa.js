@@ -1,4 +1,4 @@
-/*! ARAH PWA v0.1.27
+/*! ARAH PWA v0.1.29
  * Installability and offline support, as a separate layer like arah-enhancements.js: it never calls the app's code.
  *  1. Registers the service worker (sw.js) so the app shell opens offline.
  *  2. Install button: the native prompt on Android/desktop Chrome and Edge, a short how-to on iPhone/iPad.
@@ -9,7 +9,7 @@
 (function () {
   'use strict';
   if (window.__arahPWA) return;
-  window.__arahPWA = '0.1.27';
+  window.__arahPWA = '0.1.29';
 
   var DISMISS_KEY = 'arah.pwa.dismissed';
   var DISMISS_DAYS = 7;

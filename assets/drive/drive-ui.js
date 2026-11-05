@@ -1,4 +1,4 @@
-/*! ARAH drive UI v0.1.4
+/*! ARAH drive UI v0.2.0
  * While a trip runs: an AR road view (camera + the route painted on the road, or a virtual road when there is no camera), a mini
  * guided map, a racing-style speedometer, and three drive modes (Normal, Sports, Luxury) that restyle all of it.
  * Privacy: the camera is opt-in (the AR button), is only displayed, and is never recorded, stored or uploaded; it stops when AR is
@@ -6,7 +6,7 @@
  * looking at the road. Separate layer: reads window.__arahMap (the route source) and the DOM; never calls the app's code. */
 (function () {
   'use strict';
-  var C = window.__arahDriveCore, VERSION = '0.1.4';
+  var C = window.__arahDriveCore, VERSION = '0.2.0';
   if (!C || window.__arahDriveUI) return;
   window.__arahDriveUI = VERSION;
 
@@ -20,7 +20,7 @@
   var reduce = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
 
   var S = { active: false, root: null, map: null, line: null, hint: 0, pos: null, fixAt: 0, speed: 0, shown: 0, heading: 0, compass: null, beta: 90,
-    stream: null, video: null, watch: null, demo: false, timers: [], themeOpen: false, camMsgAt: 0, cam: null, speedo: null, mini: null, ar: false, srcOn: null };
+    stream: null, stats: C.tripStats(), statsEl: null, video: null, watch: null, demo: false, timers: [], themeOpen: false, camMsgAt: 0, cam: null, speedo: null, mini: null, ar: false, srcOn: null };
   var T = function () { return C.theme(prefs.theme); };
 
   function el(tag, props, kids) {
@@ -42,6 +42,8 @@
     '.adr-pill{position:fixed;left:12px;min-height:44px;display:flex;align-items:center;gap:8px;padding:0 16px;border-radius:22px;border:2px solid var(--a);background:rgba(10,12,26,.9);font-weight:700;font-size:14px;letter-spacing:.04em}' +
     '.adr-speedo{position:fixed;left:12px;width:132px;height:132px;padding:0;border-radius:50%;border:0;background:transparent;filter:drop-shadow(0 6px 14px rgba(0,0,0,.5))}' +
     '.adr-mini{position:fixed;right:12px;width:132px;height:132px;border-radius:50%;border:3px solid var(--a);background:var(--face);box-shadow:0 6px 18px rgba(0,0,0,.5);pointer-events:none}' +
+    '.adr-stats{position:fixed;height:132px;box-sizing:border-box;padding:10px 8px;border-radius:22px;border:1px solid rgba(255,255,255,.14);background:rgba(10,12,26,.9);box-shadow:0 6px 18px rgba(0,0,0,.5);display:flex;flex-direction:column;justify-content:space-between;text-align:center;pointer-events:none}' +
+    '.adr-stats div{line-height:1.1}.adr-stats small{display:block;font-size:10px;letter-spacing:.08em;text-transform:uppercase;color:#aab0cf}.adr-stats b{display:block;font-size:17px;font-weight:800;color:var(--ink);font-variant-numeric:tabular-nums}.adr-stats i{font-style:normal;font-size:10px;color:#aab0cf;font-weight:600}' +
     '.adr-themes{position:fixed;left:12px;display:flex;gap:6px;padding:6px;border-radius:26px;background:rgba(10,12,26,.94);border:1px solid rgba(255,255,255,.2);box-shadow:0 8px 24px rgba(0,0,0,.5)}' +
     '.adr-themes button{min-height:44px;min-width:44px;padding:0 14px;border-radius:22px;border:2px solid transparent;background:rgba(255,255,255,.08);font-weight:700;font-size:13px}' +
     '.adr-themes button[aria-pressed=true]{border-color:var(--a);background:rgba(255,255,255,.18)}' +
@@ -102,7 +104,7 @@
   }
   function onFix(p) {
     var c = p.coords, v = c.speed != null && c.speed >= 0 ? c.speed * 3.6 : S.speed;
-    S.pos = [c.longitude, c.latitude]; S.fixAt = p.timestamp || Date.now(); S.speed = v; if (S.speed < 2) S.speed = 0;
+    S.pos = [c.longitude, c.latitude]; S.fixAt = p.timestamp || Date.now(); S.stats.add(c.longitude, c.latitude, v, S.fixAt); S.speed = v; if (S.speed < 2) S.speed = 0;
     if (c.heading != null && !isNaN(c.heading) && v > 9) S.gpsHeading = c.heading; easeSpeed();
   }
   function startGps() {
@@ -242,6 +244,9 @@
     var low = barTop - 10 - 132; // top edge of the speedo / mini-map row
     S.speedo.btn.style.top = low + 'px'; S.mini.style.top = low + 'px'; S.speedo.btn.style.bottom = S.mini.style.bottom = 'auto';
     S.mini.hidden = vh < 560 || vw < 330;
+    // trip statistics fill the gap between the speedometer and the mini map (hidden when the gap is too narrow to read, and in easy mode)
+    var gap = vw - 24 - 132 - (S.mini.hidden ? 0 : 132) - 16, sx = 12 + 132 + 8;
+    S.statsEl.style.top = low + 'px'; S.statsEl.style.left = sx + 'px'; S.statsEl.style.width = Math.min(gap, 150) + 'px'; S.statsEl.hidden = gap < 84 || S.mini.hidden || easy();
     // the existing AR hazard-assist button floats just under the turn card: the road view sits below it and the pill beside it
     var fab = document.querySelector('.arah-ar-fab'), fr = fab && fab.getBoundingClientRect(), fabB = fr && fr.height ? fr.bottom : 0, top = Math.max(cardBottom, fabB) + 8;
     S.pill.style.top = cardBottom + 8 + 'px'; S.pill.style.left = (fr && fr.height && fr.top < cardBottom + 40 ? fr.right + 8 : 12) + 'px';
@@ -249,6 +254,13 @@
     if (S.ar && room >= 130) { S.cam.box.hidden = false; S.cam.box.style.top = top + 'px'; S.cam.box.style.height = h + 'px'; }
     else if (S.ar) S.cam.box.hidden = true; // no room (landscape / small screen): the map stays visible
     S.themes.style.top = low - 56 + 'px';
+  }
+
+  function paintStats() {
+    if (!S.statsEl || S.statsEl.hidden) return; var g = S.stats.get(), v = S.statsVals;
+    var km = g.metres / 1000; v.dist[0].textContent = km < 10 ? km.toFixed(2) : km.toFixed(1); v.dist[1].textContent = 'km';
+    v.avg[0].textContent = String(Math.round(g.avgKmh)); v.avg[1].textContent = 'km/j';
+    v.time[0].textContent = C.fmtTime(g.elapsedSec); v.time[1].textContent = '';
   }
 
   /* ---------------------------------------------------------------- frame */
@@ -279,9 +291,11 @@
     S.pill = el('button', { class: 'adr-pill', type: 'button', 'aria-label': 'Buka paparan AR · Open AR road view', onclick: function () { setAR(true); } }, [camIcon(), el('span', { text: 'AR JALAN' })]);
     S.speedo = { btn: el('button', { class: 'adr-speedo', type: 'button', 'aria-haspopup': 'true', onclick: function () { S.themeOpen = !S.themeOpen; S.themes.hidden = !S.themeOpen; } }), say: 0 };
     S.mini = el('canvas', { class: 'adr-mini', role: 'img', 'aria-label': 'Peta panduan mini · Mini guided map' });
+    S.statsEl = el('div', { class: 'adr-stats', role: 'group', 'aria-label': 'Statistik perjalanan · Trip statistics' }); S.statsVals = {};
+    [['dist', 'Jarak'], ['avg', 'Purata'], ['time', 'Masa']].forEach(function (r) { var b = el('b', { text: '-' }), i = el('i', { text: '' }); S.statsVals[r[0]] = [b, i]; S.statsEl.appendChild(el('div', null, [el('small', { text: r[1] }), b, i])); });
     S.themes = el('div', { class: 'adr-themes', role: 'group', 'aria-label': 'Mod pemanduan · Drive mode', hidden: '' }); S.themeBtns = [];
     Object.keys(C.THEMES).forEach(function (id) { var b = el('button', { type: 'button', 'data-id': id, 'aria-pressed': 'false', text: C.THEMES[id].name.ms + ' · ' + C.THEMES[id].name.en, onclick: function () { setTheme(id); S.themeOpen = false; S.themes.hidden = true; } }); S.themeBtns.push(b); S.themes.appendChild(b); });
-    S.root.append(S.cam.box, S.pill, S.speedo.btn, S.mini, S.themes); document.body.appendChild(S.root);
+    S.root.append(S.cam.box, S.pill, S.speedo.btn, S.mini, S.statsEl, S.themes); document.body.appendChild(S.root);
     applyTheme(); S.pill.hidden = prefs.ar; // saved AR choice is applied below
   }
   function camIcon() { var s = svg('svg', { viewBox: '0 0 24 24', width: 20, height: 20, 'aria-hidden': 'true', fill: 'none', stroke: 'currentColor', 'stroke-width': 2, 'stroke-linecap': 'round', 'stroke-linejoin': 'round' }); svg('path', { d: 'M4 8h3l2-3h6l2 3h3v11H4z' }, s); svg('circle', { cx: 12, cy: 13, r: 3.5 }, s); return s; }
@@ -290,7 +304,7 @@
   function start() {
     if (S.active) return; S.active = true; S.map = window.__arahMap; build(); readRoute(); startGps();
     if (S.map && S.map.on) { S.srcOn = function (e) { if (e.sourceId === 'route' && e.isSourceLoaded) { clearTimeout(S.rt); S.rt = setTimeout(readRoute, 250); } }; S.map.on('sourcedata', S.srcOn); }
-    S.timers.push(setInterval(tick, 100), setInterval(layout, 800), setInterval(function () { if (!tripActive()) stop(); }, 1000));
+    S.timers.push(setInterval(paintStats, 1000), setInterval(tick, 100), setInterval(layout, 800), setInterval(function () { if (!tripActive()) stop(); }, 1000));
     window.addEventListener('resize', layout); document.addEventListener('visibilitychange', onVis); layout();
     if (prefs.ar && !easy()) { S.ar = false; setAR(true); } // the user left AR on last time
   }
@@ -301,14 +315,14 @@
     camOff(); if (S.watch != null && navigator.geolocation) navigator.geolocation.clearWatch(S.watch); S.watch = null;
     window.removeEventListener('resize', layout); document.removeEventListener('visibilitychange', onVis);
     window.removeEventListener('deviceorientationabsolute', onOrient, true); window.removeEventListener('deviceorientation', onOrient, true);
-    if (S.root) S.root.remove(); if (S.style) S.style.remove(); S.root = null; S.ar = false; S.line = null; S.pos = null; S.speed = 0; S.shown = 0; S.demo = false;
+    if (S.root) S.root.remove(); if (S.style) S.style.remove(); S.stats.reset(); S.root = null; S.ar = false; S.line = null; S.pos = null; S.speed = 0; S.shown = 0; S.demo = false;
     setTimeout(function () { if (tripActive()) start(); }, 1200); // a new trip may begin right away
   }
 
   var base = window.__arahDrive || {};
   window.__arahDrive = Object.assign(base, {
     version: VERSION,
-    status: function () { return { loaded: true, active: S.active, ar: S.ar, camera: !!S.stream, theme: prefs.theme, speed: Math.round(S.shown), heading: Math.round(S.heading), route: S.line ? S.line.length : 0, demo: S.demo }; },
+    status: function () { return { loaded: true, active: S.active, ar: S.ar, camera: !!S.stream, theme: prefs.theme, speed: Math.round(S.shown), heading: Math.round(S.heading), route: S.line ? S.line.length : 0, demo: S.demo, stats: S.stats.get() }; },
     setTheme: setTheme, setAR: setAR,
     // Demo / test hook: feed a position as if it came from GPS (speed in km/h). Real GPS is ignored while a demo is running.
     feed: function (f) { S.demo = true; onFix({ coords: { longitude: f.lng, latitude: f.lat, speed: f.speed / 3.6, heading: f.heading == null ? null : f.heading }, timestamp: Date.now() }); },

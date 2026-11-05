@@ -58,6 +58,7 @@ While a trip is running ARAH adds three things around your own turn card (`asset
 
 - **AR road view**: tap **AR JALAN** and the back camera shows the road with the route painted on it as a glowing ribbon, moving chevrons and a floating turn marker with the distance. No camera, or permission refused? You get a virtual road with the same ribbon. The camera is only displayed: **nothing is recorded, saved or uploaded**, and it stops when you close the view, end the trip or leave the app. It reuses the field of view you calibrated in AR assist.
 - **Mini guided map**: a round, heading-up map from the route itself (works offline, no tiles) with the next turn, the one after it and the finish.
+- **Trip stats**: between the speedometer and the mini map, distance driven, average speed while moving (stops at lights do not drag it down) and time, from the phone's own GPS; one wild GPS reading cannot add a kilometre. Nothing is stored or sent.
 - **Racing speedometer**: a small gauge with an easing needle and a red zone, driven by GPS speed. Tap it to choose a drive mode: **Biasa · Normal** (cyan, 180 km/h dial), **Sukan · Sports** (carbon face, red/yellow, shift lights, 240 km/h dial) or **Mewah · Luxury** (champagne gold, serif numerals). The choice is remembered on the device.
 
 The drive view finds the app's turn card by geometry and stays clear of it; temporary messages (festival greeting, keep-awake hint) are placed so they never cover a control, which a browser test checks at phone and tablet sizes.

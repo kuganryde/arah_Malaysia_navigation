@@ -4,6 +4,16 @@ Every module has its own version (see `versions.json` and `VERSIONING.md`). Each
 
 ## [Unreleased]
 
+- **pwa 0.1.29**: release stamp 0.23.0
+- **twa 0.1.8**: version sync to release 0.23.0
+## [0.23.0] - 2026-11-05
+
+- **pwa 0.1.28**: drive engine cache refresh
+- **docs 0.13.1**: README: trip stats
+- **ci 0.20.1**: trip stats unit and E2E checks
+- **drive 0.2.0**: trip stats card: distance, average speed while moving, time
+- **drive 0.2.0**: trip stats card (distance, average speed while moving, time) between the speedometer and the mini map; GPS jumps ignored; on-device only
+
 - **pwa 0.1.27**: release stamp 0.22.0
 - **twa 0.1.7**: version sync to release 0.22.0
 ## [0.22.0] - 2026-11-05
