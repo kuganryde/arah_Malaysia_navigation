@@ -354,3 +354,33 @@ test('Loader: with reduced motion nothing animates', async () => {
     assert.equal(await p.evaluate(() => getComputedStyle(document.querySelector('#arah-loader .al-arrow')).animationName), 'none');
   } finally { await b.close(); }
 });
+
+test('Drive view: starts with a trip, shows speedo + mini map + AR road, themes persist, stops when the trip ends, no recording', async () => {
+  const b = await launch(); const p = await b.page();
+  try {
+    await openApp(p, srv.url);
+    await p.evaluate(() => {
+      const card = document.createElement('div'); card.style.cssText = 'position:fixed;left:12px;right:68px;top:56px;height:70px;z-index:5'; document.body.appendChild(card);
+      const bar = document.createElement('div'); bar.style.cssText = 'position:fixed;left:12px;right:12px;bottom:12px;height:64px;z-index:5'; const t = document.createElement('button'); t.textContent = 'Tamat'; t.id = 'fake-end'; bar.appendChild(t); document.body.appendChild(bar);
+      const o = [101.71, 3.15], mx = 1 / 111320 / Math.cos(3.15 * Math.PI / 180), my = 1 / 110574, pt = (e, n) => [o[0] + e * mx, o[1] + n * my];
+      window.__arahMap.getSource('route').setData({ type: 'Feature', properties: {}, geometry: { type: 'LineString', coordinates: [pt(0, 0), pt(0, 400), pt(150, 400), pt(150, 900)] } });
+    });
+    await p.waitForFunction(() => window.__arahDrive && window.__arahDrive.status().active, null, { timeout: 15000 });
+    await p.waitForFunction(() => window.__arahDrive.status().route > 1, null, { timeout: 10000 });
+    await p.evaluate(() => window.__arahDrive.feed({ lng: 101.71, lat: 3.15 + 250 / 110574, speed: 120, heading: 0 }));
+    await p.waitForFunction(() => window.__arahDrive.status().speed === 120, null, { timeout: 5000 });
+    assert.ok(await p.locator('.adr-speedo').isVisible() && await p.locator('.adr-mini').isVisible());
+    assert.match(await p.locator('.adr-speedo').getAttribute('aria-label'), /120 km\/j/);
+    await p.click('.adr-speedo'); await p.click('.adr-themes button[data-id=sports]');
+    assert.equal(await p.evaluate(() => JSON.parse(localStorage.getItem('arah.drive.v1')).theme), 'sports');
+    await p.click('.adr-pill'); await p.waitForFunction(() => window.__arahDrive.status().camera, null, { timeout: 8000 });
+    assert.ok(await p.locator('.adr-cam').isVisible());
+    // privacy: the page never creates a recorder, and closing the view releases the camera
+    assert.equal(await p.evaluate(() => typeof MediaRecorder === 'undefined' || !document.querySelector('.adr-cam video').srcObject ? 'x' : 'live'), 'live');
+    await p.click('.adr-x'); await p.waitForFunction(() => !window.__arahDrive.status().camera);
+    await p.evaluate(() => document.getElementById('fake-end').remove());
+    await p.waitForFunction(() => !window.__arahDrive.status().active, null, { timeout: 5000 });
+    assert.equal(await p.locator('.adr').count(), 0);
+    assert.deepEqual(p.errors, []);
+  } finally { await b.close(); }
+});

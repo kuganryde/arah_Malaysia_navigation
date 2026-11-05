@@ -44,6 +44,16 @@ It is a **100% non-profit beta** by **Rydetech Global Enterprise**: free, no ads
 
 An **Auto siang / malam** option switches between day and night for you. On the map: toggle 3D, reset north, jump to **my location**, change map views, or file a report.
 
+### 🏎️ Drive view: AR road, mini map, racing speedometer
+
+While a trip is running ARAH adds three things around your own turn card (`assets/drive/`, loaded only when a trip starts):
+
+- **AR road view**: tap **AR JALAN** and the back camera shows the road with the route painted on it as a glowing ribbon, moving chevrons and a floating turn marker with the distance. No camera, or permission refused? You get a virtual road with the same ribbon. The camera is only displayed: **nothing is recorded, saved or uploaded**, and it stops when you close the view, end the trip or leave the app. It reuses the field of view you calibrated in AR assist.
+- **Mini guided map**: a round, heading-up map from the route itself (works offline, no tiles) with the next turn, the one after it and the finish.
+- **Racing speedometer**: a small gauge with an easing needle and a red zone, driven by GPS speed. Tap it to choose a drive mode: **Biasa · Normal** (cyan, 180 km/h dial), **Sukan · Sports** (carbon face, red/yellow, shift lights, 240 km/h dial) or **Mewah · Luxury** (champagne gold, serif numerals). The choice is remembered on the device.
+
+It is guidance for a mounted phone, not a reason to look away from the road. Test hook: `__arahDrive.feed({lng,lat,speed,heading})`.
+
 ### 🏙️ 3D low-poly landmarks
 
 Twelve low-poly landmarks you can tap for a short spoken guide, height and city:
