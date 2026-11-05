@@ -1,4 +1,4 @@
-/*! ARAH landmarks v0.1.0
+/*! ARAH landmarks v0.1.1
  * Replaces the flat-coloured block landmarks with textured low-poly 3D models of 12 Malaysian icons (Petronas Twin
  * Towers, Merdeka 118, Menara KL, Masjid Negara, Sultan Abdul Samad, Batu Caves, Masjid Putra, Komtar, Menara Alor
  * Setar, A Famosa, DUN Sarawak, Gunung Kinabalu). Free: the models and textures are original, built in code.
@@ -10,7 +10,7 @@
 (function () {
   'use strict';
   if (window.__arahLandmarks) return;
-  window.__arahLandmarks = '0.1.0';
+  window.__arahLandmarks = '0.1.1';
 
   var LM_SRI = 'sha384-obe0grfYcEIhBSU3oq5oDdx81ROHzR3rtRHJVAhv1wzHiCmqCMEsc5IZbqqnrKYn';
   var KEY = 'arah.landmarks3d.v1', LAYER = 'landmark-models', OLD = 'landmark-3d';
@@ -69,6 +69,8 @@
     if (lsGet(KEY) === '0') active = false;
     if (!webgl() || dataSaver()) { failed = true; return true; }
     map.on('moveend', check); map.on('zoomend', check);
+    // The app applies its own showLandmarks=false once the style settles, which can land after the first reveal: put the layers back (only while this module is on).
+    map.on('idle', function () { if (active && inst) { try { if (map.getLayoutProperty(OLD, 'visibility') === 'none') reveal(true); } catch (e) { /* style swapping */ } } });
     if (map.loaded()) check(); else map.once('idle', check);
     return true;
   }

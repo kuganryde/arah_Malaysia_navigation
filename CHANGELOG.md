@@ -4,6 +4,18 @@ Every module has its own version (see `versions.json` and `VERSIONING.md`). Each
 
 ## [Unreleased]
 
+## [0.20.0] - 2026-11-05
+- **landmarks 0.1.1**: re-assert the landmark layers after the app hides them when its style settles (fixes an intermittent invisible-landmarks race)
+- **drive 0.1.2**: speedometer label settles on the final speed
+- **drive 0.1.1**: speedometer label follows big speed changes at once
+- **pwa 0.1.21**: release stamp 0.20.0
+- **twa 0.1.3**: version sync to release 0.20.0
+- **drive 0.1.0**: Drive view for trips: AR road view (opt-in camera, never recorded, virtual road fallback) with route ribbon, chevrons and floating turn marker; heading-up mini guided map; racing speedometer with Normal, Sports and Luxury modes (remembered)
+
+- **pwa 0.1.20**: Drive view loader precached; its engine cached on first use
+- **docs 0.11.3**: README: drive view
+- **ci 0.18.0**: Drive view tests (maths, projection, themes) and an E2E for the trip HUD; eager budget 43 KB
+- **app 0.4.2**: Drive view loader script injected into the page head
 ## [0.19.0] - 2026-11-04
 
 - **twa 0.1.2**: version sync to release 0.19.0
