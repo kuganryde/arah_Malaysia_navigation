@@ -4,6 +4,15 @@ Every module has its own version (see `versions.json` and `VERSIONING.md`). Each
 
 ## [Unreleased]
 
+- **pwa 0.1.22**: release stamp 0.20.1
+- **twa 0.1.4**: version sync to release 0.20.1
+## [0.20.1] - 2026-11-05
+
+- **docs 0.11.4**: README: layout note
+- **ci 0.18.1**: E2E: no overlapping floating controls on phones and tablets
+- **drive 0.1.3**: turn card found by geometry as well as by style, so the HUD never sits on top of it
+- **keepawake 0.3.1**: hint sits below its button so it no longer covers the Makan & Mall row on narrow phones
+- **festive 0.2.2**: festive toast moved clear of the buttons and the keep-awake hint (it covered them on phones)
 ## [0.20.0] - 2026-11-05
 - **landmarks 0.1.1**: re-assert the landmark layers after the app hides them when its style settles (fixes an intermittent invisible-landmarks race)
 - **drive 0.1.2**: speedometer label settles on the final speed

@@ -1,4 +1,4 @@
-/*! ARAH drive UI v0.1.2
+/*! ARAH drive UI v0.1.3
  * While a trip runs: an AR road view (camera + the route painted on the road, or a virtual road when there is no camera), a mini
  * guided map, a racing-style speedometer, and three drive modes (Normal, Sports, Luxury) that restyle all of it.
  * Privacy: the camera is opt-in (the AR button), is only displayed, and is never recorded, stored or uploaded; it stops when AR is
@@ -6,7 +6,7 @@
  * looking at the road. Separate layer: reads window.__arahMap (the route source) and the DOM; never calls the app's code. */
 (function () {
   'use strict';
-  var C = window.__arahDriveCore, VERSION = '0.1.2';
+  var C = window.__arahDriveCore, VERSION = '0.1.3';
   if (!C || window.__arahDriveUI) return;
   window.__arahDriveUI = VERSION;
 
@@ -224,11 +224,20 @@
     layout(); tick();
   }
 
+  // The app's turn card: by its inline style first, otherwise by geometry (absolute/fixed box pinned top-left, 68 px short of the right edge),
+  // so a re-written style attribute or a re-skin cannot silently drop the card from the layout maths and let the HUD sit on top of it.
+  function turnCard() {
+    var c = document.querySelector('div[style*="right:68px"], div[style*="right: 68px"]'); if (c) return c;
+    var all = document.querySelectorAll('body div');
+    for (var i = 0; i < all.length && i < 4000; i++) { var e = all[i]; if (e.closest('.adr')) continue; var cs = getComputedStyle(e); if ((cs.position === 'absolute' || cs.position === 'fixed') && cs.left === '12px' && cs.right === '68px' && parseFloat(cs.top) < 40) return e; }
+    return null;
+  }
+
   /* ---------------------------------------------------------------- layout: sits between the app's own cards, never over them */
   function layout() {
     if (!S.root) return;
     var vh = window.innerHeight, vw = window.innerWidth, tam = tripActive(), bar = tam && tam.parentElement, barTop = bar ? bar.getBoundingClientRect().top : vh - 100;
-    var card = document.querySelector('div[style*="right:68px"]'), cardBottom = card ? card.getBoundingClientRect().bottom : 130;
+    var card = turnCard(), cardBottom = card ? card.getBoundingClientRect().bottom : 130;
     var low = barTop - 10 - 132; // top edge of the speedo / mini-map row
     S.speedo.btn.style.top = low + 'px'; S.mini.style.top = low + 'px'; S.speedo.btn.style.bottom = S.mini.style.bottom = 'auto';
     S.mini.hidden = vh < 560 || vw < 330;

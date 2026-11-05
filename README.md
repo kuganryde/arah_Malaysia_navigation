@@ -52,6 +52,8 @@ While a trip is running ARAH adds three things around your own turn card (`asset
 - **Mini guided map**: a round, heading-up map from the route itself (works offline, no tiles) with the next turn, the one after it and the finish.
 - **Racing speedometer**: a small gauge with an easing needle and a red zone, driven by GPS speed. Tap it to choose a drive mode: **Biasa · Normal** (cyan, 180 km/h dial), **Sukan · Sports** (carbon face, red/yellow, shift lights, 240 km/h dial) or **Mewah · Luxury** (champagne gold, serif numerals). The choice is remembered on the device.
 
+The drive view finds the app's turn card by geometry and stays clear of it; temporary messages (festival greeting, keep-awake hint) are placed so they never cover a control, which a browser test checks at phone and tablet sizes.
+
 It is guidance for a mounted phone, not a reason to look away from the road. Test hook: `__arahDrive.feed({lng,lat,speed,heading})`.
 
 ### 🏙️ 3D low-poly landmarks

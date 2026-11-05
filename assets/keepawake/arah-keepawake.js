@@ -1,4 +1,4 @@
-/*! ARAH keep-awake v0.3.0
+/*! ARAH keep-awake v0.3.1
  * Keeps the screen on while ARAH is open and visible, on every device:
  *   1. Screen Wake Lock API: Chrome/Edge/Samsung Internet on Android and desktop, Safari 16.4+ (browser and installed app).
  *   2. Fallback where that API does not exist (older iPhone/iPad, some browsers): a tiny silent looping video, the
@@ -11,7 +11,7 @@
 (function () {
   'use strict';
   if (window.__arahKeepAwake) return;
-  window.__arahKeepAwake = '0.3.0';
+  window.__arahKeepAwake = '0.3.1';
 
   var KEY = 'arah.awake.v1';
   var BASE = new URL('.', document.currentScript ? document.currentScript.src : location.href).href;
@@ -115,7 +115,7 @@
     }
     btn.style.top = top === null ? 'calc(env(safe-area-inset-top,0px) + 74px + 6 * 52px)' : Math.round(top) + 'px';
     btn.style.right = right + 'px';
-    if (tip) tip.style.top = btn.style.top;
+    if (tip) tip.style.top = (parseFloat(btn.style.top) + 52) + 'px'; // below the button: beside it the hint covered the Makan & Mall row on narrow phones
   }
   function paint() {
     if (!btn) return;
