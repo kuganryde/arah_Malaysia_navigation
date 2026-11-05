@@ -34,6 +34,8 @@ export const CORE = {
   '/assets/landmarks/arah-landmarks.js': 'assets/landmarks/arah-landmarks.js',
   '/assets/drive/arah-drive.js': 'assets/drive/arah-drive.js',
   '/assets/easy/arah-easy.js': 'assets/easy/arah-easy.js',
+  '/assets/skin/arah-skin.js': 'assets/skin/arah-skin.js',
+  '/assets/skin/skin-core.js': 'assets/skin/skin-core.js',
   '/assets/ar/arah-ar.js': 'assets/ar/arah-ar.js',
   '/assets/ar/ar-core.mjs': 'assets/ar/ar-core.mjs',
   '/assets/ar/ar-engine.mjs': 'assets/ar/ar-engine.mjs',

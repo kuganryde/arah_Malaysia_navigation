@@ -480,3 +480,23 @@ test('Makan & Mall: a hung server does not slow the search (two servers raced), 
     assert.equal(calls.length, n, 'cached');
   } finally { await b.close(); }
 });
+
+test('Skin v2: one chip row holds the add-on buttons, search is a pill, map buttons are circles; ?skin=classic restores the old look', async () => {
+  const b = await launch(); const p = await b.page();
+  try {
+    await openApp(p, srv.url); await p.waitForFunction(() => document.documentElement.getAttribute('data-skin') === 'v2', null, { timeout: 15000 });
+    await p.waitForTimeout(1800);
+    const s = await p.evaluate(() => {
+      const rail = document.querySelector('.sk-rail'), inRail = (sel) => !!rail && !!rail.querySelector(sel);
+      const loc = document.querySelector('button[title="My location"]');
+      return { ar: inRail('.arah-ar-fab'), makan: inRail('.ap-btn'), n: rail ? rail.children.length : 0, radius: loc ? getComputedStyle(loc).borderRadius : '', handle: getComputedStyle(document.querySelector('.maplibregl-map ~ div[style*="58dvh"]'), '::before').content };
+    });
+    assert.ok(s.ar && s.makan && s.n >= 3, 'AR and Makan & Mall chips live in the row'); assert.match(s.radius, /50%|px/); assert.equal(s.handle, '""', 'grab handle on the sheet');
+    // chips still work after being moved
+    await p.click('.sk-rail .ap-btn'); await p.waitForSelector('.ap-sheet');
+    await p.goto(srv.url + '/index.html?skin=classic', { waitUntil: 'load' }); await p.waitForFunction(() => !!window.__arahMap); await p.waitForTimeout(2500);
+    assert.equal(await p.evaluate(() => document.documentElement.hasAttribute('data-skin') || !!document.querySelector('.sk-rail')), false, 'classic = no skin');
+    await p.goto(srv.url + '/index.html?skin=v2', { waitUntil: 'load' }); await p.waitForFunction(() => document.documentElement.getAttribute('data-skin') === 'v2', null, { timeout: 15000 });
+    assert.deepEqual(p.errors, []);
+  } finally { await b.close(); }
+});

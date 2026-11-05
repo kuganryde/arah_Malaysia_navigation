@@ -1,8 +1,8 @@
 {
-  "release": "0.21.1",
+  "release": "0.22.0",
   "modules": {
     "app": {
-      "version": "0.4.3",
+      "version": "0.4.4",
       "description": "The map app: bundled index.html and its editable source",
       "paths": [
         "index.html",
@@ -97,7 +97,7 @@
       ]
     },
     "ci": {
-      "version": "0.19.1",
+      "version": "0.20.0",
       "description": "Tests, guard rails and GitHub Actions",
       "paths": [
         ".github/**",
@@ -107,7 +107,7 @@
       "markers": []
     },
     "docs": {
-      "version": "0.12.1",
+      "version": "0.13.0",
       "description": "README and its animated art",
       "paths": [
         "README.md",
@@ -121,7 +121,7 @@
       "markers": []
     },
     "pwa": {
-      "version": "0.1.25",
+      "version": "0.1.27",
       "description": "Installable app: manifest, service worker, offline page, icons, install and update UI",
       "paths": [
         "sw.js",
@@ -202,7 +202,7 @@
       ]
     },
     "keepawake": {
-      "version": "0.3.1",
+      "version": "0.3.2",
       "description": "Keep the screen awake while ARAH is open (assets/keepawake/)",
       "paths": [
         "assets/keepawake/**"
@@ -296,7 +296,7 @@
       ]
     },
     "twa": {
-      "version": "0.1.6",
+      "version": "0.1.7",
       "description": "Android (Trusted Web Activity) packaging, Play listing drafts, asset links (twa/, .well-known/)",
       "paths": [
         "twa/**",
@@ -374,6 +374,31 @@
         {
           "file": "assets/easy/arah-easy.js",
           "text": "VERSION = '{v}'"
+        }
+      ]
+    },
+    "skin": {
+      "version": "0.1.0",
+      "description": "Skin v2: rounder look, one chip row for the add-on buttons (assets/skin/)",
+      "paths": [
+        "assets/skin/**"
+      ],
+      "markers": [
+        {
+          "file": "assets/skin/arah-skin.js",
+          "text": "/*! ARAH skin v{v}"
+        },
+        {
+          "file": "assets/skin/arah-skin.js",
+          "text": "version: '{v}'"
+        },
+        {
+          "file": "assets/skin/skin-core.js",
+          "text": "/*! ARAH skin core v{v}"
+        },
+        {
+          "file": "assets/skin/skin-core.js",
+          "text": "__arahSkinCore = '{v}'"
         }
       ]
     }
