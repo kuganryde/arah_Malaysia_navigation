@@ -315,7 +315,7 @@
       "markers": []
     },
     "landmarks": {
-      "version": "0.1.0",
+      "version": "0.1.1",
       "description": "Textured low-poly 3D models of 12 iconic Malaysian landmarks (assets/landmarks/)",
       "paths": [
         "assets/landmarks/**"
@@ -336,7 +336,7 @@
       ]
     },
     "drive": {
-      "version": "0.1.1",
+      "version": "0.1.2",
       "description": "Drive view: AR road view, mini guided map, racing speedometer, Normal/Sports/Luxury modes (assets/drive/)",
       "paths": [
         "assets/drive/**"

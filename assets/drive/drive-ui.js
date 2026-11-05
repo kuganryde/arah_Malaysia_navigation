@@ -1,4 +1,4 @@
-/*! ARAH drive UI v0.1.1
+/*! ARAH drive UI v0.1.2
  * While a trip runs: an AR road view (camera + the route painted on the road, or a virtual road when there is no camera), a mini
  * guided map, a racing-style speedometer, and three drive modes (Normal, Sports, Luxury) that restyle all of it.
  * Privacy: the camera is opt-in (the AR button), is only displayed, and is never recorded, stored or uploaded; it stops when AR is
@@ -6,7 +6,7 @@
  * looking at the road. Separate layer: reads window.__arahMap (the route source) and the DOM; never calls the app's code. */
 (function () {
   'use strict';
-  var C = window.__arahDriveCore, VERSION = '0.1.1';
+  var C = window.__arahDriveCore, VERSION = '0.1.2';
   if (!C || window.__arahDriveUI) return;
   window.__arahDriveUI = VERSION;
 
@@ -86,7 +86,7 @@
   function easeSpeed() { // needle glides to the GPS speed; the timer only runs while it is moving (nothing redraws when idle)
     if (S.easing) return; S.easing = true;
     (function step() {
-      var d = S.speed - S.shown; if (Math.abs(d) < 0.25 || reduce) { S.shown = S.speed; drawSpeedo(); S.easing = false; return; }
+      var d = S.speed - S.shown; if (Math.abs(d) < 0.25 || reduce) { S.shown = S.speed; drawSpeedo(true); S.easing = false; return; }
       S.shown += d * 0.22; drawSpeedo(); requestAnimationFrame(step);
     })();
   }

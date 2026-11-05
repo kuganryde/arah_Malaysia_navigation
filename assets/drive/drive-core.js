@@ -1,4 +1,4 @@
-/*! ARAH drive core v0.1.1 - pure maths for the drive view (no DOM): route ahead of the car, next turn, camera projection of a road
+/*! ARAH drive core v0.1.2 - pure maths for the drive view (no DOM): route ahead of the car, next turn, camera projection of a road
  * ribbon, gauge geometry and the three drive-mode themes. Works in the browser (window.__arahDriveCore) and under node --test.
  * Local frame: x = east, y = north, metres, origin at the car. Camera frame: forward / right / up, camera 1.3 m above the road. */
 (function (root) {
@@ -114,6 +114,6 @@
   // Distance for a label: 450 m / 1.2 km.
   function fmtDist(m) { return m >= 1000 ? (m / 1000).toFixed(m >= 9500 ? 0 : 1) + ' km' : Math.max(10, Math.round(m / 10) * 10) + ' m'; }
 
-  var api = { toXY: toXY, dist: dist, norm360: norm360, angDiff: angDiff, lerpAngle: lerpAngle, bearingOf: bearingOf, snap: snap, ahead: ahead, nextTurn: nextTurn, camera: camera, project: project, ribbon: ribbon, gaugeAngle: gaugeAngle, arcPoint: arcPoint, arcPath: arcPath, SWEEP: SWEEP, THEMES: THEMES, theme: theme, fmtDist: fmtDist, version: '0.1.1' };
+  var api = { toXY: toXY, dist: dist, norm360: norm360, angDiff: angDiff, lerpAngle: lerpAngle, bearingOf: bearingOf, snap: snap, ahead: ahead, nextTurn: nextTurn, camera: camera, project: project, ribbon: ribbon, gaugeAngle: gaugeAngle, arcPoint: arcPoint, arcPath: arcPath, SWEEP: SWEEP, THEMES: THEMES, theme: theme, fmtDist: fmtDist, version: '0.1.2' };
   if (typeof module === 'object' && module.exports) module.exports = api; else root.__arahDriveCore = api;
 })(typeof window !== 'undefined' ? window : globalThis);

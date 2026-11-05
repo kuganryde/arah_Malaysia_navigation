@@ -106,6 +106,7 @@ test('Landmarks: textured 3D models draw over the old shapes, in day and night, 
     await openApp(p, srv.url);
     await p.evaluate(() => window.__arahMap.jumpTo({ center: [101.7116, 3.15787], zoom: 15.8, pitch: 60, bearing: -35 }));
     await p.waitForFunction(() => { const s = window.__arahLandmark3d.status().state; return s && s.drawn; }, null, { timeout: 45000 });
+    await p.waitForFunction(() => window.__arahMap.getLayoutProperty('landmark-3d', 'visibility') === 'visible', null, { timeout: 10000 }); // the module re-asserts it if the app hides it as its style settles
     const on = await p.evaluate(() => { const m = window.__arahMap, s = window.__arahLandmark3d.status(); return { built: s.state.built, vis: m.getLayoutProperty('landmark-3d', 'visibility'), op: m.getPaintProperty('landmark-3d', 'fill-extrusion-opacity'), models: m.getLayer('landmark-models').type, order: m.style._order.slice() }; }); // getStyle() omits custom layers; the internal draw order is what matters here
     assert.ok(on.built.includes('petronas'), 'Petronas model built');
     assert.equal(on.vis, 'visible', 'the landmark layers are switched on (the app default hid them)');
@@ -370,7 +371,7 @@ test('Drive view: starts with a trip, shows speedo + mini map + AR road, themes 
     await p.evaluate(() => window.__arahDrive.feed({ lng: 101.71, lat: 3.15 + 250 / 110574, speed: 120, heading: 0 }));
     await p.waitForFunction(() => window.__arahDrive.status().speed === 120, null, { timeout: 5000 });
     assert.ok(await p.locator('.adr-speedo').isVisible() && await p.locator('.adr-mini').isVisible());
-    assert.match(await p.locator('.adr-speedo').getAttribute('aria-label'), /120 km\/j/);
+    await p.waitForFunction(() => /120 km\/j/.test(document.querySelector('.adr-speedo').getAttribute('aria-label')), null, { timeout: 5000 });
     await p.click('.adr-speedo'); await p.click('.adr-themes button[data-id=sports]');
     assert.equal(await p.evaluate(() => JSON.parse(localStorage.getItem('arah.drive.v1')).theme), 'sports');
     await p.click('.adr-pill'); await p.waitForFunction(() => window.__arahDrive.status().camera, null, { timeout: 8000 });

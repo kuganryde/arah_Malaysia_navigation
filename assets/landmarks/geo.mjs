@@ -1,4 +1,4 @@
-// ARAH landmarks v0.1.0 - geometry helpers (pure three.js, no DOM, so they run under node --test).
+// ARAH landmarks v0.1.1 - geometry helpers (pure three.js, no DOM, so they run under node --test).
 // Everything is built in METRES in three's usual frame: x = east, y = up, z = south (-z is north).
 import { BufferGeometry, Float32BufferAttribute, Mesh, Group } from 'three';
 
