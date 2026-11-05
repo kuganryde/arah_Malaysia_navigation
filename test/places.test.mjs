@@ -26,7 +26,9 @@ test('every brand pattern compiles and matches its own name', () => {
 test('queries: valid shape, scoped, and injection-safe', () => {
   const kfc = BRANDS.find((b) => b.id === 'kfc');
   const q = P.buildQuery('food', kfc, { around: [3.15, 101.71, 5000] });
-  assert.match(q, /^\[out:json\]\[timeout:25\];nwr\["amenity"~/);
+  assert.match(q, /^\[out:json\]\[timeout:25\];\(nwr\["amenity"~/);
+  assert.ok(q.includes('["brand"~') && q.includes('["name"~'), 'brand matched on name and brand separately (fast)');
+  assert.match(P.buildQuery('food', null, { around: [3, 101, 1500] }, 80, 10), /^\[out:json\]\[timeout:10\];nwr\["amenity"~.*\["name"\]\(around:1500/);
   assert.ok(q.includes('(around:5000,3.15000,101.71000)'));
   assert.match(P.buildQuery('mall', BRANDS.find((b) => b.id === 'suria-klcc'), { malaysia: true }), /"shop"="mall"/);
   const evil = { name: 'x"];out;node(1);//', kind: 'food' };

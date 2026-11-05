@@ -1,4 +1,4 @@
-// places v0.2.0
+// places v0.2.1
 // Pure logic for the Makan & Mall directory: validation, OpenStreetMap query building, result parsing.
 // No DOM and no network here, so it is unit-tested in Node.
 export const KINDS = ['food', 'mall'];
@@ -50,17 +50,22 @@ const ff = '["amenity"~"^(fast_food|restaurant|cafe|ice_cream)$"]';
  * Overpass query. scope: {around:[lat,lon,metres]} or {malaysia:true}.
  * brand: a BRANDS entry, or null for "everything of this kind nearby".
  */
-export function buildQuery(kind, brand, scope, limit = 80) {
+export function buildQuery(kind, brand, scope, limit = 80, timeoutS = 25) {
   if (!KINDS.includes(kind)) throw new Error('bad kind');
   const base = kind === 'mall' ? '["shop"="mall"]' : ff;
-  const nameF = brand ? `[~"^(name|brand)$"~"${brandPattern(brand)}",i]` : '["name"]';
   let where;
   if (scope && scope.around) {
     const [lat, lon, r] = scope.around.map(Number);
     if (![lat, lon, r].every(Number.isFinite) || r < 100 || r > 50000) throw new Error('bad scope');
     where = `(around:${Math.round(r)},${lat.toFixed(5)},${lon.toFixed(5)})`;
   } else where = `(${MY_BBOX})`;
-  return `[out:json][timeout:25];nwr${base}${nameF}${where};out center ${Math.min(150, limit)};`;
+  const t = Math.max(5, Math.min(60, Math.round(Number(timeoutS)) || 25)), n = Math.min(150, limit);
+  // A brand is matched on its two tags separately and unioned: one key-regex over every tag of every object in the area (the old
+  // [~"^(name|brand)$"~...] form) is much slower on the public Overpass servers and was a main cause of timeouts.
+  const body = brand
+    ? `(nwr${base}["name"~"${brandPattern(brand)}",i]${where};nwr${base}["brand"~"${brandPattern(brand)}",i]${where};)`
+    : `nwr${base}["name"]${where}`;
+  return `[out:json][timeout:${t}];${body};out center ${n};`;
 }
 
 export const haversine = (a, b) => { // [lon,lat] pairs, metres
