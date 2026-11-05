@@ -1,4 +1,4 @@
-/*! ARAH Network Resilience v0.1.0
+/*! ARAH Network Resilience v0.1.1
  * A thin, separate layer around window.fetch for the public map services ARAH depends on. The app's own code is untouched.
  *  - Every call to a known service gets a hard timeout, so a stalled server can never freeze routing or search.
  *  - Overpass (nearby places): tried on up to three public mirrors; a 429/5xx, timeout, or an "out of time" answer moves on.
@@ -13,8 +13,8 @@
   'use strict';
   if (window.__arahNet || !window.fetch) return;
   try { if (/[?&]nonet=1\b/.test(location.search)) return; } catch (e) { /* no location: carry on */ }
-  var VERSION = '0.1.0';
-  var cfg = { overpassMs: 20000, overpassRetryMs: 15000, photonMs: 6000, nominatimMs: 8000, osrmMs: 9000, cooldownMs: 60000, trips: 2, toastGapMs: 120000 };
+  var VERSION = '0.1.1';
+  var cfg = { overpassMs: 12000, overpassRetryMs: 10000, photonMs: 6000, nominatimMs: 8000, osrmMs: 9000, cooldownMs: 60000, trips: 2, toastGapMs: 120000 };
   try { var o = window.__arahNetConfig; if (o) for (var k in o) if (k in cfg) cfg[k] = +o[k]; } catch (e) { /* ignore */ }
 
   var realFetch = window.fetch.bind(window);
@@ -64,6 +64,9 @@
   function overpass(url, init, outer) {
     var hosts = OVERPASS.filter(function (x) { return !isOpen(x); });
     if (!hosts.length) hosts = OVERPASS.slice(); // everything tripped: try anyway rather than fail by policy
+    // Start with the server the caller asked for (callers that want a race send two requests, each naming a different server); the rest stay as fallbacks.
+    var asked = (function () { try { return new URL(url).hostname; } catch (e) { return ''; } })();
+    if (hosts.indexOf(asked) > 0) hosts = [asked].concat(hosts.filter(function (x) { return x !== asked; }));
     var i = 0, first = true;
     function next() {
       if (i >= hosts.length) return Promise.reject(new TypeError('All map data servers are unavailable'));

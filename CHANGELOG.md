@@ -4,6 +4,16 @@ Every module has its own version (see `versions.json` and `VERSIONING.md`). Each
 
 ## [Unreleased]
 
+- **pwa 0.1.25**: release stamp 0.21.1
+- **twa 0.1.6**: version sync to release 0.21.1
+## [0.21.1] - 2026-11-05
+
+- **places 0.2.1 / resilience 0.1.1**: Makan & Mall no longer feels slow or empty: staged search (near, then wide), two servers raced, 15-minute cache, faster brand query; Overpass first try 12 s instead of 20 s
+
+- **docs 0.12.1**: README: Makan and Mall note
+- **ci 0.19.1**: E2E: hung server, widening search and cache for Makan and Mall
+- **resilience 0.1.1**: Overpass failover starts at the server the caller names (so two requests race), first try 12 s instead of 20 s
+- **places 0.2.1**: search is staged (near then wide), two servers raced, answers cached 15 min, faster brand query (name and brand tags separately) so Makan and Mall no longer feels slow or empty
 - **pwa 0.1.24**: release stamp 0.21.0
 - **twa 0.1.5**: version sync to release 0.21.0
 ## [0.21.0] - 2026-11-05

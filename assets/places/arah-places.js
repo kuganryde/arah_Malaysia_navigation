@@ -1,4 +1,4 @@
-/*! ARAH Makan & Mall v0.2.0
+/*! ARAH Makan & Mall v0.2.1
  * A directory of Malaysian fast-food chains and shopping malls with logos. Separate layer, like arah-ar.js:
  * it reads the app's map through window.__arahMap and never calls the app's other code.
  *  - Outlets come live from OpenStreetMap (Overpass), searched around the centre of the map view.
@@ -9,7 +9,7 @@
 (function () {
   'use strict';
   if (window.__arahPlaces) return;
-  window.__arahPlaces = '0.2.0';
+  window.__arahPlaces = '0.2.1';
   var BASE = new URL('.', document.currentScript ? document.currentScript.src : location.href).href;
   var OVERPASS = 'https://overpass-api.de/api/interpreter';
   var LOGO_KEY = 'arah.places.logos';
@@ -152,7 +152,7 @@
       el('button', { class: 'ap-go q', type: 'button', text: '← Kembali · Back', onclick: function () { state.brand = null; state.items = null; state.err = ''; render(); } }),
       el('span', { class: 's', text: (b ? b.name : (state.kind === 'food' ? 'Semua makanan' : 'Semua mall')) + (state.items ? ' · ' + state.items.length : '') })]);
     body.appendChild(bar);
-    if (state.busy) return body.appendChild(el('p', { class: 'ap-msg', role: 'status', text: 'Mencari… · Searching…' }));
+    if (state.busy) return body.appendChild(el('p', { class: 'ap-msg', role: 'status', text: state.hint || 'Mencari… · Searching…' }));
     if (state.err) return body.appendChild(el('p', { class: 'ap-msg', role: 'alert', text: state.err }));
     if (!state.items || !state.items.length) return body.appendChild(el('p', { class: 'ap-msg', text: 'Tiada hasil dalam kawasan ini. Alihkan peta lalu cuba lagi. · Nothing found here. Move the map and try again.' }));
     state.items.forEach(function (o) {
@@ -175,17 +175,48 @@
     if (!navigator.onLine) { state.brand = b || {}; state.items = []; state.err = 'Tiada internet. Carian memerlukan sambungan. · You are offline. Search needs a connection.'; return render(); }
     var c = m.getCenter(), ref = [c.lng, c.lat];
     state.brand = b || {}; state.busy = true; state.err = ''; state.items = []; render();
-    // A specific mall is searched across Malaysia (its name is selective); everything else around the map centre.
-    var scope = (b && state.kind === 'mall') ? { malaysia: true } : { around: [c.lat, c.lng, state.kind === 'mall' ? 12000 : 5000] };
-    var q;
-    try { q = core.buildQuery(state.kind, b, scope); } catch (e) { state.busy = false; state.err = 'Ralat · Error'; return render(); }
-    var ctl = new AbortController(), to = setTimeout(function () { ctl.abort(); }, 28000);
-    fetch(OVERPASS, { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: 'data=' + encodeURIComponent(q), credentials: 'omit', signal: ctl.signal })
-      .then(function (r) { if (!r.ok) throw new Error('http ' + r.status); return r.json(); })
-      .then(function (j) { state.items = core.parseOutlets(j, ref, state.kind, data.BRANDS); state.busy = false; render(); })
-      .catch(function () { state.busy = false; state.err = 'Carian sibuk atau gagal. Cuba lagi. · Search is busy or failed. Try again.'; render(); })
+    // Staged, cached, raced: the public Overpass servers are slow and often busy, and the old single wide query (up to 28 s, one server at a
+    // time) looked like "slow and nothing found". Now a small area is asked first (fast), two servers are asked at once (first good answer
+    // wins), a wider area follows only when the first came back empty, and recent answers are kept for 15 minutes.
+    var wide = state.kind === 'mall' ? 12000 : 5000, near = state.kind === 'mall' ? 5000 : 1800;
+    var stages = (b && state.kind === 'mall') ? [{ malaysia: true }] : [{ around: [c.lat, c.lng, near] }, { around: [c.lat, c.lng, wide] }];
+    var key = [state.kind, b && b.id || '', c.lat.toFixed(2), c.lng.toFixed(2)].join('|'), hit = cacheGet(key);
+    if (hit) { state.items = core.parseOutlets(hit, ref, state.kind, data.BRANDS); state.busy = false; return render(); }
+    var token = ++runId, ctl = new AbortController(), to = setTimeout(function () { ctl.abort(); }, 40000);
+    function stage(i) {
+      state.hint = i ? 'Mencari lebih jauh… · Searching a wider area…' : 'Mencari berdekatan… · Searching nearby…'; render();
+      var q; try { q = core.buildQuery(state.kind, b, stages[i], 80, i ? 25 : 12); } catch (e) { return Promise.reject(e); }
+      return raceMirrors(q, ctl.signal).then(function (j) {
+        var items = core.parseOutlets(j, ref, state.kind, data.BRANDS);
+        if (!items.length && i + 1 < stages.length && token === runId) return stage(i + 1);
+        if (items.length) cachePut(key, j);
+        return items;
+      });
+    }
+    stage(0).then(function (items) { if (token !== runId) return; state.items = items; state.busy = false; state.hint = ''; render(); })
+      .catch(function (e) { if (token !== runId) return; state.busy = false; state.hint = ''; state.err = (e && e.name === 'AbortError') ? 'Pelayan peta terlalu perlahan. Cuba lagi sebentar lagi. · The map servers are too slow right now. Try again in a moment.' : 'Carian gagal. Semak sambungan dan cuba lagi. · Search failed. Check your connection and try again.'; render(); })
       .then(function () { clearTimeout(to); });
   }
+  var runId = 0;
+  // Ask two Overpass servers at once; the first usable answer wins and the other request is cancelled.
+  function raceMirrors(q, outer) {
+    var hosts = ['overpass-api.de', 'overpass.kumi.systems'], ctls = hosts.map(function () { return new AbortController(); });
+    outer.addEventListener('abort', function () { ctls.forEach(function (c) { c.abort(); }); });
+    return new Promise(function (resolve, reject) {
+      var left = hosts.length, lastErr = null;
+      hosts.forEach(function (h, i) {
+        fetch('https://' + h + '/api/interpreter', { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: 'data=' + encodeURIComponent(q), credentials: 'omit', signal: ctls[i].signal })
+          .then(function (r) { if (!r.ok) throw new Error('http ' + r.status); return r.json(); })
+          .then(function (j) {
+            if (j && j.remark && /runtime error|timed out|out of memory/i.test(j.remark) && !(j.elements && j.elements.length)) throw new Error('overloaded');
+            ctls.forEach(function (c, k) { if (k !== i) c.abort(); }); resolve(j);
+          })
+          .catch(function (e) { lastErr = e; if (--left === 0) reject(outer.aborted ? new DOMException('Aborted', 'AbortError') : lastErr); });
+      });
+    });
+  }
+  function cacheGet(k) { try { var v = JSON.parse(sessionStorage.getItem('arah.places.' + k) || 'null'); return v && Date.now() - v.t < 900000 ? v.j : null; } catch (e) { return null; } }
+  function cachePut(k, j) { try { sessionStorage.setItem('arah.places.' + k, JSON.stringify({ t: Date.now(), j: j })); } catch (e) { /* full or private mode */ } }
   function marker(o, ob) {
     var gl = window.maplibregl; if (!gl || !map()) return null;
     var e = el('div', { class: 'ap-mk', role: 'img', 'aria-label': o.name }); e.appendChild(logo(ob, 30));

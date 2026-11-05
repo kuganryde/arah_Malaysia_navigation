@@ -1,5 +1,5 @@
 {
-  "release": "0.21.0",
+  "release": "0.21.1",
   "modules": {
     "app": {
       "version": "0.4.3",
@@ -97,7 +97,7 @@
       ]
     },
     "ci": {
-      "version": "0.19.0",
+      "version": "0.19.1",
       "description": "Tests, guard rails and GitHub Actions",
       "paths": [
         ".github/**",
@@ -107,7 +107,7 @@
       "markers": []
     },
     "docs": {
-      "version": "0.12.0",
+      "version": "0.12.1",
       "description": "README and its animated art",
       "paths": [
         "README.md",
@@ -121,7 +121,7 @@
       "markers": []
     },
     "pwa": {
-      "version": "0.1.24",
+      "version": "0.1.25",
       "description": "Installable app: manifest, service worker, offline page, icons, install and update UI",
       "paths": [
         "sw.js",
@@ -152,7 +152,7 @@
       ]
     },
     "places": {
-      "version": "0.2.0",
+      "version": "0.2.1",
       "description": "Makan & Mall: Malaysian fast-food and mall directory with logos, live OpenStreetMap outlets (assets/places/)",
       "paths": [
         "assets/places/**"
@@ -219,7 +219,7 @@
       ]
     },
     "resilience": {
-      "version": "0.1.0",
+      "version": "0.1.1",
       "description": "Timeouts and failover for Overpass, Photon and OSRM (assets/resilience/)",
       "paths": [
         "assets/resilience/**"
@@ -296,7 +296,7 @@
       ]
     },
     "twa": {
-      "version": "0.1.5",
+      "version": "0.1.6",
       "description": "Android (Trusted Web Activity) packaging, Play listing drafts, asset links (twa/, .well-known/)",
       "paths": [
         "twa/**",
