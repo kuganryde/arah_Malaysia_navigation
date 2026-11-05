@@ -52,6 +52,6 @@ self.__ARAH_PRECACHE = {
     "/assets/vehicles/models/Textures/colormap.png",
     "/assets/ar/models/yolox_nano.onnx"
   ],
-  "coreHash": "0efdff69a787",
+  "coreHash": "afd75ebbd7f8",
   "lazyHash": "7e03922a1fe3"
 };

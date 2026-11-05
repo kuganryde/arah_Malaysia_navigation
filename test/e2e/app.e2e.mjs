@@ -277,11 +277,11 @@ test('Keep-awake is a small button in the map button column area, overlaps nothi
       const hit = (a, c) => a.left < c.right && c.left < a.right && a.top < c.bottom && c.top < a.bottom;
       const toggle = document.querySelector('button[aria-label^="Togol"]');
       return { w: kr.width, h: kr.height, toast: !!document.querySelector('.ak-toast'), overlapsColumn: [...col.children].some((x) => hit(kr, r(x))), overlapsToggle: hit(kr, r(toggle)),
-        colVsToggle: [...col.children].some((x) => hit(r(x), r(toggle))), pt: window.__arahLayout.panelTop(), kb: kr.bottom, right: innerWidth - kr.right };
+        colVsToggle: [...col.children].some((x) => hit(r(x), r(toggle))), pt: window.__arahLayout.panelTop(), kb: kr.bottom, right: innerWidth - kr.right, inRow: !!document.querySelector('.sk-rail .ak-btn') };
     });
     assert.equal(g.toast, false); assert.ok(g.w >= 44 && g.h >= 44);
     assert.equal(g.overlapsColumn, false, 'not on top of a map button'); assert.equal(g.overlapsToggle, false, 'not on top of the panel toggle'); assert.equal(g.colVsToggle, false, 'column clears the panel toggle');
-    assert.ok(g.right >= 12 && g.right < 140, 'on the right side: ' + g.right);
+    assert.ok((g.right >= 12 && g.right < 140) || g.inRow, 'on the right side or in the skin chip row: ' + g.right);
     await p.click('.ak-btn');
     assert.equal(await p.evaluate(() => localStorage.getItem('arah.awake.v1')), '0');
     assert.equal(await p.getAttribute('.ak-btn', 'aria-pressed'), 'false');

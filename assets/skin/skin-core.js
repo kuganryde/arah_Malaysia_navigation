@@ -45,7 +45,7 @@
   }
   function start() {
     st = document.createElement('style'); st.id = 'arah-skin-css'; st.textContent = CSS; document.head.appendChild(st);
-    rail = document.createElement('div'); rail.className = 'sk-rail'; rail.setAttribute('role', 'toolbar'); rail.setAttribute('aria-label', 'Pintasan · Shortcuts'); document.body.appendChild(rail);
+    rail = document.createElement('div'); rail.className = 'sk-rail'; rail.setAttribute('role', 'region'); rail.setAttribute('aria-label', 'Pintasan · Shortcuts'); document.body.appendChild(rail);
     root.setAttribute('data-skin', 'v2'); adopt(); place();
     new MutationObserver(function () { adopt(); }).observe(document.body, { childList: true }); // late buttons from other modules
     setInterval(function () { adopt(); place(); }, 1200); window.addEventListener('resize', place);
