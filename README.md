@@ -44,6 +44,10 @@ It is a **100% non-profit beta** by **Rydetech Global Enterprise**: free, no ads
 
 An **Auto siang / malam** option switches between day and night for you. On the map: toggle 3D, reset north, jump to **my location**, change map views, or file a report.
 
+### 👵 Easy mode · Mod Mudah
+
+For older drivers, or anyone who finds small controls hard: tap **Mod Mudah** (under the search box) and ARAH becomes calmer and about 30% larger: bigger text, every button around 57 px, only what matters on screen (search, my location, report, the route), no festival decoration, no animation, no logo block, and no AR or camera. On a trip the speedometer is large and the turn card is enlarged. **Paparan biasa** switches back. The choice is remembered on the device, and a link ending in `?easy=1` (or `?easy=0`) sets it, so you can set up a parent's phone and add it to their home screen. Nothing leaves the device (`assets/easy/`).
+
 ### 🏎️ Drive view: AR road, mini map, racing speedometer
 
 While a trip is running ARAH adds three things around your own turn card (`assets/drive/`, loaded only when a trip starts):

@@ -4,6 +4,17 @@ Every module has its own version (see `versions.json` and `VERSIONING.md`). Each
 
 ## [Unreleased]
 
+- **pwa 0.1.24**: release stamp 0.21.0
+- **twa 0.1.5**: version sync to release 0.21.0
+## [0.21.0] - 2026-11-05
+
+- **pwa 0.1.23**: Easy mode script precached
+- **docs 0.12.0**: README: easy mode
+- **ci 0.19.0**: Easy mode E2E (sizes, persistence, toggle, no camera); eager budget 45 KB
+- **app 0.4.3**: Easy mode script injected into the page head
+- **drive 0.1.4**: no AR or camera while easy mode is on (also releases a running camera)
+- **easy 0.1.0**: Easy mode (Mod Mudah) for older drivers: 30% larger text and targets, only essential controls, no decoration, motion or camera, big speedometer on trips; remembered, `?easy=1` link
+
 - **pwa 0.1.22**: release stamp 0.20.1
 - **twa 0.1.4**: version sync to release 0.20.1
 ## [0.20.1] - 2026-11-05

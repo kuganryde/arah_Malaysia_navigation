@@ -1,8 +1,8 @@
 {
-  "release": "0.20.1",
+  "release": "0.21.0",
   "modules": {
     "app": {
-      "version": "0.4.2",
+      "version": "0.4.3",
       "description": "The map app: bundled index.html and its editable source",
       "paths": [
         "index.html",
@@ -97,7 +97,7 @@
       ]
     },
     "ci": {
-      "version": "0.18.1",
+      "version": "0.19.0",
       "description": "Tests, guard rails and GitHub Actions",
       "paths": [
         ".github/**",
@@ -107,7 +107,7 @@
       "markers": []
     },
     "docs": {
-      "version": "0.11.4",
+      "version": "0.12.0",
       "description": "README and its animated art",
       "paths": [
         "README.md",
@@ -121,7 +121,7 @@
       "markers": []
     },
     "pwa": {
-      "version": "0.1.22",
+      "version": "0.1.24",
       "description": "Installable app: manifest, service worker, offline page, icons, install and update UI",
       "paths": [
         "sw.js",
@@ -296,7 +296,7 @@
       ]
     },
     "twa": {
-      "version": "0.1.4",
+      "version": "0.1.5",
       "description": "Android (Trusted Web Activity) packaging, Play listing drafts, asset links (twa/, .well-known/)",
       "paths": [
         "twa/**",
@@ -336,7 +336,7 @@
       ]
     },
     "drive": {
-      "version": "0.1.3",
+      "version": "0.1.4",
       "description": "Drive view: AR road view, mini guided map, racing speedometer, Normal/Sports/Luxury modes (assets/drive/)",
       "paths": [
         "assets/drive/**"
@@ -356,6 +356,23 @@
         },
         {
           "file": "assets/drive/drive-ui.js",
+          "text": "VERSION = '{v}'"
+        }
+      ]
+    },
+    "easy": {
+      "version": "0.1.0",
+      "description": "Easy mode (Mod Mudah): larger, simpler layout for older drivers (assets/easy/)",
+      "paths": [
+        "assets/easy/**"
+      ],
+      "markers": [
+        {
+          "file": "assets/easy/arah-easy.js",
+          "text": "/*! ARAH easy mode v{v}"
+        },
+        {
+          "file": "assets/easy/arah-easy.js",
           "text": "VERSION = '{v}'"
         }
       ]

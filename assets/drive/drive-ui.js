@@ -1,4 +1,4 @@
-/*! ARAH drive UI v0.1.3
+/*! ARAH drive UI v0.1.4
  * While a trip runs: an AR road view (camera + the route painted on the road, or a virtual road when there is no camera), a mini
  * guided map, a racing-style speedometer, and three drive modes (Normal, Sports, Luxury) that restyle all of it.
  * Privacy: the camera is opt-in (the AR button), is only displayed, and is never recorded, stored or uploaded; it stops when AR is
@@ -6,7 +6,7 @@
  * looking at the road. Separate layer: reads window.__arahMap (the route source) and the DOM; never calls the app's code. */
 (function () {
   'use strict';
-  var C = window.__arahDriveCore, VERSION = '0.1.3';
+  var C = window.__arahDriveCore, VERSION = '0.1.4';
   if (!C || window.__arahDriveUI) return;
   window.__arahDriveUI = VERSION;
 
@@ -217,8 +217,9 @@
     }).catch(function () { msg('Kamera tidak dibenarkan · Camera not allowed: showing the virtual road'); });
   }
   function camOff() { if (S.stream) { S.stream.getTracks().forEach(function (t) { t.stop(); }); S.stream = null; } if (S.video) S.video.srcObject = null; }
+  function easy() { return document.documentElement.hasAttribute('data-easy'); } // easy mode: no camera at all
   function setAR(on) {
-    on = !!on; if (on === S.ar) return; S.ar = on; prefs.ar = on; save();
+    on = !!on && !easy(); if (on === S.ar) return; S.ar = on; prefs.ar = on; save();
     if (!S.root) return; S.cam.box.hidden = !on; S.pill.hidden = on;
     if (on) { startOrient(); camOn(); msg('Letakkan telefon di pendiri · Mount the phone; guidance only'); } else camOff();
     layout(); tick();
@@ -253,6 +254,7 @@
   /* ---------------------------------------------------------------- frame */
   function tick() {
     if (!S.active || document.hidden) return;
+    if (S.ar && easy()) setAR(false); // easy mode switched on mid-trip: release the camera at once, not just hide the view
     var lp = livePos(), path = lp && S.line ? C.ahead(S.line, lp, 300, S.hint) : null;
     if (path && path.off < 60) S.hint = path.index;
     if (path && path.off >= 60) path = null; // off the route (the app will reroute): do not draw a ribbon over the wrong road
@@ -290,7 +292,7 @@
     if (S.map && S.map.on) { S.srcOn = function (e) { if (e.sourceId === 'route' && e.isSourceLoaded) { clearTimeout(S.rt); S.rt = setTimeout(readRoute, 250); } }; S.map.on('sourcedata', S.srcOn); }
     S.timers.push(setInterval(tick, 100), setInterval(layout, 800), setInterval(function () { if (!tripActive()) stop(); }, 1000));
     window.addEventListener('resize', layout); document.addEventListener('visibilitychange', onVis); layout();
-    if (prefs.ar) { S.ar = false; setAR(true); } // the user left AR on last time
+    if (prefs.ar && !easy()) { S.ar = false; setAR(true); } // the user left AR on last time
   }
   function onVis() { if (document.hidden) camOff(); else if (S.ar) camOn(); }
   function stop() {

@@ -33,6 +33,7 @@ export const CORE = {
   '/assets/vehicles/arah-vehicles.js': 'assets/vehicles/arah-vehicles.js',
   '/assets/landmarks/arah-landmarks.js': 'assets/landmarks/arah-landmarks.js',
   '/assets/drive/arah-drive.js': 'assets/drive/arah-drive.js',
+  '/assets/easy/arah-easy.js': 'assets/easy/arah-easy.js',
   '/assets/ar/arah-ar.js': 'assets/ar/arah-ar.js',
   '/assets/ar/ar-core.mjs': 'assets/ar/ar-core.mjs',
   '/assets/ar/ar-engine.mjs': 'assets/ar/ar-engine.mjs',

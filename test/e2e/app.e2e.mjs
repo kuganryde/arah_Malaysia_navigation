@@ -412,3 +412,46 @@ test('Layout: no two floating controls overlap on phones and tablets (festive to
     }
   } finally { await b.close(); }
 });
+
+test('Easy mode: ?easy=1 enlarges and simplifies, nothing is cut off, it is remembered, the toggle returns to normal, and it never uses the camera', async () => {
+  const b = await launch();
+  try {
+    for (const [w, h] of [[390, 844], [360, 640], [820, 1180]]) {
+      const p = await b.page(); await p.setViewportSize({ width: w, height: h });
+      try {
+        await openApp(p, srv.url + '/?easy=1'); await p.waitForTimeout(2000);
+        const s = await p.evaluate(() => ({
+          on: document.documentElement.hasAttribute('data-easy'), sw: document.documentElement.scrollWidth, vw: innerWidth,
+          hidden: ['Toggle 3D', 'Reset north', 'Map views', '3D terrain'].every((t) => { const e = document.querySelector(`button[title="${t}"]`); return !e || getComputedStyle(e).display === 'none' || !e.getBoundingClientRect().width || e.closest('[style*="zoom"]') === null && !e.offsetParent; }),
+          minBtn: Math.min(...[...document.querySelectorAll('.maplibregl-map ~ div button')].filter((e) => e.offsetParent && e.getBoundingClientRect().width).map((e) => Math.min(e.getBoundingClientRect().width, e.getBoundingClientRect().height))),
+          over: [...document.querySelectorAll('.maplibregl-map ~ div')].every((d) => { const r = d.getBoundingClientRect(); return r.left >= 0 && r.right <= innerWidth + 1; }),
+          deco: !!document.querySelector('.af-cv') && getComputedStyle(document.querySelector('.af-cv')).display !== 'none',
+        }));
+        assert.ok(s.on, 'easy mode on'); assert.ok(s.sw <= s.vw + 1, `no sideways scroll at ${w}x${h}`); assert.ok(s.over, 'layers inside the screen');
+        assert.ok(s.minBtn >= 44, `touch targets >= 44 px (got ${s.minBtn})`); assert.ok(!s.deco, 'no festive decoration');
+        assert.equal(await p.evaluate(() => window.__arahEasy.status().on), true);
+        // remembered on reload without the query string
+        await p.goto(srv.url + '/index.html', { waitUntil: 'load' }); await p.waitForFunction(() => !!window.__arahMap);
+        assert.ok(await p.evaluate(() => document.documentElement.hasAttribute('data-easy')), 'remembered');
+        // the toggle returns to the standard view
+        await p.click('.aez'); assert.equal(await p.evaluate(() => document.documentElement.hasAttribute('data-easy')), false);
+        assert.deepEqual(p.errors, []);
+      } finally { await p.close(); }
+    }
+    // trip in easy mode: no camera, no mini map, big speedometer
+    const p = await b.page();
+    try {
+      await openApp(p, srv.url + '/?easy=1');
+      await p.evaluate(() => {
+        const t = document.createElement('button'); t.textContent = 'Tamat'; t.id = 'fake-end'; const bar = document.createElement('div'); bar.style.cssText = 'position:fixed;left:12px;right:12px;bottom:12px;height:64px;z-index:5'; bar.appendChild(t); document.body.appendChild(bar);
+        const o = [101.71, 3.15], mx = 1 / 111320 / Math.cos(3.15 * Math.PI / 180), my = 1 / 110574, pt = (e, n) => [o[0] + e * mx, o[1] + n * my];
+        window.__arahMap.getSource('route').setData({ type: 'Feature', properties: {}, geometry: { type: 'LineString', coordinates: [pt(0, 0), pt(0, 400), pt(150, 400), pt(150, 900)] } });
+      });
+      await p.waitForFunction(() => window.__arahDrive && window.__arahDrive.status().active, null, { timeout: 15000 });
+      await p.evaluate(() => { window.__arahDrive.setAR(true); window.__arahDrive.feed({ lng: 101.71, lat: 3.15 + 250 / 110574, speed: 60, heading: 0 }); });
+      await p.waitForTimeout(800);
+      const st = await p.evaluate(() => ({ ar: window.__arahDrive.status().ar, camera: window.__arahDrive.status().camera, mini: getComputedStyle(document.querySelector('.adr-mini')).display, toggle: getComputedStyle(document.querySelector('.aez')).display }));
+      assert.equal(st.ar, false, 'AR cannot start in easy mode'); assert.equal(st.camera, false); assert.equal(st.mini, 'none'); assert.equal(st.toggle, 'none', 'mode switch hidden while navigating');
+    } finally { await p.close(); }
+  } finally { await b.close(); }
+});
