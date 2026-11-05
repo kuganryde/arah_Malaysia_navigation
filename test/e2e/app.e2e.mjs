@@ -371,6 +371,10 @@ test('Drive view: starts with a trip, shows speedo + mini map + AR road, themes 
     await p.evaluate(() => window.__arahDrive.feed({ lng: 101.71, lat: 3.15 + 250 / 110574, speed: 120, heading: 0 }));
     await p.waitForFunction(() => window.__arahDrive.status().speed === 120, null, { timeout: 5000 });
     assert.ok(await p.locator('.adr-speedo').isVisible() && await p.locator('.adr-mini').isVisible());
+    await p.evaluate(() => window.__arahDrive.feed({ lng: 101.71, lat: 3.15 + 330 / 110574, speed: 120, heading: 0 })); // 80 m further
+    await p.waitForFunction(() => window.__arahDrive.status().stats.metres > 60, null, { timeout: 5000 });
+    await p.waitForFunction(() => /^0\.[1-9]\d$/.test(document.querySelector('.adr-stats b').textContent), null, { timeout: 4000 }); // the test geolocation already gave a first fix, so the total is larger than the 80 m step
+    assert.equal(await p.locator('.adr-stats').getAttribute('role'), 'group', 'trip statistics card');
     await p.waitForFunction(() => /120 km\/j/.test(document.querySelector('.adr-speedo').getAttribute('aria-label')), null, { timeout: 5000 });
     await p.click('.adr-speedo'); await p.click('.adr-themes button[data-id=sports]');
     assert.equal(await p.evaluate(() => JSON.parse(localStorage.getItem('arah.drive.v1')).theme), 'sports');

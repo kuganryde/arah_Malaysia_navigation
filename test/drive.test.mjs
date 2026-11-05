@@ -72,3 +72,17 @@ test('drive: three themes with distinct accents, sane gauge scales, and an unkno
 test('drive: distance labels', () => {
   assert.equal(C.fmtDist(7), '10 m'); assert.equal(C.fmtDist(143), '140 m'); assert.equal(C.fmtDist(1234), '1.2 km'); assert.equal(C.fmtDist(12000), '12 km');
 });
+
+test('trip stats: distance, moving time, average speed that ignores stops, and GPS jumps', () => {
+  const t = C.tripStats(), lat = 3.15, step = 20 / 110574; // 20 m north per second = 72 km/h
+  for (let i = 0; i <= 60; i++) t.add(101.71, lat + i * step, 72, i * 1000);          // 60 s moving: 1.2 km
+  for (let i = 61; i <= 120; i++) t.add(101.71, lat + 60 * step, 0, i * 1000);         // 60 s stopped at a light
+  t.add(101.71, lat + 5000 * step, 50, 121000);                                           // one wild GPS jump (100 km): ignored
+  const s = t.get();
+  assert.ok(Math.abs(s.metres - 1200) < 15, 'metres ' + s.metres);
+  assert.ok(Math.abs(s.movingSec - 60) <= 1, 'moving ' + s.movingSec);
+  assert.ok(Math.abs(s.avgKmh - 72) < 2, 'average over moving time only ' + s.avgKmh);
+  assert.equal(Math.round(s.elapsedSec), 121);
+  t.reset(); assert.equal(t.get().metres, 0);
+  assert.equal(C.fmtTime(1488), '24:48'); assert.equal(C.fmtTime(3909), '1:05:09'); assert.equal(C.fmtTime(-3), '00:00');
+});

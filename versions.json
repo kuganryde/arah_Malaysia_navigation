@@ -1,5 +1,5 @@
 {
-  "release": "0.22.0",
+  "release": "0.23.0",
   "modules": {
     "app": {
       "version": "0.4.4",
@@ -97,7 +97,7 @@
       ]
     },
     "ci": {
-      "version": "0.20.0",
+      "version": "0.20.1",
       "description": "Tests, guard rails and GitHub Actions",
       "paths": [
         ".github/**",
@@ -107,7 +107,7 @@
       "markers": []
     },
     "docs": {
-      "version": "0.13.0",
+      "version": "0.13.1",
       "description": "README and its animated art",
       "paths": [
         "README.md",
@@ -121,7 +121,7 @@
       "markers": []
     },
     "pwa": {
-      "version": "0.1.27",
+      "version": "0.1.29",
       "description": "Installable app: manifest, service worker, offline page, icons, install and update UI",
       "paths": [
         "sw.js",
@@ -296,7 +296,7 @@
       ]
     },
     "twa": {
-      "version": "0.1.7",
+      "version": "0.1.8",
       "description": "Android (Trusted Web Activity) packaging, Play listing drafts, asset links (twa/, .well-known/)",
       "paths": [
         "twa/**",
@@ -336,7 +336,7 @@
       ]
     },
     "drive": {
-      "version": "0.1.4",
+      "version": "0.2.0",
       "description": "Drive view: AR road view, mini guided map, racing speedometer, Normal/Sports/Luxury modes (assets/drive/)",
       "paths": [
         "assets/drive/**"
