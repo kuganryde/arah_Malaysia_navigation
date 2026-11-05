@@ -475,8 +475,8 @@ test('Makan & Mall: a hung server does not slow the search (two servers raced), 
     assert.ok(calls.some((c) => /around:1800,/.test(c.q)) && calls.some((c) => /around:5000,/.test(c.q)), 'small area first, then the wider one');
     assert.ok(calls.some((c) => /timeout:12\]/.test(c.q)), 'short server-side time limit for the quick stage');
     // same place again: served from the 15-minute cache, no new request
-    await p.keyboard.press('Escape'); const n = calls.length;
-    await p.click('.ap-btn'); await p.waitForSelector('.ap-sheet'); await p.locator('.ap-chip', { hasText: 'KFC' }).first().click(); await p.waitForSelector('.ap-row', { timeout: 3000 });
+    const n = calls.length; await p.locator('.ap-x').first().click(); await p.waitForSelector('.ap-sheet', { state: 'detached' });
+    await p.click('.ap-btn'); await p.waitForSelector('.ap-sheet'); await p.getByText('← Kembali').click(); await p.locator('.ap-chip', { hasText: 'KFC' }).first().click(); await p.waitForSelector('.ap-row', { timeout: 3000 });
     assert.equal(calls.length, n, 'cached');
   } finally { await b.close(); }
 });
